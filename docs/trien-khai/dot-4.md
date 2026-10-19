@@ -1,0 +1,223 @@
+# Đợt 4 · Tối ưu và đo
+
+Đọc [README.md](README.md) trước. Cần Đợt 0–3 đã xong. Mỗi mục ở đây **độc lập**, làm theo thứ tự nào cũng được.
+Mọi tính năng có công tắc và **mặc định tắt**. Chủ dự án bật sau khi thử trên máy.
+
+| Mục | Việc | Công tắc (`DEFAULT_CONFIG`) |
+|---|---|---|
+| 4.1 | Deep Research hai pha: máy chủ chờ thay cho agent | `deepResearchTwoPhase: false` |
+| 4.2 | Chọn model theo loại bước | `stepModel: {}` |
+| 4.3 | Chạy song song các bước độc lập | `maxParallel: 1` |
+| 4.4 | Chế độ tiếp nối (bản mới chỉ làm phần chênh) | (tuỳ chọn khi tạo dự án) |
+| 4.5 | Thử nghiệm: hỏi nhanh đồng nghiệp | `consultTool: false` |
+| 4.6 | Trang Báo cáo: chỉ số trí não | (luôn bật) |
+
+---
+
+## 4.1 Deep Research hai pha
+
+Trong các lượt Mai dùng Chrome, khoảng 45% thao tác là chờ hoặc tải lại trang Gemini, và mỗi lần chờ đọc lại khoảng 44 nghìn token ngữ cảnh.
+Tách thành hai lượt ngắn; máy chủ chờ ở giữa, không tốn token.
+
+**Làm**
+1. Áp dụng khi: `config.deepResearchTwoPhase`, bước trong dự án, `kind === 'work'`, `geminiWebOf(agent).mode === 'deep-research'`.
+2. Thêm trạng thái lên bước: `s.pha` (1 hoặc 2, mặc định 1), `s.henLuc` (ISO), `s.lanKiem` (số lần thu hoạch).
+3. `chromePrompt(agent, kind, pha)`: khi `pha` là 1 hoặc 2, thay khối `CÁCH NGHIÊN CỨU: GEMINI DEEP RESEARCH (bắt buộc)` bằng đúng một trong hai khối sau (`<…>` thay như code hiện có; `<file>` là `agents/<id>/<chu-de>-deep-research.md`):
+   ~~~
+   CÁCH LÀM: GEMINI DEEP RESEARCH, PHA 1/2 (KHỞI CHẠY). Lượt này chỉ khởi chạy, không chờ kết quả.
+   - Việc chính chạy trên https://gemini.google.com trong tab đó, bằng tài khoản Gemini của chủ dự án. Không dùng WebSearch.
+   - Mở chat mới.<chọn model nếu có> Bật "Deep Research" trong ô nhập.
+   - Viết MỘT prompt gộp toàn bộ câu hỏi theo từng mục của brief/nhiệm vụ (bỏ những mục bộ não đã có ý đã duyệt), nêu loại nguồn ưu tiên, yêu cầu báo cáo bằng <ngôn ngữ> có link nguồn. Gửi.
+   - Gemini hiện kế hoạch nghiên cứu: <đối chiếu với brief nếu checkPlan>; bấm "Start research"/"Bắt đầu nghiên cứu".
+   - Ngay khi Gemini bắt đầu nghiên cứu: ghi <file> với 3 dòng đầu "Link: <URL cuộc chat dạng /app/…>", "Trạng thái: đang chạy", "Bắt đầu: <giờ>". Rồi ghi bàn giao ngắn và KẾT THÚC lượt. Không chờ kết quả: máy chủ sẽ chờ (không tốn token) rồi gọi lại bạn để lấy báo cáo.
+   - Gặp trang đăng nhập, CAPTCHA, hết quota: dừng, ghi nguyên văn vào Vướng mắc.
+   ~~~
+   ~~~
+   CÁCH LÀM: GEMINI DEEP RESEARCH, PHA 2/2 (LẤY KẾT QUẢ).
+   - Đọc <file>, lấy dòng "Link:". Mở link đó trong một tab mới, kiểm tra Gemini đã xong chưa (có nút Xuất/Export, không còn dòng tiến độ).
+   - CHƯA XONG: sửa dòng "Trạng thái:" thành "Trạng thái: đang chạy (kiểm lúc <giờ>)", ghi bàn giao một dòng rồi KẾT THÚC lượt; máy chủ sẽ gọi lại sau.
+   - ĐÃ XONG: lấy toàn văn báo cáo và danh sách nguồn bằng get_page_text với max_chars: 200000. Ghi nguyên bản vào <file> (giữ dòng Link, đổi thành "Trạng thái: xong"). Rồi tổng hợp sang file nguồn theo hướng dẫn riêng; nguồn chỉ có trong báo cáo mà bạn chưa mở thì ghi "chưa kiểm".
+   - Gemini báo lỗi hoặc hết quota: ghi nguyên văn vào Vướng mắc.
+   ~~~
+   Truyền `pha` từ `startRun` (`opts.pha`) xuống `buildPrompt` rồi `chromePrompt`. Pha 1 dùng `maxTurns: 40`.
+4. `onDone` của bước (chỉ khi áp dụng 4.1). Đọc `<file>`:
+   - Pha 1 xong mà file có dòng `^Trạng thái:\s*đang chạy`:
+     - đặt `s.pha = 2`, `s.status = 'pending'`;
+     - đặt `s.henLuc = now + max(10, g.maxWaitMinutes * 0.5)` phút;
+     - ghi log `Deep Research đang chạy trên Gemini; máy chủ chờ tới <giờ> (không tốn token) rồi gọi <tên> lấy kết quả`.
+   - Pha 2 xong mà file **vẫn** `đang chạy`:
+     - nếu `s.lanKiem < 3`: tăng `s.lanKiem`, `s.henLuc = now + 10 phút`, trạng thái `pending`;
+     - nếu đã đủ 3 lần: báo lỗi bước `Gemini chưa xong sau 3 lần kiểm` (đi qua `onStepError`).
+   - File có `^Trạng thái:\s*xong` thì xử lý như bước xong bình thường.
+5. `pumpPlan` (hoặc `chonBuocChay` nếu đã làm 4.3): bước `pending` có `henLuc` ở tương lai thì chưa chạy.
+   - đặt `plan.note = 'Chờ Gemini Deep Research tới <giờ>'`;
+   - hẹn `setTimeout(() => pumpPlan(plan), <thời gian còn lại>)`, giữ hẹn trong một `Map` theo id kế hoạch để không hẹn trùng;
+   - `loadPlans` và `resumePlan` cũng hẹn lại cho bước có `henLuc`.
+6. Kiểm: đọc code. Thử thật trên máy (thu-tren-may.md, Đợt 4).
+
+---
+
+## 4.2 Chọn model theo loại bước
+
+**Làm**
+1. `DEFAULT_CONFIG`: `stepModel: {}, // model theo loại bước, vd {"rereview": "haiku"}; không áp dụng cho agent dùng Chrome`.
+2. `cliArgs`, nhánh Claude: `const m = (config.stepModel || {})[kind];`. Dùng `m` thay cho `chromeModel(agent)` khi `m && !usesChrome(agent)`.
+   `startRun` ghi đúng model thực dùng vào `run.model`.
+3. README: gợi ý đặt `{"rereview": "haiku"}` sau khi sổ vấn đề đã chạy ổn (duyệt lại chỉ còn kiểm danh sách vấn đề).
+
+---
+
+## 4.3 Chạy song song các bước độc lập
+
+Lợi ích thật nằm ở **sau một bước duyệt có lỗi của nhiều người**. Ví dụ Vy sửa thiết kế và Lam sửa kịch bản cùng lúc.
+Bước nào cần bản cuối của sản phẩm vẫn chờ đủ vòng duyệt lại. Không tiết kiệm token, chỉ rút ngắn thời gian.
+
+**Làm**
+1. `lib/lich.js` (đã chạy thử với các tình huống ở bước 3):
+   ```js
+   'use strict';
+   // Gốc của một bước (đánh số từ 1): đi theo checks/fixOf về bước làm ban đầu
+   function gocBuoc(steps, k) {
+     for (let n = 0; n < 50; n++) { const s = steps[k - 1]; const t = s && (s.checks || s.fixOf); if (!t) return k; k = t; }
+     return k;
+   }
+   // Bước idx (đánh số từ 0) chạy được chưa: phụ thuộc là bước duyệt thì chỉ cần bước đó xong;
+   // là bước làm/sửa thì cần bản cuối của sản phẩm đó (mọi bước cùng gốc đứng trước idx đã xong)
+   function sanSang(steps, idx) {
+     const s = steps[idx];
+     const deps = new Set([...(s.from && s.from.length ? s.from : idx > 0 ? [idx] : []), ...(s.checks ? [s.checks] : [])]);
+     for (const d of deps) {
+       const b = steps[d - 1];
+       if (!b) continue;
+       if (b.checks) { if (b.status !== 'done') return false; continue; }
+       const g = gocBuoc(steps, d);
+       for (let j = 0; j < idx; j++) if (gocBuoc(steps, j + 1) === g && steps[j].status !== 'done') return false;
+     }
+     return true;
+   }
+   // Chọn các bước bắt đầu ngay. max = 1 giữ đúng cách chạy tuần tự cũ.
+   function chonBuocChay(steps, { max = 1, dangBan = new Set() } = {}) {
+     if (steps.some(s => s.status === 'error')) return [];
+     const dangLam = steps.filter(s => s.status === 'working');
+     if (max <= 1) {
+       if (dangLam.length) return [];
+       const idx = steps.findIndex(s => s.status !== 'done');
+       return idx >= 0 && steps[idx].status === 'pending' ? [idx] : [];
+     }
+     const out = [], ban = new Set([...dangBan, ...dangLam.map(s => s.agentId)]);
+     for (let idx = 0; idx < steps.length && dangLam.length + out.length < max; idx++) {
+       const s = steps[idx];
+       if (s.status !== 'pending' || ban.has(s.agentId)) continue;
+       if (steps.slice(0, idx).some(x => x.agentId === s.agentId && x.status !== 'done')) continue;
+       if (!sanSang(steps, idx)) continue;
+       out.push(idx); ban.add(s.agentId);
+     }
+     return out;
+   }
+   module.exports = { gocBuoc, sanSang, chonBuocChay };
+   ```
+2. `server.js`:
+   - tách phần thân `pumpPlan` (từ `const s = plan.steps[idx]` tới hết) thành `startStep(plan, idx)`, **không đổi gì bên trong**;
+   - `pumpPlan` mới:
+     - giữ các dòng kiểm đầu hàm (`status`, giao ban, kiểm Chrome, hết bước thì `finishPlan`);
+     - với `maxParallel` là 1: giữ y cách cũ, gồm cả `plan.waiting` khi agent đang bận;
+     - với `maxParallel` từ 2: gọi `chonBuocChay(plan.steps, { max, dangBan: new Set(running.keys()) })` rồi `startStep` từng chỉ số. Mỗi lần trước khi chạy thêm một bước, kiểm `overBudget`;
+   - `finishPlan` chỉ chạy khi mọi bước `done` và không có bước `working`.
+   - Đang hỏi chủ dự án (`asking`) thì bước khác đang chạy vẫn chạy nốt; `onDone` thấy `plan.status !== 'running'` thì chỉ lưu, không chạy tiếp (như hiện nay).
+3. Kiểm thử `test/lich.test.js` với các bước mẫu:
+   ```js
+   const B = () => [
+     { agentId: 'lam', status: 'done', from: [] },
+     { agentId: 'vy', status: 'done', from: [1] },
+     { agentId: 'ha', status: 'done', from: [2], checks: 2 },
+     { agentId: 'vy', status: 'pending', from: [2, 3], fixOf: 2 },
+     { agentId: 'lam', status: 'pending', from: [1, 3], fixOf: 1 },
+     { agentId: 'ha', status: 'pending', from: [3, 4, 5], checks: 4 },
+     { agentId: 'nhi', status: 'pending', from: [2] }
+   ];
+   ```
+   - `max: 2` → `[3, 4]` (Vy và Lam sửa cùng lúc); `max: 1` → `[3]`;
+   - bước 4 xong, bước 5 đang chạy, `max: 2` → `[]` (duyệt lại chờ Lam; Nhi chờ bản thiết kế qua duyệt lại);
+   - bước 4, 5 xong, `max: 3` → `[5]`. Thêm bước 6 xong → `[6]`;
+   - `dangBan: new Set(['vy'])`, `max: 2` → `[4]`;
+   - có bước `error` → `[]`;
+   - chuỗi tuần tự `[done, done, pending, pending]` với `max: 1` → `[2]`.
+
+---
+
+## 4.4 Chế độ tiếp nối
+
+Cho lần làm lại một chủ đề đã có (vd suy giáp v8). Bản mới bắt đầu từ bản cũ, chỉ làm phần chênh.
+
+**Làm**
+1. `createPlan(b)` nhận `b.tiepNoiTu` (id một kế hoạch đã `done`):
+   - **Chủ đề mới**: bỏ đuôi `-v<n>` của chủ đề cũ rồi thêm `-v<n lớn nhất đang có trong output/ + 1>`. Chủ đề cũ chưa có đuôi thì thêm `-v2`. Gán ngay `plan.topic`.
+   - **Chép sản phẩm**:
+     - các file `.md` nằm ngay trong `output/<cũ>/` → `output/<mới>/`;
+     - ảnh trong `output/<cũ>/hinh/` và `hinh-nguon/`: tạo liên kết cứng `fs.link`, lỗi thì `copyFile`;
+     - bỏ qua `cac-ban/`.
+   - **Chép brief** giống `retryPlan`, thay mọi chuỗi `output/<cũ>/` thành `output/<mới>/` và dòng `Thư mục chủ đề:`.
+   - Chép `answers` của kế hoạch cũ sang (giống `retryPlan`).
+2. `buildPlanPrompt`: khi kế hoạch có `tiepNoiTu`, thêm khối sau ngay sau `MỤC TIÊU`:
+   ```
+   DỰ ÁN TIẾP NỐI từ <id cũ>: sản phẩm đã được chép sang output/<mới>/.
+   Phần còn thiếu theo nghiệm thu cũ:
+   <mục "## Phần còn thiếu" trong du-an/<id cũ>/nghiem-thu.md, tối đa 2.000 ký tự; không có thì ghi "(không có)">
+   Vấn đề còn mở của dự án cũ:
+   - <tối đa 15 dòng từ issues có trạng thái mo hoặc khong-sua>
+   Chỉ lập kế hoạch cho phần chênh: sửa phần còn thiếu, cập nhật theo mục tiêu mới; không làm lại phần đã đạt.
+   ```
+3. Giao diện, ô tạo dự án: thêm ô chọn "Tiếp nối từ dự án…" (danh sách kế hoạch `done`, mặc định "Không"), gửi `tiepNoiTu` trong body `POST /api/plan`.
+4. README: mô tả ngắn chế độ tiếp nối.
+
+---
+
+## 4.5 Thử nghiệm: hỏi nhanh đồng nghiệp
+
+**Làm** (chỉ khi `config.consultTool`):
+1. Công cụ MCP `hoi_dong_nghiep(ai, cau_hoi)`:
+   - `description`: `Hỏi nhanh một đồng nghiệp trong nhóm (vd hỏi An một ý đã được duyệt chưa). Máy chủ chạy một lượt rất ngắn của người đó (chỉ đọc file) và trả câu trả lời 3–6 câu. Mỗi dự án tối đa 3 lần; dùng khi tra_cuu và file bàn giao không đủ.`
+   - `inputSchema`: `{ ai: string, cau_hoi: string }`, bắt buộc cả hai.
+2. Máy chủ chỉ chạy khi:
+   - lượt hỏi thuộc một dự án;
+   - `findAgent(ai)` có thật, không phải người hỏi, và không đang bận;
+   - `(plan.consults || 0) < 3`.
+
+   Chạy `startRun(nguoiDuocHoi, …, { prompt, maxTurns: 4, effort: 'low', planId, step: 0, chiDoc: true })` rồi **chờ** `onDone` (tối đa 3 phút). Trả về `run.summary` cắt 1.500 ký tự.
+3. `opts.chiDoc`: công cụ chỉ còn `Read`, `Glob`, `Grep` (không Chrome, không web, không MCP).
+4. Prompt:
+   `Bạn là <Tên> — <vai>. Đồng nghiệp <Tên người hỏi> đang làm dự án "<goal>" hỏi bạn: "<câu hỏi>". Trả lời ngắn (3–6 câu) dựa trên file của bạn trong agents/<id>/ và sản phẩm của bạn; được đọc file nhưng không ghi file nào. Không chắc thì nói không chắc.`
+5. Cộng token vào dự án (`addUsage`); ghi log `Hỏi nhanh: <A> hỏi <B>`.
+
+---
+
+## 4.6 Trang Báo cáo: chỉ số trí não
+
+**Làm**
+1. `GET /api/tri-nao?days=<n>` trả về các chỉ số tính từ `runs.jsonl`, `plans.json`, `tri-thuc/`:
+   - theo dự án:
+     - token quy đổi theo loại bước (`work`, `review`, `rereview`, `fix`, điều phối);
+     - tỉ lệ vòng duyệt–sửa so với bước làm;
+     - số vấn đề BẮT BUỘC theo loại và theo gốc;
+     - số lần giao ban;
+     - điểm nghiệm thu lần đầu;
+   - theo agent: số lần chạy có gọi Bash/PowerShell; số lần `tra_cuu`, `soat_loi`, `kiem_link` (đếm act theo `describeTool` của 0.13);
+   - bài học: số theo `trang_thai`; số bài tái phạm trong 30 ngày;
+   - bộ não: số ý (đã duyệt / nháp / cần xem lại), số nguồn theo `truy_cap`, số note được dự án gần nhất dùng (`dung_trong`).
+2. Trang Báo cáo (`#usage`): thêm khối "Trí não" dưới bảng theo dự án.
+   - một bảng theo dự án;
+   - một dòng thẻ số: lần chạy gọi Bash, bài học tái phạm, ý đã duyệt, nguồn bị chặn;
+   - mỗi chỉ số kèm mục tiêu ở mục 5 của kế hoạch, tô xanh khi đạt.
+3. Mục tiêu ghi cứng trong giao diện. Chép đúng các con số ở mục 5 của `docs/ke-hoach-tri-nao.md`.
+
+---
+
+## Xong Đợt 4 khi
+
+- `npm test` qua hết, `node --check server.js` không lỗi, thử khởi động không lỗi.
+- Với mọi công tắc ở giá trị mặc định (tắt), máy chủ chạy y như sau Đợt 3.
+- Chủ dự án bật từng tính năng theo phần **Đợt 4** trong [thu-tren-may.md](thu-tren-may.md).
+
+## Phát hiện thêm
+
+(Người triển khai ghi vào đây.)

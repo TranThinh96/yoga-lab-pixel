@@ -1126,6 +1126,7 @@ function pumpPlan(plan) {
       kind === 'rereview' ? `- Đây là DUYỆT LẠI: chỉ đọc những chỗ đã sửa (theo danh sách trong bàn giao của bước sửa) và nhận xét cũ; không duyệt lại cả file, không mở lại link đã kiểm.`
         : `- Kiểm link theo mẫu: tối đa ~10 link quan trọng nhất (số liệu, cảnh báo an toàn, nghiên cứu được trích); không cần mở hết.`,
       `- Việc của bạn là KIỂM, không làm thay: không WebSearch tìm nguồn mới. Ý thiếu nguồn hoặc nguồn không khớp → ghi BẮT BUỘC "cần nguồn" để người làm tự tìm.`,
+      ...(checked && checked.noChange ? [`- CHÚ Ý: bước sửa trước không ghi vào file sản phẩm nào (${checked.fileSua.slice(0, 3).join(', ')}). Kiểm kỹ từng chỗ người sửa báo "đã sửa".`] : []),
       lintBlock(lintFiles(plan.steps.filter(x => x.agentId === (checked || {}).agentId).flatMap(x => x.files || []))),
       `- Dòng CUỐI của bàn giao phải là đúng một trong hai: "KẾT LUẬN: ĐẠT" (không còn lỗi BẮT BUỘC) hoặc "KẾT LUẬN: CẦN SỬA".`] : []),
     ...noHandoff.map(x => `\nKết quả bước trước (${x.agentId}, không có file bàn giao): ${x.summary.slice(0, 600)}`),
@@ -1143,6 +1144,13 @@ function pumpPlan(plan) {
       if (run.status === 'done') {
         s.status = 'done'; s.prevFiles = null;
         s.files = [...new Set([...(s.files || []), ...(run.files || []).filter(isProductFile)])].slice(0, 20);
+        if (kind === 'fix') {
+          const doi = (run.files || []).filter(f => (s.fileSua || []).includes(f));
+          if ((s.fileSua || []).length && !doi.length) {
+            s.noChange = true;
+            plan.log.push(`Bước ${idx + 1}: ${agent.name} sửa nhưng không ghi vào ${s.fileSua.slice(0, 3).join(', ')}`);
+          }
+        }
         if (plan.status !== 'running') return emitPlan(plan);
         // Kết luận / câu hỏi đôi khi chỉ nằm trong câu trả lời cuối: đọc cả bàn giao lẫn câu trả lời
         const handoffText = readWs(run.handoff);

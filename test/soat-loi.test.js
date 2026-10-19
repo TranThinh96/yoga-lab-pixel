@@ -19,3 +19,8 @@ test('soatVanBan khớp kết quả mong đợi', () => {
   }
   assert.ok(doDo > 0, 'vẫn phải báo lặp từ "độ độ"');
 });
+
+test('soChuTungTrang', () => {
+  const { soChuTungTrang } = require('../lib/soat-loi');
+  for (const [k, v] of Object.entries(MD.so_chu)) assert.deepEqual(soChuTungTrang(readFixture(k)), v, k);
+});

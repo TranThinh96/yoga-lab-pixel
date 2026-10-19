@@ -16,7 +16,7 @@ const path = require('path');
 const { spawn, execFile } = require('child_process');
 const os = require('os');
 const https = require('https');
-const { locBaiHocMoi, phanLoaiCauHoi } = require('./lib/van-ban');
+const { docCauHoi: parseQuestions, locBaiHocMoi, phanLoaiCauHoi } = require('./lib/van-ban');
 
 const ROOT = __dirname;
 const CONFIG_PATH = path.join(ROOT, 'config.json');
@@ -876,20 +876,6 @@ function parsePlan(text, offset, team) {
     catch (e) { parsePlan.lastError = e.message; }
   }
   return null;
-}
-
-// Mục "## Câu hỏi cho chủ dự án" trong bàn giao
-function parseQuestions(text) {
-  const lines = String(text || '').split(/\r?\n/);
-  const i = lines.findIndex(l => /^#{2,3}\s*câu hỏi cho chủ dự án/iu.test(l.trim()));
-  if (i < 0) return [];
-  const body = [];
-  for (const l of lines.slice(i + 1)) { if (/^#{1,3}\s/.test(l.trim())) break; body.push(l); }
-  const none = s => /^\(?\s*(không|không có|chưa có|none|n\/a)\s*\.?\)?$/iu.test(s.trim());
-  const items = body.filter(l => /^\s*([-*•]|\d+[.)])\s+/.test(l)).map(l => l.replace(/^\s*([-*•]|\d+[.)])\s+/, '').trim()).filter(s => s && !none(s));
-  if (items.length) return items.slice(0, 5);
-  const all = body.join(' ').trim();
-  return all && !none(all) ? [all.slice(0, 600)] : [];
 }
 
 // Dòng "KẾT LUẬN: ĐẠT / CẦN SỬA" của người duyệt (lấy dòng cuối cùng)

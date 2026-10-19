@@ -39,3 +39,14 @@ test('phanLoaiCauHoi', () => {
   assert.deepEqual(vb.phanLoaiCauHoi([c2, v], [c1], []), { moi: [v], trung: [{ q: c2, i: 0 }] });
   assert.deepEqual(vb.phanLoaiCauHoi([c1, c2], [], []).moi, [c1]);
 });
+
+test('docCauHoi: "Không (…)" không phải câu hỏi', () => {
+  for (const s of TL.khong_phai_cau_hoi) {
+    assert.deepEqual(vb.docCauHoi('## Câu hỏi cho chủ dự án\n' + s + '\n\n## Gợi ý bước sau\nx'), [], s);
+    assert.deepEqual(vb.docCauHoi('## Câu hỏi cho chủ dự án\n- ' + s + '\n'), [], s);
+  }
+  for (const s of TL.la_cau_hoi) {
+    assert.deepEqual(vb.docCauHoi('## Câu hỏi cho chủ dự án\n' + s + '\n\n## Gợi ý bước sau\nx'), [s]);
+    assert.deepEqual(vb.docCauHoi('## Câu hỏi cho chủ dự án\n- ' + s + '\n'), [s]);
+  }
+});

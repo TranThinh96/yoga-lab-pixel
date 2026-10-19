@@ -50,3 +50,15 @@ test('docCauHoi: "Không (…)" không phải câu hỏi', () => {
     assert.deepEqual(vb.docCauHoi('## Câu hỏi cho chủ dự án\n- ' + s + '\n'), [s]);
   }
 });
+
+test('chonChuDe', () => {
+  const cases = [
+    [{ jsonChuDe: 'Tăng huyết áp' }, 'tang-huyet-ap'],
+    [{ jsonChuDe: '<chu-de>', tasks: ['ghi output/abc/slides.md'] }, 'abc'],
+    [{ brief: readFixture('brief-v7.md') }, 'suy-giap-v7'],
+    [{ brief: '# B\n\n## Sản phẩm cần giao\n| `output/x-y/slides.md` | Lam |\n\n## Ràng buộc\nxem output/khac/a.md' }, 'x-y'],
+    [{ files: ['agents/an/a.md', 'output/q/thiet-ke.md'] }, 'q'],
+    [{}, null]
+  ];
+  for (const [vao, ra] of cases) assert.equal(vb.chonChuDe(vao), ra, JSON.stringify(vao).slice(0, 80));
+});

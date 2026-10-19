@@ -16,7 +16,7 @@ const path = require('path');
 const { spawn, execFile } = require('child_process');
 const os = require('os');
 const https = require('https');
-const { docCauHoi: parseQuestions, locBaiHocMoi, phanLoaiCauHoi } = require('./lib/van-ban');
+const { docCauHoi: parseQuestions, locBaiHocMoi, phanLoaiCauHoi, chonChuDe, chuDeTu } = require('./lib/van-ban');
 
 const ROOT = __dirname;
 const CONFIG_PATH = path.join(ROOT, 'config.json');
@@ -772,6 +772,18 @@ const projDir = plan => `du-an/${plan.id}`;
 const briefPath = plan => `${projDir(plan)}/brief.md`;
 const boardPath = plan => `${projDir(plan)}/bang.md`;
 const acceptPath = plan => `${projDir(plan)}/nghiem-thu.md`;
+// Chủ đề của dự án: tính một lần rồi giữ trong plan.topic (lưu cùng plans.json)
+function planTopic(plan) {
+  if (!plan) return null;
+  if (!plan.topic) plan.topic = chonChuDe({ brief: readWs(briefPath(plan)), tasks: plan.steps.map(s => s.task), files: plan.steps.flatMap(s => s.files || []) });
+  return plan.topic;
+}
+// Thư mục ảnh của một lượt chạy: theo chủ đề của dự án; lượt lẻ thì theo đường dẫn trong nhiệm vụ
+function imageDirFor(run) {
+  const plan = run.planId && plans.find(p => p.id === run.planId);
+  const topic = planTopic(plan) || chuDeTu(run.task);
+  return topic ? `output/${topic}/hinh` : null;
+}
 const wsExists = r => { const a = insideWorkspace(r); return !!a && fs.existsSync(a); };
 const readWs = r => { const a = r && insideWorkspace(r); try { return a ? fs.readFileSync(a, 'utf8').normalize('NFC') : ''; } catch { return ''; } };
 const cfgNum = (k, d) => { const n = Number(config[k]); return Number.isFinite(n) ? n : d; };
@@ -872,7 +884,7 @@ function parsePlan(text, offset, team) {
   for (const j of blocks) {
     const questions = cleanQuestions(j && j.questions);
     const list = Array.isArray(j) ? j : j && j.steps;
-    try { return { steps: cleanSteps(list || [], offset, team, questions.length > 0), questions }; }
+    try { return { steps: cleanSteps(list || [], offset, team, questions.length > 0), questions, chuDe: j && j.chu_de }; }
     catch (e) { parsePlan.lastError = e.message; }
   }
   return null;
@@ -903,6 +915,7 @@ function buildPlanPrompt(coord, plan, failedIdx) {
   if (ans.length) L.push('', 'CHỦ DỰ ÁN ĐÃ TRẢ LỜI (bắt buộc tuân theo):', ...ans.map(x => `- ${x.q}\n  → ${x.a}`));
   if (!replan) {
     L.push('', `VIỆC 1 — ${hasBrief ? 'CẬP NHẬT' : 'VIẾT'} BRIEF: ghi file ${brief} (file duy nhất bạn được ghi). Gồm các mục:`,
+      '- Dòng đầu tiên sau tiêu đề: "Thư mục chủ đề: <chu-de>" (chữ thường, không dấu, nối gạch ngang, vd tang-huyet-ap). Mọi sản phẩm cuối nằm trong output/<chu-de>/.',
       '- "## Mục tiêu & người nhận": sản phẩm dùng cho ai, trong bối cảnh nào.',
       '- "## Sản phẩm cần giao": từng file đầu ra (đường dẫn trong output/<chu-de>/), định dạng.',
       '- "## Tài liệu mẫu": file trong sources/ dùng làm chuẩn tham chiếu (nếu có), các mục của mẫu phải được phủ; ghi "Không có" nếu không có.',
@@ -920,7 +933,7 @@ function buildPlanPrompt(coord, plan, failedIdx) {
   }
   const offset = replan ? plan.steps.filter(s => s.status === 'done').length : 0;
   L.push('', `${replan ? '' : 'VIỆC 2 — '}CHIA VIỆC. Trả lời: chỉ một khối \`\`\`json theo mẫu dưới, không giải thích thêm.`, '```json',
-    '{"questions":[],"steps":[{"agent":"<id>","task":"<việc cụ thể, có file đầu ra>","from":[<các bước trước cần đọc bàn giao>]},{"agent":"<id người khác>","task":"Duyệt …","from":[1],"checks":1}]}', '```',
+    '{"chu_de":"<chu-de>","questions":[],"steps":[{"agent":"<id>","task":"<việc cụ thể, có file đầu ra>","from":[<các bước trước cần đọc bàn giao>]},{"agent":"<id người khác>","task":"Duyệt …","from":[1],"checks":1}]}', '```',
     `Quy tắc: tối đa ${max - offset} bước; mỗi bước một người hợp vai; "from" để trống thì bước đó đọc bàn giao của bước ngay trước.`,
     `- Mỗi bước tạo ra sản phẩm chính (nguồn, kịch bản, thiết kế…) nên có một bước DUYỆT ngay sau, do người khác làm, ghi "checks": <số bước được duyệt>. Người duyệt không sửa hộ; nếu họ kết luận CẦN SỬA, máy chủ tự trả về người làm để sửa rồi duyệt lại (bạn không cần thêm bước sửa).`,
     `- Ghi rõ trong "task" file đầu ra mong đợi (nháp trong agents/<id>/, sản phẩm cuối trong output/<chu-de>/), và nhắc đọc brief ${brief}.`,
@@ -954,6 +967,7 @@ async function runCoordinator(plan, failedIdx) {
           plan.note = run.status === 'done' ? `${coord.name} không trả về kế hoạch hợp lệ${parsePlan.lastError ? ': ' + parsePlan.lastError : ''}` : (run.error || 'Điều phối viên gặp lỗi');
           return emitPlan(plan);
         }
+        if (!plan.topic) plan.topic = chonChuDe({ jsonChuDe: parsed.chuDe }) || null;
         if (!replan && !wsExists(briefPath(plan))) plan.log.push(`${coord.name} chưa ghi brief ${briefPath(plan)}`);
         let next;
         if (replan) { plan.steps = plan.steps.filter(s => s.status === 'done').concat(parsed.steps); plan.replans++; next = 'running'; }
@@ -1282,8 +1296,6 @@ function resumePlan(plan) {
 // Máy chủ chép giúp sau mỗi lượt: ten_png_123.jpg → output/<chủ đề>/hinh/ten.jpg (bản tạo sau cùng là bản chính).
 const IMG_EXT = /\.(png|jpe?g|webp)$/i;
 const agyBrain = () => config.agyBrainDir || path.join(os.homedir(), '.gemini', 'antigravity-cli', 'brain');
-// Thư mục hinh/ của chủ đề: lấy từ đường dẫn output/<chủ đề>/ đầu tiên nhắc trong việc được giao
-function imageDirOf(text) { const m = /output\/([\p{L}\p{N}_.-]+)\//u.exec(String(text || '')); return m ? `output/${m[1]}/hinh` : 'hinh-moi'; }
 const imageName = n => path.basename(n, path.extname(n)).replace(/_\d{10,}$/, '').replace(/_(png|jpe?g|webp)$/i, '').replace(/[_-](v|lan|lần)[_-]?\d+$/i, '') // bản tạo lại (_v2) ghi đè bản cũ
   .replace(/_/g, '-').toLowerCase().replace(/[^\p{L}\p{N}-]+/gu, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') || 'anh';
 async function harvestAgyImages(entry) {
@@ -1328,8 +1340,14 @@ async function harvestGeminiDownloads(agent, entry) {
 async function placeImages(entry, found, from, extraNote = '') {
   const run = entry.run;
   if (!found.length) return [];
-  const dirRel = imageDirOf(run.task), dirAbs = insideWorkspace(dirRel);
+  const dirRel = imageDirFor(run) || 'hinh-moi', dirAbs = insideWorkspace(dirRel);
   if (!dirAbs) return [];
+  if (dirRel === 'hinh-moi') {
+    const msg = 'KHÔNG xác định được chủ đề nên ảnh tạm để ở hinh-moi/. Chép tay vào output/<chủ đề>/hinh/, hoặc ghi rõ output/<chủ đề>/ trong nhiệm vụ.';
+    extraNote = extraNote ? msg + '\n' + extraNote : msg;
+    const plan = run.planId && plans.find(p => p.id === run.planId);
+    if (plan) plan.log.push(msg);
+  }
   await fsp.mkdir(dirAbs, { recursive: true });
   // agy hay tự thêm đuôi khi tạo lại (_v2, _flat…): khớp với tên dự kiến trong "Danh sách hình" (dài nhất trùng phần đầu)
   const expected = listedImages(path.posix.join(path.posix.dirname(dirRel), 'thiet-ke.md')).map(x => x.name.replace(/\.[a-z]+$/i, ''))
@@ -1791,7 +1809,7 @@ async function retryPlan(old) {
   const plan = {
     id, goal: old.goal, coordinatorId: coord.id, team: teamFor(coord.id), autoStart: false, review: old.review !== false || !!old.reviewDone,
     status: 'draft', steps, replans: 0, log: [`Chạy lại từ ${old.id}`], note: '', waiting: null, tokens: 0,
-    questions: [], answers: (old.answers || []).slice(), afterAnswer: null, askRounds: 0, fixRounds: 0, wtokens: 0, costUsd: 0, score: null, acceptFile: null, reviewDone: false, resumeAt: null, budgetX: 1,
+    topic: old.topic || null, questions: [], answers: (old.answers || []).slice(), afterAnswer: null, askRounds: 0, fixRounds: 0, wtokens: 0, costUsd: 0, score: null, acceptFile: null, reviewDone: false, resumeAt: null, budgetX: 1,
     createdAt: now.toISOString(), endedAt: null, planRunId: old.planRunId || null, replanRunIds: [], reviewRunId: null, reviewHandoff: null, summary: '', retryOf: old.id
   };
   // Brief của kế hoạch cũ là yêu cầu đã chốt: chép sang folder dự án mới

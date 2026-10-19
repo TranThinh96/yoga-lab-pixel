@@ -1104,10 +1104,20 @@ function pumpPlan(plan) {
   const noHandoff = srcs.filter(x => !x.handoff && x.summary);
   const checked = s.checks && plan.steps[latestStep(plan, s.checks, idx) - 1];
   const checkedName = checked && ((config.agents.find(a => a.id === checked.agentId) || {}).name || checked.agentId);
+  let loiSua = [];
+  if (kind === 'fix') {
+    // File của sản phẩm đang sửa: bước gốc và các bước sửa trước của nó; bước sửa sau nghiệm thu thì lấy mọi file người này đã ghi
+    const fileSua = s.fixOf
+      ? [...new Set(plan.steps.slice(0, idx).filter((x, i) => i + 1 === s.fixOf || x.fixOf === s.fixOf).flatMap(x => x.files || []))]
+      : [...new Set(plan.steps.slice(0, idx).filter(x => x.agentId === agent.id).flatMap(x => x.files || []))];
+    s.fileSua = fileSua;
+    loiSua = lintFiles(fileSua);
+  }
   const task = [
     `(Dự án: ${plan.goal} — bước ${idx + 1}/${plan.steps.length}, do điều phối viên giao)`,
     proj.length ? `Brief và bảng dự án: ${proj.join(', ')} — đọc trước. Mục "Trả lời của chủ dự án" trong bảng là quyết định đã chốt.` : '',
     '', s.task,
+    ...(loiSua.length ? ['', lintBlockFix(loiSua)] : []),
     ...(s.prevFiles && s.prevFiles.length ? ['', `LẦN TRƯỚC bước này bị ngắt giữa chừng (${snippet(s.lastError || 'lỗi')}), nhưng đã ghi: ${s.prevFiles.join(', ')}. ` +
       `Đọc lại các file đó trước: nếu đã đủ thì chỉ kiểm tra, sửa chỗ thiếu và viết bàn giao; đừng làm lại từ đầu.`] : []),
     ...(s.checks ? ['', `ĐÂY LÀ BƯỚC DUYỆT sản phẩm của bước ${s.checks} (${checkedName}). Đọc chính sản phẩm trong output/ (không chỉ đọc bàn giao), đối chiếu với brief, tiêu chí hoàn thành và tài liệu mẫu.`,
@@ -1597,6 +1607,13 @@ function lintBlock(issues) {
   if (!issues.length) return '- MÁY ĐÃ SOÁT (dấu câu, từ lặp, từ cấm, cách gọi, số chữ/trang): không thấy lỗi. Không cần tự dò lại những lỗi này.';
   const max = 25;
   return [`- MÁY ĐÃ SOÁT (server tự kiểm, không tốn lượt của bạn) và thấy ${issues.length} chỗ. Đưa các chỗ đúng là lỗi vào nhận xét (BẮT BUỘC nếu nằm trên slide hoặc lời giảng); không cần tự dò lại loại lỗi này:`,
+    ...issues.slice(0, max).map(x => '  - ' + x), ...(issues.length > max ? [`  - … và ${issues.length - max} chỗ nữa`] : [])].join('\n');
+}
+
+// Cho người sửa: máy đã soát chính sản phẩm họ đang sửa
+function lintBlockFix(issues) {
+  const max = 25;
+  return [`MÁY ĐÃ SOÁT sản phẩm bạn sửa và thấy ${issues.length} chỗ (dấu câu, từ cần tránh, cách gọi, số chữ/trang). Sửa luôn những chỗ đúng là lỗi:`,
     ...issues.slice(0, max).map(x => '  - ' + x), ...(issues.length > max ? [`  - … và ${issues.length - max} chỗ nữa`] : [])].join('\n');
 }
 

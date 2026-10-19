@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Văn phòng pixel phong cách yoga để điều khiển Claude Code và Gemini CLI chạy ngầm",
   "main": "server.js",
-  "scripts": { "start": "node server.js" },
+  "scripts": { "start": "node server.js", "test": "node --test" },
   "engines": { "node": ">=18" },
   "license": "MIT"
 }

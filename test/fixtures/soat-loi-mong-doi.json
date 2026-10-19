@@ -1,0 +1,268 @@
+{
+ "ghi_chu": "Kết quả của lintText và phần đếm chữ ở commit 066f825. Hàm mới trong lib/soat-loi.js phải trả về y hệt (dot-0.md, mục 0.6). File nguồn đặt trong test/fixtures/.",
+ "lint": [
+  {
+   "file": "output/thu/slides.md",
+   "nguon": "soat-loi-mau.md",
+   "max": 40,
+   "banned": [
+    "chữa khỏi",
+    "thải độc",
+    "giảm liều",
+    "chắc chắn khỏi",
+    "kích thích tuyến giáp"
+   ],
+   "variants": [
+    [
+     "giáo viên",
+     "giảng viên"
+    ]
+   ],
+   "mong_doi": [
+    "output/thu/slides.md:2: lặp từ \"Chang Chang\"",
+    "output/thu/slides.md:7 (Trang 1): dấu câu đôi \"g của cơ thể,.\"",
+    "output/thu/slides.md:7 (Trang 1): lặp từ \"độ độ\"",
+    "output/thu/slides.md:8 (Trang 1): dấu cách trước dấu câu \"viên thở chậm ,\"",
+    "output/thu/slides.md:9 (Trang 1): từ cần tránh \"chữa khỏi\" (nếu là câu bác bỏ thì bỏ qua)",
+    "output/thu/slides.md (Trang 2): 50 chữ trên slide, vượt ngưỡng ~40",
+    "output/thu/slides.md: lẫn cách gọi \"giáo viên\" (1 chỗ) và \"giảng viên\" (2 chỗ), chọn một"
+   ]
+  },
+  {
+   "file": "agents/an/ghi-chu.md",
+   "nguon": "soat-loi-mau.md",
+   "max": 40,
+   "banned": [
+    "chữa khỏi",
+    "thải độc",
+    "giảm liều",
+    "chắc chắn khỏi",
+    "kích thích tuyến giáp"
+   ],
+   "variants": [
+    [
+     "giáo viên",
+     "giảng viên"
+    ]
+   ],
+   "mong_doi": [
+    "agents/an/ghi-chu.md:7 (Trang 1): dấu câu đôi \"g của cơ thể,.\"",
+    "agents/an/ghi-chu.md:8 (Trang 1): dấu cách trước dấu câu \"viên thở chậm ,\"",
+    "agents/an/ghi-chu.md (Trang 2): 50 chữ trên slide, vượt ngưỡng ~40"
+   ]
+  },
+  {
+   "file": "output/suy-giap-v7/slides.md",
+   "nguon": "slides-v7.md",
+   "max": 90,
+   "banned": [
+    "chữa khỏi",
+    "thải độc",
+    "giảm liều",
+    "chắc chắn khỏi",
+    "kích thích tuyến giáp"
+   ],
+   "variants": [
+    [
+     "giáo viên",
+     "giảng viên"
+    ]
+   ],
+   "mong_doi": [
+    "output/suy-giap-v7/slides.md:4: lặp từ \"Chang Chang\"",
+    "output/suy-giap-v7/slides.md:51 (Trang 1): lặp từ \"Chang Chang\""
+   ]
+  },
+  {
+   "file": "output/suy-giap-v7/slides.md",
+   "nguon": "slides-v7.md",
+   "max": 40,
+   "banned": [
+    "chữa khỏi",
+    "thải độc",
+    "giảm liều",
+    "chắc chắn khỏi",
+    "kích thích tuyến giáp"
+   ],
+   "variants": [
+    [
+     "giáo viên",
+     "giảng viên"
+    ]
+   ],
+   "mong_doi": [
+    "output/suy-giap-v7/slides.md:4: lặp từ \"Chang Chang\"",
+    "output/suy-giap-v7/slides.md:51 (Trang 1): lặp từ \"Chang Chang\"",
+    "output/suy-giap-v7/slides.md (Trang 5): 52 chữ trên slide, vượt ngưỡng ~40",
+    "output/suy-giap-v7/slides.md (Trang 6): 54 chữ trên slide, vượt ngưỡng ~40",
+    "output/suy-giap-v7/slides.md (Trang 7): 49 chữ trên slide, vượt ngưỡng ~40",
+    "output/suy-giap-v7/slides.md (Trang 8): 48 chữ trên slide, vượt ngưỡng ~40",
+    "output/suy-giap-v7/slides.md (Trang 9): 74 chữ trên slide, vượt ngưỡng ~40",
+    "output/suy-giap-v7/slides.md (Trang 10): 59 chữ trên slide, vượt ngưỡng ~40",
+    "output/suy-giap-v7/slides.md (Trang 11): 61 chữ trên slide, vượt ngưỡng ~40",
+    "output/suy-giap-v7/slides.md (Trang 12): 66 chữ trên slide, vượt ngưỡng ~40",
+    "output/suy-giap-v7/slides.md (Trang 14): 79 chữ trên slide, vượt ngưỡng ~40",
+    "output/suy-giap-v7/slides.md (Trang 15): 59 chữ trên slide, vượt ngưỡng ~40",
+    "output/suy-giap-v7/slides.md (Trang 16): 65 chữ trên slide, vượt ngưỡng ~40",
+    "output/suy-giap-v7/slides.md (Trang 19): 90 chữ trên slide, vượt ngưỡng ~40",
+    "output/suy-giap-v7/slides.md (Trang 24): 59 chữ trên slide, vượt ngưỡng ~40",
+    "output/suy-giap-v7/slides.md (Trang 26): 66 chữ trên slide, vượt ngưỡng ~40",
+    "output/suy-giap-v7/slides.md (Trang 27): 49 chữ trên slide, vượt ngưỡng ~40",
+    "output/suy-giap-v7/slides.md (Trang 28): 57 chữ trên slide, vượt ngưỡng ~40"
+   ]
+  },
+  {
+   "file": "output/suy-giap-v6/thiet-ke.md",
+   "nguon": "thiet-ke-v6.md",
+   "max": 90,
+   "banned": [
+    "chữa khỏi",
+    "thải độc",
+    "giảm liều",
+    "chắc chắn khỏi",
+    "kích thích tuyến giáp"
+   ],
+   "variants": [
+    [
+     "giáo viên",
+     "giảng viên"
+    ]
+   ],
+   "mong_doi": []
+  }
+ ],
+ "so_chu": {
+  "soat-loi-mau.md": [
+   {
+    "trang": 1,
+    "chu": 36
+   },
+   {
+    "trang": 2,
+    "chu": 50
+   },
+   {
+    "trang": 3,
+    "chu": 9
+   }
+  ],
+  "slides-v7.md": [
+   {
+    "trang": 1,
+    "chu": 31
+   },
+   {
+    "trang": 2,
+    "chu": 39
+   },
+   {
+    "trang": 3,
+    "chu": 26
+   },
+   {
+    "trang": 4,
+    "chu": 44
+   },
+   {
+    "trang": 5,
+    "chu": 52
+   },
+   {
+    "trang": 6,
+    "chu": 54
+   },
+   {
+    "trang": 7,
+    "chu": 49
+   },
+   {
+    "trang": 8,
+    "chu": 48
+   },
+   {
+    "trang": 9,
+    "chu": 74
+   },
+   {
+    "trang": 10,
+    "chu": 59
+   },
+   {
+    "trang": 11,
+    "chu": 61
+   },
+   {
+    "trang": 12,
+    "chu": 66
+   },
+   {
+    "trang": 13,
+    "chu": 34
+   },
+   {
+    "trang": 14,
+    "chu": 79
+   },
+   {
+    "trang": 15,
+    "chu": 59
+   },
+   {
+    "trang": 16,
+    "chu": 65
+   },
+   {
+    "trang": 17,
+    "chu": 34
+   },
+   {
+    "trang": 18,
+    "chu": 33
+   },
+   {
+    "trang": 19,
+    "chu": 90
+   },
+   {
+    "trang": 20,
+    "chu": 0
+   },
+   {
+    "trang": 21,
+    "chu": 0
+   },
+   {
+    "trang": 22,
+    "chu": 0
+   },
+   {
+    "trang": 23,
+    "chu": 0
+   },
+   {
+    "trang": 24,
+    "chu": 59
+   },
+   {
+    "trang": 25,
+    "chu": 43
+   },
+   {
+    "trang": 26,
+    "chu": 66
+   },
+   {
+    "trang": 27,
+    "chu": 49
+   },
+   {
+    "trang": 28,
+    "chu": 57
+   },
+   {
+    "trang": 29,
+    "chu": 24
+   }
+  ]
+ }
+}

@@ -26,3 +26,16 @@ test('chuDeTu', () => {
   assert.equal(vb.chuDeTu('ghi vào output/suy-giap-v7/slides.md'), 'suy-giap-v7');
   assert.equal(vb.chuDeTu('output/<chu-de>/slides.md'), null);
 });
+
+test('locBaiHocMoi', () => {
+  const [a, b] = TL.bai_hoc.giong[0];
+  const khac = 'Đặt tiêu đề trang slide ngắn gọn, đúng như tiêu đề trong slide mẫu, không đổi thành câu hỏi.';
+  assert.deepEqual(vb.locBaiHocMoi([b, khac], [a]), [khac]);
+});
+
+test('phanLoaiCauHoi', () => {
+  const [c1, c2] = TL.cau_hoi.giong[0];
+  const v = TL.cau_hoi.khac[0][0];
+  assert.deepEqual(vb.phanLoaiCauHoi([c2, v], [c1], []), { moi: [v], trung: [{ q: c2, i: 0 }] });
+  assert.deepEqual(vb.phanLoaiCauHoi([c1, c2], [], []).moi, [c1]);
+});

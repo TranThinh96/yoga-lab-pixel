@@ -16,6 +16,7 @@ const path = require('path');
 const { spawn, execFile } = require('child_process');
 const os = require('os');
 const https = require('https');
+const { locBaiHocMoi, phanLoaiCauHoi } = require('./lib/van-ban');
 
 const ROOT = __dirname;
 const CONFIG_PATH = path.join(ROOT, 'config.json');
@@ -988,11 +989,13 @@ async function runCoordinator(plan, failedIdx) {
 
 // Câu hỏi mới thật sự: bỏ câu đã hỏi / đã trả lời (người duyệt lại hay hỏi lại y câu cũ).
 // Đã hỏi đủ maxAskRounds lần thì không dừng nữa: ghi câu hỏi kèm "nhóm tự quyết theo đề xuất" để vẫn có dấu vết.
-const qKey = q => String(q || '').toLowerCase().normalize('NFC').replace(/[^\p{L}\p{N} ]/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
 function newQuestions(plan, list, from, step) {
-  const seen = new Set([...(plan.answers || []), ...(plan.questions || [])].map(x => qKey(x.q)));
-  const out = [];
-  for (const q of list) { const k = qKey(q); if (k && !seen.has(k)) { seen.add(k); out.push({ q, from, step }); } }
+  plan.answers = plan.answers || [];
+  const { moi, trung } = phanLoaiCauHoi(list, plan.answers.map(x => x.q), (plan.questions || []).map(x => x.q));
+  // Câu giống câu đã trả lời: không hỏi lại, ghi kèm câu trả lời cũ để người hỏi thấy trong bảng dự án
+  for (const { q, i } of trung) plan.answers.push({ q, from, step, a: `(Giống câu đã trả lời: "${snippet(plan.answers[i].q)}" → ${plan.answers[i].a})` });
+  if (trung.length) plan.log.push(`Không hỏi lại ${trung.length} câu giống câu đã trả lời`);
+  const out = moi.map(q => ({ q, from, step }));
   if (out.length && (plan.askRounds || 0) >= cfgNum('maxAskRounds', 3)) {
     plan.answers = (plan.answers || []).concat(out.map(x => ({ ...x, a: '(Đã hỏi đủ số lần cho phép: nhóm tự quyết theo phương án đề xuất)' })));
     plan.log.push(`Bỏ qua ${out.length} câu hỏi mới (đã dừng hỏi ${plan.askRounds} lần) → nhóm tự quyết theo đề xuất`);
@@ -1638,8 +1641,8 @@ async function appendLessons(lessons, date) {
     const abs = insideWorkspace(`agents/${id}/kinh-nghiem.md`);
     if (!abs) continue;
     const old = await fsp.readFile(abs, 'utf8').catch(() => '');
-    const have = new Set(old.split(/\r?\n/).map(l => qKey(l.replace(/^\s*[-*•]\s+(\([^)]*\)\s*)?/, ''))));
-    const add = list.slice(0, 3).map(x => String(x || '').replace(/\s+/g, ' ').trim().slice(0, 400)).filter(x => x && !have.has(qKey(x)));
+    const cu = old.split(/\r?\n/).filter(l => /^\s*[-*•]\s+/.test(l)).map(l => l.replace(/^\s*[-*•]\s+(\([^)]*\)\s*)?/, ''));
+    const add = locBaiHocMoi(list.slice(0, 3).map(x => String(x || '').replace(/\s+/g, ' ').trim().slice(0, 400)).filter(Boolean), cu);
     if (!add.length) continue;
     await fsp.mkdir(path.dirname(abs), { recursive: true });
     const head = !old.trim() ? '# Kinh nghiệm\n\nBài học rút ra sau mỗi dự án (mới nhất ở cuối).\n\n' : old.endsWith('\n') ? '' : '\n';

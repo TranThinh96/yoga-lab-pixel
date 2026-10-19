@@ -18,6 +18,7 @@ const os = require('os');
 const https = require('https');
 const { soatVanBan } = require('./lib/soat-loi');
 const { vietBanDo } = require('./lib/ban-do');
+const { ghiQuyetDinh, goiYChoCauHoi, quyetDinhChoKeHoach, vietSoQuyetDinh } = require('./lib/quyet-dinh');
 const { docCauHoi: parseQuestions, locBaiHocMoi, phanLoaiCauHoi, chonChuDe, chuDeTu } = require('./lib/van-ban');
 
 const ROOT = __dirname;
@@ -805,6 +806,33 @@ async function loadPlans() {
   for (const p of plans) if (p.status === 'paused' && p.resumeAt) scheduleResume(p);
 }
 
+// ── Sổ quyết định: .yogalab/quyet-dinh.json là bản gốc, tri-thuc/quyet-dinh.md để xem trong Obsidian ──
+const qdFile = () => path.join(stateDir(), 'quyet-dinh.json');
+let quyetDinh = [], qdSave = Promise.resolve();
+async function loadQuyetDinh() {
+  try { quyetDinh = JSON.parse(await fsp.readFile(qdFile(), 'utf8')); if (Array.isArray(quyetDinh)) return; } catch {}
+  // Chưa có sổ: dựng từ câu trả lời của mọi kế hoạch cũ
+  quyetDinh = [];
+  for (const p of plans) quyetDinh = ghiQuyetDinh(quyetDinh, (p.answers || []).map(x => ({ q: x.q, a: x.a, from: x.from, step: x.step,
+    planId: p.id, topic: planTopic(p), goal: p.goal, at: p.endedAt || p.createdAt })));
+  saveQuyetDinh();
+}
+function saveQuyetDinh() {
+  const data = JSON.stringify(quyetDinh, null, 1), md = vietSoQuyetDinh(quyetDinh);
+  qdSave = qdSave.then(async () => {
+    await fsp.writeFile(qdFile(), data, 'utf8');
+    await fsp.mkdir(insideWorkspace('tri-thuc'), { recursive: true });
+    await fsp.writeFile(insideWorkspace('tri-thuc/quyet-dinh.md'), md, 'utf8');
+  }).catch(e => console.error('Không lưu được sổ quyết định:', e.message));
+}
+// Ghi các câu vừa có câu trả lời (của bạn, hoặc máy chủ tự điền) của một kế hoạch vào sổ
+function ghiSoQuyetDinh(plan, list) {
+  if (!list.length) return;
+  const at = new Date().toISOString(), topic = planTopic(plan);
+  quyetDinh = ghiQuyetDinh(quyetDinh, list.map(x => ({ q: x.q, a: x.a, from: x.from, step: x.step, planId: plan.id, topic, goal: plan.goal, at })));
+  saveQuyetDinh();
+}
+
 let planSave = Promise.resolve();
 function emitPlan(plan) {
   broadcast({ type: 'plan', plan });
@@ -914,6 +942,9 @@ function buildPlanPrompt(coord, plan, failedIdx) {
     ...(coord.instructions && coord.instructions.trim() ? ['', 'HƯỚNG DẪN RIÊNG CỦA BẠN:', coord.instructions.trim()] : []),
     '', 'NGƯỜI TRỰC THUỘC (id: tên — vai; thụt lề = báo cáo cho người phía trên). Chỉ giao việc cho những người này:', ...team, '', `MỤC TIÊU: ${plan.goal}`
   ];
+  const qd = quyetDinhChoKeHoach(quyetDinh, planTopic(plan));
+  if (qd.length) L.push('QUYẾT ĐỊNH TỪ CÁC DỰ ÁN TRƯỚC (dùng lại nếu còn hợp với mục tiêu này và ghi vào "Quyết định đã chốt" của brief; không hỏi lại những điều đã có ở đây):',
+    ...qd.map(d => `- (${d.planId}${d.tuQuyet ? ', nhóm tự quyết' : ''}) ${String(d.q).replace(/\s+/g, ' ')} → ${String(d.a).replace(/\s+/g, ' ')}`.slice(0, 300)));
   const ans = plan.answers || [];
   if (ans.length) L.push('', 'CHỦ DỰ ÁN ĐÃ TRẢ LỜI (bắt buộc tuân theo):', ...ans.map(x => `- ${x.q}\n  → ${x.a}`));
   if (!replan) {
@@ -1000,7 +1031,9 @@ function newQuestions(plan, list, from, step) {
   if (trung.length) plan.log.push(`Không hỏi lại ${trung.length} câu giống câu đã trả lời`);
   const out = moi.map(q => ({ q, from, step }));
   if (out.length && (plan.askRounds || 0) >= cfgNum('maxAskRounds', 3)) {
-    plan.answers = (plan.answers || []).concat(out.map(x => ({ ...x, a: '(Đã hỏi đủ số lần cho phép: nhóm tự quyết theo phương án đề xuất)' })));
+    const tu = out.map(x => ({ ...x, a: '(Đã hỏi đủ số lần cho phép: nhóm tự quyết theo phương án đề xuất)' }));
+    plan.answers = (plan.answers || []).concat(tu);
+    ghiSoQuyetDinh(plan, tu);
     plan.log.push(`Bỏ qua ${out.length} câu hỏi mới (đã dừng hỏi ${plan.askRounds} lần) → nhóm tự quyết theo đề xuất`);
     return [];
   }
@@ -1010,6 +1043,12 @@ function newQuestions(plan, list, from, step) {
 // Dừng dự án để hỏi chủ dự án. after: trạng thái sau khi trả lời ('running' | 'draft' | 'plan' = lập kế hoạch lại)
 function askOwner(plan, questions, after) {
   plan.askRounds = (plan.askRounds || 0) + 1;
+  // Câu giống câu đã trả lời ở dự án trước: giao diện điền sẵn câu trả lời cũ
+  const topic = planTopic(plan);
+  for (const x of questions) {
+    const d = goiYChoCauHoi(quyetDinh, x.q, topic);
+    if (d) x.goiY = { a: d.a, planId: d.planId, at: d.at, tuQuyet: !!d.tuQuyet };
+  }
   plan.questions = (plan.questions || []).concat(questions).slice(0, 8);
   plan.afterAnswer = plan.afterAnswer === 'plan' ? 'plan' : after;
   plan.status = 'asking'; plan.waiting = null;
@@ -1021,10 +1060,13 @@ function answerPlan(plan, answers, skip) {
   if (plan.status !== 'asking') throw Object.assign(new Error('Dự án không chờ câu trả lời'), { status: 409 });
   const qs = plan.questions || [];
   const list = Array.isArray(answers) ? answers : [];
-  plan.answers = (plan.answers || []).concat(qs.map((x, i) => {
+  const moi = qs.map((x, i) => {
     const a = skip ? '' : String(list[i] || '').trim().slice(0, 2000);
-    return { ...x, a: a || '(Chủ dự án để nhóm tự quyết theo phương án đề xuất)' };
-  }));
+    const { goiY, ...q } = x;
+    return { ...q, a: a || '(Chủ dự án để nhóm tự quyết theo phương án đề xuất)' };
+  });
+  plan.answers = (plan.answers || []).concat(moi);
+  ghiSoQuyetDinh(plan, moi);
   plan.questions = [];
   plan.log.push(skip ? 'Chủ dự án để nhóm tự quyết' : `Chủ dự án đã trả lời ${qs.length} câu hỏi`);
   const after = plan.afterAnswer || 'running';
@@ -2240,6 +2282,7 @@ const server = http.createServer(async (req, res) => {
   await ensureWorkspace();
   await loadRuns();
   await loadPlans();
+  await loadQuyetDinh();
   scheduleIndex();
   loadLimits();
   scanAgyQuota().catch(() => {});

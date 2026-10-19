@@ -16,6 +16,7 @@ const path = require('path');
 const { spawn, execFile } = require('child_process');
 const os = require('os');
 const https = require('https');
+const { soatVanBan } = require('./lib/soat-loi');
 const { docCauHoi: parseQuestions, locBaiHocMoi, phanLoaiCauHoi, chonChuDe, chuDeTu } = require('./lib/van-ban');
 
 const ROOT = __dirname;
@@ -1582,48 +1583,8 @@ async function downloadSourceImages(nguonRel, handoffRel) {
 // ── Máy soát lỗi (server tự làm, không tốn token) ──
 // Lỗi máy móc người duyệt hay bỏ sót ("đó,." qua 2 vòng duyệt ở v5): dấu câu, từ lặp, từ cấm, cách gọi lẫn lộn, trang quá chữ.
 const isProductFile = f => /\.md$/i.test(f) && !/^(handoff|du-an)\//.test(f) && !/(^|\/)kinh-nghiem\.md$/.test(f) && f !== 'index.md';
-const REDUP_OK = new Set(['từ', 'dần', 'đều', 'mãi', 'xa', 'lâu', 'nhiều', 'ngày', 'năm', 'khác', 'nhau', 'chính', 'song', 'sinh']); // 'Ý chính chính là…', 'sơ sinh sinh ra' là câu đúng
-function lintText(rel, txt) {
-  const out = [], lines = String(txt || '').normalize('NFC').split(/\r?\n/);
-  const max = cfgNum('lintMaxWords', 40), banned = config.lintBanned || DEFAULT_CONFIG.lintBanned || [];
-  let page = '', mode = '', words = 0, inCode = false;
-  // Từ cấm, lặp từ, cách gọi chỉ soát trong sản phẩm: ghi chú nghiên cứu/duyệt hay nhắc các từ này để bác bỏ
-  const product = /^output\//.test(rel);
-  const at = i => `${rel}:${i + 1}${page ? ' (' + page + ')' : ''}`;
-  const count = t => (t.match(/[\p{L}\p{N}]+/gu) || []).length;
-  const flushPage = () => { if (page && max > 0 && words > max + 5) out.push(`${rel} (${page}): ${words} chữ trên slide, vượt ngưỡng ~${max}`); words = 0; mode = ''; };
-  lines.forEach((l, i) => {
-    if (/^\s*```/.test(l)) { inCode = !inCode; return; }
-    if (inCode) return;
-    const h = /^#{1,3}\s+(Trang\s+\d+)/i.exec(l);
-    if (h) { flushPage(); page = h[1]; return; }
-    if (/^#{1,3}\s/.test(l)) { flushPage(); page = ''; }
-    const t = l.replace(/https?:\/\/[^\s)\]>]+/g, 'URL').replace(/`[^`]*`/g, 'X'); // giữ chỗ, tránh báo nhầm lỗi dấu cách
-    const dbl = /.{0,12}([,;:][ \t]*[.,;]|[^.]\.\.(?!\.)).{0,6}/.exec(t);
-    const sp = !dbl && !/^\s*\|/.test(t) && /.{0,12}\S[ \t]+[,.;:!?](?=\s|$)/.exec(t);
-    if (dbl) out.push(`${at(i)}: dấu câu đôi "${dbl[0].trim()}"`);
-    else if (sp) out.push(`${at(i)}: dấu cách trước dấu câu "${sp[0].trim()}"`);
-    const dup = /(^|[^\p{L}])(\p{L}+)\s+\2(?=$|[^\p{L}])/iu.exec(t);
-    if (product && dup && !REDUP_OK.has(dup[2].toLowerCase())) out.push(`${at(i)}: lặp từ "${dup[2]} ${dup[2]}"`);
-    const low = t.toLowerCase();
-    if (product) for (const w of banned) if (w && low.includes(String(w).toLowerCase())) out.push(`${at(i)}: từ cần tránh "${w}" (nếu là câu bác bỏ thì bỏ qua)`);
-    // Đếm chữ trên slide: các ý dưới "Ý chính" + "Câu chốt"
-    if (!page) return;
-    if (/^- Ý chính:/i.test(l)) { mode = 'y'; return; }
-    const cc = /^- Câu chốt:\s*(.*)$/i.exec(l);
-    if (cc) { mode = ''; if (!/^[—–-]?\s*$/.test(cc[1])) words += count(cc[1]); return; }
-    if (/^- \S/.test(l)) { mode = ''; return; }
-    const item = /^\s{2,}[-*]\s+(.*)$/.exec(l);
-    if (item && mode === 'y') words += count(item[1]);
-  });
-  flushPage();
-  const all = lines.join('\n').toLowerCase();
-  if (product) for (const pair of config.lintVariants || DEFAULT_CONFIG.lintVariants || []) {
-    const n = pair.map(w => all.split(String(w).toLowerCase()).length - 1);
-    if (n.filter(x => x > 0).length > 1) out.push(`${rel}: lẫn cách gọi ${pair.map((w, k) => '"' + w + '" (' + n[k] + ' chỗ)').join(' và ')}, chọn một`);
-  }
-  return out;
-}
+const lintText = (rel, txt) => soatVanBan(rel, txt, { maxChu: cfgNum('lintMaxWords', 40),
+  tuTranh: config.lintBanned || DEFAULT_CONFIG.lintBanned || [], cachGoi: config.lintVariants || DEFAULT_CONFIG.lintVariants || [] });
 function lintFiles(files) {
   return [...new Set(files || [])].filter(isProductFile).flatMap(rel => {
     const t = readWs(rel);

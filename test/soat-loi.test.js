@@ -24,3 +24,10 @@ test('soChuTungTrang', () => {
   const { soChuTungTrang } = require('../lib/soat-loi');
   for (const [k, v] of Object.entries(MD.so_chu)) assert.deepEqual(soChuTungTrang(readFixture(k)), v, k);
 });
+
+test('doiChieuThietKe', () => {
+  const { doiChieuThietKe } = require('../lib/soat-loi');
+  const DC = JSON.parse(readFixture('doi-chieu-mong-doi.json'));
+  assert.deepEqual(doiChieuThietKe(readFixture('doi-chieu-slides.md'), readFixture('doi-chieu-thiet-ke.md')), DC.mau);
+  assert.deepEqual(doiChieuThietKe(readFixture('slides-v6.md'), readFixture('thiet-ke-v6.md')), DC.v6);
+});

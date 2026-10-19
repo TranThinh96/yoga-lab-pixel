@@ -9,7 +9,13 @@ const readFixture = n => fs.readFileSync(path.join(__dirname, 'fixtures', n), 'u
 const MD = JSON.parse(readFixture('soat-loi-mong-doi.json'));
 
 test('soatVanBan khớp kết quả mong đợi', () => {
+  let doDo = 0;
   for (const c of MD.lint) {
-    assert.deepEqual(soatVanBan(c.file, readFixture(c.nguon), { maxChu: c.max, tuTranh: c.banned, cachGoi: c.variants }), c.mong_doi, `${c.file} · ${c.nguon} · ${c.max}`);
+    // Tên riêng viết hoa lặp lại không còn bị báo (mục 0.6B)
+    const mong = c.mong_doi.filter(x => !x.includes('lặp từ "Chang Chang"'));
+    const ra = soatVanBan(c.file, readFixture(c.nguon), { maxChu: c.max, tuTranh: c.banned, cachGoi: c.variants });
+    assert.deepEqual(ra, mong, `${c.file} · ${c.nguon} · ${c.max}`);
+    doDo += ra.filter(x => x.includes('lặp từ "độ độ"')).length;
   }
+  assert.ok(doDo > 0, 'vẫn phải báo lặp từ "độ độ"');
 });

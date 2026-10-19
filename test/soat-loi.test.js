@@ -31,3 +31,15 @@ test('doiChieuThietKe', () => {
   assert.deepEqual(doiChieuThietKe(readFixture('doi-chieu-slides.md'), readFixture('doi-chieu-thiet-ke.md')), DC.mau);
   assert.deepEqual(doiChieuThietKe(readFixture('slides-v6.md'), readFixture('thiet-ke-v6.md')), DC.v6);
 });
+
+test('kiemFileHinh', () => {
+  const { kiemFileHinh } = require('../lib/soat-loi');
+  const co = new Set(['output/t/hinh/trang-04-a.jpg', 'output/t/hinh-nguon/x.jpg']);
+  const vao = {
+    dsHinh: [{ name: 'trang-04-a.png', pages: [4] }, { name: 'trang-05-b.jpg', pages: [5] }],
+    slidesTxt: '- Hình: C, hinh-nguon/x.jpg\n- Hình: C, `hinh-nguon/y.png` và lại hinh-nguon/y.png',
+    chuDe: 't', coFile: r => co.has(r), coThuMucHinh: true
+  };
+  assert.deepEqual(kiemFileHinh(vao), ['Trang 5: chưa có output/t/hinh/trang-05-b.jpg', 'slides.md nhắc hinh-nguon/y.png nhưng chưa có file']);
+  assert.deepEqual(kiemFileHinh({ ...vao, coThuMucHinh: false }), ['slides.md nhắc hinh-nguon/y.png nhưng chưa có file']);
+});

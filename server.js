@@ -19,7 +19,7 @@ const https = require('https');
 const { soatVanBan } = require('./lib/soat-loi');
 const { vietBanDo } = require('./lib/ban-do');
 const { ghiQuyetDinh, goiYChoCauHoi, quyetDinhChoKeHoach, vietSoQuyetDinh } = require('./lib/quyet-dinh');
-const { docCauHoi: parseQuestions, locBaiHocMoi, phanLoaiCauHoi, chonChuDe, chuDeTu } = require('./lib/van-ban');
+const { docCauHoi: parseQuestions, laCauHoiMoiTruong, locBaiHocMoi, phanLoaiCauHoi, chonChuDe, chuDeTu } = require('./lib/van-ban');
 
 const ROOT = __dirname;
 const CONFIG_PATH = path.join(ROOT, 'config.json');
@@ -67,6 +67,7 @@ const DEFAULT_CONFIG = {
   maxAskRounds: 3,    // dự án dừng hỏi chủ dự án tối đa mấy lần; sau đó nhóm tự quyết theo phương án đề xuất
   maxLessons: 30,     // mỗi kinh-nghiem.md giữ tối đa bấy nhiêu bài học gần nhất (agent đọc file này mỗi lượt)
   stepTurns: { work: 30, review: 24, rereview: 12, fix: 18 }, // --max-turns theo loại bước (chỉ Claude Code)
+  chromePreflight: true, // kiểm Chrome bằng một lượt rất ngắn trước khi giao việc cho agent dùng Chrome
   agents: []
 };
 
@@ -221,6 +222,44 @@ function probeClaude() {
     proc.on('close', () => { clearTimeout(timer); resolve(got); });
   }).finally(() => { probing = null; });
   return probing;
+}
+
+// Kiểm Chrome trước khi giao việc cho agent dùng Chrome: một lượt rất ngắn, chỉ gọi tabs_context_mcp.
+// Chưa bật extension hay chưa cấp quyền thì dừng dự án ngay, không để agent chạy hết lượt rồi mới báo.
+let chromeOkAt = 0, chromeCheck = null;
+const chromeChecking = new Set(); // id kế hoạch đang chờ kết quả kiểm
+function checkChrome() {
+  if (chromeCheck) return chromeCheck;
+  chromeCheck = new Promise(resolve => {
+    const args = ['-p', '--output-format', 'stream-json', '--verbose', '--model', 'sonnet', '--max-turns', '3',
+      '--strict-mcp-config', '--chrome', '--permission-mode', 'acceptEdits', '--allowedTools', 'mcp__claude-in-chrome'];
+    let proc, buf = '', text = '', errs = '';
+    try { proc = spawn(config.claudeCommand || 'claude', IS_WIN ? args.map(quoteWinArg) : args, { cwd: workspaceDir(), shell: IS_WIN, windowsHide: true, env: { ...process.env, FORCE_COLOR: '0' } }); }
+    catch (e) { return resolve({ ok: false, err: e.message }); }
+    const timer = setTimeout(() => { errs += ' quá thời gian 2 phút'; try { killProc(proc); } catch {} }, 120e3);
+    proc.stdin.on('error', () => {});
+    proc.stdin.end('Gọi công cụ tabs_context_mcp với createIfEmpty: true. Gọi được thì trả lời đúng một chữ: OK. Lỗi thì trả lời "LỖI: " kèm nguyên văn thông báo lỗi.', 'utf8');
+    proc.stdout.setEncoding('utf8');
+    proc.stdout.on('data', d => {
+      buf += d; let i;
+      while ((i = buf.indexOf('\n')) >= 0) {
+        const line = buf.slice(0, i).trim(); buf = buf.slice(i + 1);
+        try {
+          const o = JSON.parse(line);
+          if (o.type === 'result' && typeof o.result === 'string') text = o.result;
+          if (o.type === 'user' && o.message && Array.isArray(o.message.content))
+            for (const c of o.message.content) if (c.type === 'tool_result' && c.is_error) errs += ' ' + JSON.stringify(c.content).slice(0, 200);
+        } catch {}
+      }
+    });
+    proc.on('error', e => { errs += ' ' + e.message; });
+    proc.on('close', () => {
+      clearTimeout(timer);
+      const ok = /^\s*OK\b/i.test(text) && !/requires permission|not connected/i.test(errs);
+      resolve({ ok, err: ok ? '' : (text || errs || 'không rõ').trim().slice(0, 300) });
+    });
+  }).finally(() => { chromeCheck = null; });
+  return chromeCheck;
 }
 
 // ───────────────────────── SSE (đẩy sự kiện lên giao diện) ─────────────────────────
@@ -1134,6 +1173,19 @@ function pumpPlan(plan) {
   if (running.has(agent.id)) { if (plan.waiting !== agent.id) { plan.waiting = agent.id; emitPlan(plan); } return; }
   plan.waiting = null;
   if (overBudget(plan)) return pauseForBudget(plan, `trước bước ${idx + 1}`);
+  if (usesChrome(agent) && config.chromePreflight !== false && Date.now() - chromeOkAt > 30 * 60e3) {
+    if (chromeChecking.has(plan.id)) return;
+    chromeChecking.add(plan.id); plan.note = 'Đang kiểm Chrome trước khi giao việc…'; emitPlan(plan);
+    return checkChrome().then(r => {
+      chromeChecking.delete(plan.id);
+      if (plan.status !== 'running') return emitPlan(plan);
+      if (r.ok) { chromeOkAt = Date.now(); plan.note = ''; return pumpPlan(plan); }
+      plan.status = 'paused';
+      plan.note = `Chrome chưa sẵn sàng (${snippet(r.err)}). Mở Chrome, bật Claude in Chrome, đăng nhập Gemini nếu cần, rồi bấm "Chạy tiếp".`;
+      plan.log.push(`Kiểm Chrome trước bước ${idx + 1}: chưa sẵn sàng → tạm dừng`);
+      emitPlan(plan);
+    });
+  }
 
   const base = s.from.length ? s.from : (idx > 0 ? [idx] : []);
   const srcIdx = [...new Set([...(s.checks ? [s.checks] : []), ...base].map(k => latestStep(plan, k, idx)))];
@@ -1197,8 +1249,16 @@ function pumpPlan(plan) {
         const handoffText = readWs(run.handoff);
         if (!run.handoff) plan.log.push(`Bước ${idx + 1}: ${agent.name} không ghi file bàn giao, người sau chỉ nhận câu trả lời cuối`);
         const text = [handoffText, full || run.summary || ''].filter(Boolean).join('\n\n');
+        const tatCa = parseQuestions(handoffText || text), moiTruong = tatCa.filter(laCauHoiMoiTruong);
+        if (moiTruong.length) {
+          s.status = 'error'; s.error = 'Lỗi môi trường: ' + snippet(moiTruong[0]);
+          plan.status = 'paused';
+          plan.note = `${agent.name} báo lỗi môi trường: ${snippet(moiTruong[0])}. Sửa trên máy (vd mở Chrome, bật Claude in Chrome, đăng nhập Gemini) rồi bấm "Chạy tiếp".`;
+          plan.log.push(`Bước ${idx + 1}: lỗi môi trường → tạm dừng (không hỏi chủ dự án)`);
+          return emitPlan(plan);
+        }
         if (s.checks) handleReview(plan, idx, text);
-        const qs = newQuestions(plan, parseQuestions(handoffText || text), agent.id, idx + 1);
+        const qs = newQuestions(plan, tatCa.filter(q => !laCauHoiMoiTruong(q)), agent.id, idx + 1);
         // Bước vừa ghi thiet-ke.md: máy chủ tải các hình có giấy phép trong "Danh sách hình" trước khi người sau làm
         const designs = (run.files || []).filter(x => /^output\/[^/]+\/thiet-ke\.md$/.test(x));
         // Bước vừa ghi file nguồn (agents/<id>/<chu-de>-nguon.md): tải luôn hình y khoa có giấy phép vào output/<chu-de>/hinh-nguon/

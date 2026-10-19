@@ -62,3 +62,8 @@ test('chonChuDe', () => {
   ];
   for (const [vao, ra] of cases) assert.equal(vb.chonChuDe(vao), ra, JSON.stringify(vao).slice(0, 80));
 });
+
+test('laCauHoiMoiTruong', () => {
+  assert.equal(vb.laCauHoiMoiTruong('Vui lòng cấp quyền Chrome để tôi chạy Gemini Deep Research theo hướng dẫn.'), true);
+  for (const pair of [...TL.cau_hoi.giong, ...TL.cau_hoi.khac]) for (const q of pair) assert.equal(vb.laCauHoiMoiTruong(q), false, q);
+});

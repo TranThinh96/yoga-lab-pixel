@@ -869,3 +869,19 @@ Gọi `goi('soat_loi', …, ctx, [])` thì `isError` là `true`.
 
 - Đã biết, chưa sửa: trong `DEFAULT_CONFIG`, chú thích `// máy soát: số chữ tối đa…` đang nằm nhầm ở dòng `agyBrainDir`.
   Có thể dời về dòng `lintMaxWords` khi sửa gần đó.
+- 0.9 `INDEX_TEMPLATE`: bỏ cả dòng tiêu đề `## File quan trọng`, không chỉ dòng `(agent tự thêm…)`.
+  Nếu còn tiêu đề này thì workspace mới tinh cũng bị `writeIndex` chép bản mẫu rỗng sang `luu-tru/index-cu.md`.
+- 0.9 Chủ đề trong `output/` không có file `.md` nằm ngay trong thư mục (vd `output/thu-anh/` chỉ có ảnh) vẫn được liệt kê, ghi `(chưa có file .md)`.
+- 0.9 `index.md` trong commit dữ liệu được sinh trên bản sao của repo, nơi mọi file có cùng giờ sửa, nên thứ tự "Sản phẩm mới nhất" chưa đúng thực tế.
+  Máy chủ trên máy thật ghi lại theo giờ sửa thật ngay lần khởi động đầu.
+- Commit dữ liệu được sinh trên **bản sao** workspace đã bỏ `resumeAt`: dự án `plan-20261019-193827` đang hẹn tự chạy tiếp (`resumeAt` 2026-10-19T17:32Z, đã qua),
+  nên khởi động thẳng trên workspace thật sẽ gọi `claude` và đổi `plans.json`. Trên máy thật, dự án này sẽ **tự chạy tiếp khoảng 3 giây sau khi mở máy chủ** (hành vi có từ trước).
+- 0.10 27 câu trả lời cũ gộp thành 19 quyết định (câu giống nhau cùng chủ đề giữ bản mới nhất); chỉ 1 là câu bạn trả lời, 18 là nhóm tự quyết.
+  Trong đó có câu cũ "Vui lòng cấp quyền Chrome…" (câu hỏi môi trường từ trước 0.11). Nó là tự quyết của suy-giap-v6 nên không đưa vào kế hoạch chủ đề khác.
+- 0.10 `vietSoQuyetDinh`: nhóm có quyết định mới nhất lên trước; trong nhóm xếp theo số `QD-`. `answerPlan` bỏ trường `goiY` khỏi câu trả lời lưu vào `plan.answers`.
+- 0.12 `henTaiLai`: thêm một dòng chặn khi `downloadSourceImages` trả `null` hoặc `{ none: true }` (không có `ok`/`fail`), nếu không sẽ lỗi trong `setTimeout`.
+- 0.13C `startRun`: nếu `spawnInto` lỗi thì xoá luôn khoá trong `labKeys` và file `.yogalab/mcp/…` (đặc tả không nói).
+  File cấu hình MCP được ghi sau khi có `startedAt` (tên file cần `stamp(startedAt)`), không phải ngay sau `ensureWorkspace()`.
+- 0.13C Đã thử trọn đường ống trên bản sao workspace với `labTools: true` và một lệnh `claude` giả: lượt chạy gọi được `soat_loi` qua `mcp/yogalab-mcp.js`,
+  nhận kết quả thật (v6: trang 17 "tường", trang 22 "bolster"), và `.yogalab/mcp/` được dọn sau lượt. Claude Code thật thì chưa thử.
+- 0.14 README: sửa thêm dòng `index.md` trong sơ đồ folder thành "bản đồ ngắn do máy chủ viết".

@@ -1266,9 +1266,11 @@ function pumpPlan(plan) {
         const prep = Promise.all([
           ...designs.map(d => downloadListedImages(d).then(r => {
             if (r.ok.length || r.fail.length || r.none) plan.log.push(r.none ? `Máy chủ không thấy bảng "Danh sách hình" có tên file trong ${d}: chưa tải hình nào` : `Máy chủ tải hình có giấy phép (${d}): ${r.ok.length} tải được${r.fail.length ? ', ' + r.fail.length + ' không tải được (' + snippet(r.fail.map(x => x.name + ': ' + x.why).join('; ')) + ')' : ''}`);
+            if (r.fail.some(x => /429/.test(x.why))) henTaiLai(plan, d, () => downloadListedImages(d));
           })),
           ...sourcesMd.map(f => downloadSourceImages(f, run.handoff).then(r => {
             if (r) plan.log.push(r.none ? `Máy chủ không thấy bảng "Hình & sơ đồ trong nguồn" trong ${f}: chưa tải hình y khoa nào` : `Máy chủ tải hình y khoa từ nguồn (${f} → ${r.dir}): ${r.ok.length} mới, ${r.skip.length} đã có${r.fail.length ? ', ' + r.fail.length + ' không tải được (' + snippet(r.fail.map(x => x.name + ': ' + x.why).join('; ')) + ')' : ''}`);
+            if (r && (r.fail || []).some(x => /429/.test(x.why))) henTaiLai(plan, f, () => downloadSourceImages(f, null));
           }))
         ]).catch(e => plan.log.push('Không tải được hình: ' + e.message));
         return prep.then(() => {
@@ -1693,10 +1695,23 @@ async function downloadSourceImages(nguonRel, handoffRel) {
   if (hp && fs.existsSync(hp) && (res.ok.length || res.fail.length || res.skip.length)) {
     await fsp.appendFile(hp, `\n\n## Hình y khoa máy chủ đã tải (${dirRel}/)\n` +
       `${res.ok.length} mới, ${res.skip.length} đã có. Danh sách: ${dirRel}/danh-sach.md\n` +
-      (res.fail.length ? `KHÔNG tải được (cần link khác: trang File: Commons hoặc link thẳng .jpg/.png): ${res.fail.map(x => x.name + ' — ' + x.why).join('; ')}\n` : ''), 'utf8');
+      (res.fail.length ? `KHÔNG tải được (cần link khác: trang File: Commons hoặc link thẳng .jpg/.png): ${res.fail.map(x => x.name + ' — ' + x.why + (/Commons không có file này/.test(x.why) ? ' (tên file không có trên Commons: tìm lại đúng tên trang File:)' : '')).join('; ')}\n` : ''), 'utf8');
   }
   if (res.ok.length) broadcast({ type: 'files' });
   return res;
+}
+
+// Commons trả 429 khi tải dồn: thử lại cả bảng sau 2, 5, 10 phút (file đã tải thì tự bỏ qua)
+function henTaiLai(plan, label, fn, lan = 1) {
+  const cho = [2, 5, 10];
+  if (lan > cho.length) return;
+  setTimeout(async () => {
+    const x = await fn().catch(e => ({ fail: [{ name: label, why: e.message }] })) || {};
+    const r = { ok: x.ok || [], fail: x.fail || [] }; // downloadSourceImages có thể trả null hoặc { none: true }
+    plan.log.push(`Tải lại hình (${label}, lần ${lan}): ${r.ok.length} tải được${r.fail.length ? ', còn ' + r.fail.length + ' lỗi' : ''}`);
+    emitPlan(plan);
+    if (r.fail.some(x => /429/.test(x.why))) henTaiLai(plan, label, fn, lan + 1);
+  }, cho[lan - 1] * 60e3);
 }
 
 // ── Máy soát lỗi (server tự làm, không tốn token) ──

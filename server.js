@@ -256,11 +256,12 @@ const usesChrome = agent => agent.engine === 'claude' && (!!agent.chrome || !!ge
 const chromeModel = agent => usesChrome(agent) && /haiku/i.test(agent.model || '') ? 'sonnet' : agent.model;
 // Chờ Gemini trên web tốn nhiều lượt (mỗi lần chờ là một lượt)
 const defaultTurns = agent => { const g = geminiWebOf(agent); return g ? ({ 'deep-research': 150, image: 150 }[g.mode] || 60) : undefined; };
-// Agent Deep Research không tự tìm web (để Gemini làm, tính vào quota Gemini); agent dùng Chrome được thêm công cụ Chrome
-function claudeToolsOf(agent) {
+// Agent Deep Research không tự tìm web (để Gemini làm, tính vào quota Gemini), trừ bước sửa chỉ cần vài nguồn;
+// agent dùng Chrome được thêm công cụ Chrome
+function claudeToolsOf(agent, kind) {
   const g = geminiWebOf(agent);
   let tools = agent.tools || config.claudeTools || [];
-  if (!agent.tools && g && g.mode === 'deep-research') tools = tools.filter(t => t !== 'WebSearch');
+  if (!agent.tools && g && g.mode === 'deep-research' && kind !== 'fix') tools = tools.filter(t => t !== 'WebSearch');
   return usesChrome(agent) ? tools.concat('mcp__claude-in-chrome') : tools;
 }
 
@@ -281,7 +282,9 @@ function chromePrompt(agent, kind) {
   if (deep && kind && kind !== 'work') return L.concat('',
     `BƯỚC ${kind === 'fix' ? 'SỬA' : 'DUYỆT'}: KHÔNG chạy Deep Research mới.`,
     `- Dùng lại báo cáo đã lưu trong agents/${agent.id}/ (file *-deep-research.md của chủ đề) và mở link nguồn bằng WebFetch để kiểm.`,
-    `- Cần tìm nguồn thay thế cho vài ý: hỏi Gemini trên https://gemini.google.com trong một tab mới, chat thường (KHÔNG bật Deep Research), rồi mở link nó đưa bằng WebFetch để xác minh trước khi ghi.`,
+    kind === 'fix'
+      ? `- Cần tìm nguồn thay thế cho vài ý: dùng WebSearch, rồi mở link bằng WebFetch để xác minh trước khi ghi. Chỉ khi WebSearch không ra mới hỏi Gemini trên https://gemini.google.com trong một tab mới (chat thường, KHÔNG bật Deep Research).`
+      : `- Cần tìm nguồn thay thế cho vài ý: hỏi Gemini trên https://gemini.google.com trong một tab mới, chat thường (KHÔNG bật Deep Research), rồi mở link nó đưa bằng WebFetch để xác minh trước khi ghi.`,
     `- Gặp trang đăng nhập, CAPTCHA hoặc hết quota: dừng, ghi nguyên văn vào Vướng mắc.`);
   L.push('',
     deep ? `CÁCH NGHIÊN CỨU: GEMINI DEEP RESEARCH (bắt buộc)` : `CÁCH LÀM: HỎI GEMINI TRÊN WEB (bắt buộc)`,
@@ -397,7 +400,7 @@ function describeTool(name, input = {}) {
 const AGY_MAX_CONTINUES = 3;
 const ENGINE_NAME = { claude: 'Claude Code', gemini: 'Gemini CLI', antigravity: 'Antigravity CLI (agy)' };
 
-function cliArgs(agent, maxTurns, effort) {
+function cliArgs(agent, maxTurns, effort, kind) {
   if (agent.engine === 'antigravity') {
     // Antigravity CLI (agy): prompt gửi qua stdin dạng NDJSON; "-p=" bật chế độ in kết quả rồi thoát.
     // accept-edits: tự duyệt việc đọc/ghi file; lệnh shell và quyền chưa cấp sẽ bị từ chối ngầm (không treo).
@@ -415,7 +418,7 @@ function cliArgs(agent, maxTurns, effort) {
   const args = ['-p', '--output-format', 'stream-json', '--verbose',
     '--permission-mode', 'acceptEdits',
     '--max-turns', String(maxTurns || agent.maxTurns || defaultTurns(agent) || config.maxTurns || 15),
-    '--allowedTools', claudeToolsOf(agent).join(',')];
+    '--allowedTools', claudeToolsOf(agent, kind).join(',')];
   if (config.skipMcp && !agent.useMcp) args.push('--strict-mcp-config');
   // Claude in Chrome: điều khiển Chrome thật của bạn (đã đăng nhập sẵn), ví dụ để chạy Gemini Deep Research bằng gói Gemini Pro
   if (usesChrome(agent)) args.push('--chrome');
@@ -444,7 +447,7 @@ async function startRun(agent, task, attachments = [], opts = {}) {
   const startedAt = new Date();
   const handoffRel = `handoff/${stamp(startedAt)}-${agent.id}.md`;
   const prompt = opts.prompt || buildPrompt(agent, task, handoffRel, attachments, opts.kind);
-  const { cmd, args, stdinJson } = cliArgs(agent, opts.maxTurns, opts.effort);
+  const { cmd, args, stdinJson } = cliArgs(agent, opts.maxTurns, opts.effort, opts.kind);
 
   const run = {
     id: `${stamp(startedAt)}-${agent.id}`, agentId: agent.id, agentName: agent.name,

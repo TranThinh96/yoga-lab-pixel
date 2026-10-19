@@ -16,6 +16,8 @@ const path = require('path');
 const { spawn, execFile } = require('child_process');
 const os = require('os');
 const https = require('https');
+const crypto = require('crypto');
+const congCu = require('./lib/cong-cu');
 const { soatVanBan } = require('./lib/soat-loi');
 const { vietBanDo } = require('./lib/ban-do');
 const { ghiQuyetDinh, goiYChoCauHoi, quyetDinhChoKeHoach, vietSoQuyetDinh } = require('./lib/quyet-dinh');
@@ -67,6 +69,7 @@ const DEFAULT_CONFIG = {
   maxAskRounds: 3,    // dự án dừng hỏi chủ dự án tối đa mấy lần; sau đó nhóm tự quyết theo phương án đề xuất
   maxLessons: 30,     // mỗi kinh-nghiem.md giữ tối đa bấy nhiêu bài học gần nhất (agent đọc file này mỗi lượt)
   stepTurns: { work: 30, review: 24, rereview: 12, fix: 18 }, // --max-turns theo loại bước (chỉ Claude Code)
+  labTools: false, // cho agent Claude gọi công cụ của máy chủ qua MCP nội bộ (bật sau khi thử trên máy)
   chromePreflight: true, // kiểm Chrome bằng một lượt rất ngắn trước khi giao việc cho agent dùng Chrome
   agents: []
 };
@@ -297,11 +300,12 @@ const chromeModel = agent => usesChrome(agent) && /haiku/i.test(agent.model || '
 const defaultTurns = agent => { const g = geminiWebOf(agent); return g ? ({ 'deep-research': 150, image: 150 }[g.mode] || 60) : undefined; };
 // Agent Deep Research không tự tìm web (để Gemini làm, tính vào quota Gemini), trừ bước sửa chỉ cần vài nguồn;
 // agent dùng Chrome được thêm công cụ Chrome
-function claudeToolsOf(agent, kind) {
+function claudeToolsOf(agent, kind, lab = []) {
   const g = geminiWebOf(agent);
   let tools = agent.tools || config.claudeTools || [];
   if (!agent.tools && g && g.mode === 'deep-research' && kind !== 'fix') tools = tools.filter(t => t !== 'WebSearch');
-  return usesChrome(agent) ? tools.concat('mcp__claude-in-chrome') : tools;
+  if (usesChrome(agent)) tools = tools.concat('mcp__claude-in-chrome');
+  return lab.length ? tools.concat('mcp__yogalab') : tools;
 }
 
 function chromePrompt(agent, kind) {
@@ -366,7 +370,7 @@ function geminiImagePrompt(agent, g) {
 }
 
 // kind: loại bước trong kế hoạch (work / review / rereview / fix); không có khi giao việc lẻ
-function buildPrompt(agent, task, handoffPath, attachments, kind) {
+function buildPrompt(agent, task, handoffPath, attachments, kind, lab = []) {
   const lines = [
     `Bạn là ${agent.name} — ${agent.role} trong Yoga Lab (nhóm nghiên cứu yoga & y khoa).`,
     `Thư mục hiện tại là folder làm việc chung của cả nhóm.`,
@@ -396,6 +400,9 @@ function buildPrompt(agent, task, handoffPath, attachments, kind) {
   // agy chạy ngầm không được phép chạy lệnh terminal: gọi run_command sẽ bị từ chối và cả lượt dừng ngay
   if (agent.engine === 'antigravity') lines.push(`8. Chỉ làm việc trong folder hiện tại. Xem folder bằng list_dir, find_by_name, grep_search; đọc bằng view_file; ghi bằng write_to_file. Lệnh terminal duy nhất được phép là Get-ChildItem đứng một mình (không nối ; | &); mọi lệnh khác và việc đọc file ngoài folder sẽ bị chặn.`);
   if (usesChrome(agent)) lines.push('', ...chromePrompt(agent, kind));
+  if (lab.includes('soat_loi')) lines.push('', 'CÔNG CỤ CỦA MÁY CHỦ (gọi như công cụ thường):',
+    '- soat_loi(file): soát lỗi máy móc và đếm chữ từng trang của một file .md; với slides.md, thiet-ke.md còn đối chiếu hai file và kiểm file hình. Trước khi bàn giao, gọi soat_loi cho từng file sản phẩm bạn vừa ghi hoặc sửa, rồi sửa những chỗ đúng là lỗi.',
+    '- Không có Bash: đừng thử chạy lệnh, script hay python. Việc máy móc thì dùng công cụ trên.');
   if (agent.instructions && agent.instructions.trim()) {
     lines.push('', 'HƯỚNG DẪN RIÊNG CHO VAI CỦA BẠN:', agent.instructions.trim());
   }
@@ -430,6 +437,10 @@ function describeTool(name, input = {}) {
   if (/^run_command$/i.test(n)) return { kind: 'think', text: `Chạy lệnh: ${short(input.CommandLine || input.command || '')}` };
   if (/^generate_image$/i.test(n)) return { kind: 'write', text: `Tạo ảnh ${short(input.ImageName || input.Prompt || '')}` };
   if (/^TodoWrite$/i.test(n)) return { kind: 'think', text: 'Lên kế hoạch' };
+  if (n === 'mcp__yogalab__soat_loi') return { kind: 'read', text: `Máy soát ${short(input.file)}` };
+  if (n === 'mcp__yogalab__kiem_link') return { kind: 'web', text: `Kiểm ${(input.urls || []).length} link` };
+  if (n === 'mcp__yogalab__tai_hinh') return { kind: 'write', text: `Tải hình ${short(input.ten || input.link)}` };
+  if (n === 'mcp__yogalab__tra_cuu') return { kind: 'read', text: `Tra bộ não: ${short(input.tu_khoa)}` };
   if (/^mcp__claude-in-chrome__navigate$/.test(n)) return { kind: 'web', text: `Chrome: mở ${short(input.url)}` };
   if (/^mcp__claude-in-chrome__(get_page_text|read_page|find)$/.test(n)) return { kind: 'web', text: 'Chrome: đọc trang' };
   if (/^mcp__claude-in-chrome__/.test(n)) return { kind: 'web', text: `Chrome: ${short(input.action_summary || input.action || n.replace('mcp__claude-in-chrome__', ''))}` };
@@ -439,7 +450,7 @@ function describeTool(name, input = {}) {
 const AGY_MAX_CONTINUES = 3;
 const ENGINE_NAME = { claude: 'Claude Code', gemini: 'Gemini CLI', antigravity: 'Antigravity CLI (agy)' };
 
-function cliArgs(agent, maxTurns, effort, kind) {
+function cliArgs(agent, maxTurns, effort, kind, lab = [], mcpFile = null) {
   if (agent.engine === 'antigravity') {
     // Antigravity CLI (agy): prompt gửi qua stdin dạng NDJSON; "-p=" bật chế độ in kết quả rồi thoát.
     // accept-edits: tự duyệt việc đọc/ghi file; lệnh shell và quyền chưa cấp sẽ bị từ chối ngầm (không treo).
@@ -457,8 +468,9 @@ function cliArgs(agent, maxTurns, effort, kind) {
   const args = ['-p', '--output-format', 'stream-json', '--verbose',
     '--permission-mode', 'acceptEdits',
     '--max-turns', String(maxTurns || agent.maxTurns || defaultTurns(agent) || config.maxTurns || 15),
-    '--allowedTools', claudeToolsOf(agent, kind).join(',')];
-  if (config.skipMcp && !agent.useMcp) args.push('--strict-mcp-config');
+    '--allowedTools', claudeToolsOf(agent, kind, lab).join(',')];
+  if (mcpFile) { args.push('--mcp-config', mcpFile); if (!agent.useMcp) args.push('--strict-mcp-config'); }
+  else if (config.skipMcp && !agent.useMcp) args.push('--strict-mcp-config');
   // Claude in Chrome: điều khiển Chrome thật của bạn (đã đăng nhập sẵn), ví dụ để chạy Gemini Deep Research bằng gói Gemini Pro
   if (usesChrome(agent)) args.push('--chrome');
   const model = chromeModel(agent);
@@ -477,16 +489,42 @@ function quoteWinArg(x) {
   return `"${x.replace(/(\\+)$/, '$1$1')}"`;
 }
 
+// Công cụ máy chủ cho từng lượt (MCP nội bộ). Đợt 1, 2 thêm kiem_link, tai_hinh, tra_cuu theo loại bước.
+const labKeys = new Map(); // khoá của lượt chạy → { entry, agent, tools }
+function labToolsFor(agent, kind) {
+  if (!config.labTools || agent.engine !== 'claude' || agent.labTools === false) return [];
+  return ['soat_loi'];
+}
+function labCtx(lab) {
+  return {
+    read: rel => readWs(rel), exists: rel => wsExists(rel), lint: rel => lintFiles([rel]), listImages: rel => listedImages(rel),
+    hasImages: rel => { const a = insideWorkspace(rel); try { return !!a && fs.readdirSync(a).some(n => IMG_EXT.test(n)); } catch { return false; } },
+    entry: lab.entry, agent: lab.agent
+  };
+}
+
 // opts: { prompt (thay prompt mặc định), maxTurns, effort, planId, step, onDone(run) }
 async function startRun(agent, task, attachments = [], opts = {}) {
   if (running.has(agent.id)) throw Object.assign(new Error(`${agent.name} đang bận`), { status: 409 });
   running.set(agent.id, null); // giữ chỗ ngay, tránh hai việc cùng lúc chen vào trong lúc chờ
   try { await ensureWorkspace(); } catch (e) { running.delete(agent.id); throw e; }
+  const lab = labToolsFor(agent, opts.kind);
 
   const startedAt = new Date();
+  let labKey = null, mcpFile = null;
+  if (lab.length) {
+    // File cấu hình MCP riêng cho lượt này: khoá ngẫu nhiên để máy chủ biết lời gọi đến từ lượt nào
+    labKey = crypto.randomBytes(16).toString('hex');
+    mcpFile = path.join(stateDir(), 'mcp', `${stamp(startedAt)}-${agent.id}.json`);
+    try {
+      await fsp.mkdir(path.dirname(mcpFile), { recursive: true });
+      await fsp.writeFile(mcpFile, JSON.stringify({ mcpServers: { yogalab: { type: 'stdio', command: process.execPath,
+        args: [path.join(ROOT, 'mcp', 'yogalab-mcp.js')], env: { YOGALAB_URL: `http://${HOST}:${PORT}`, YOGALAB_KEY: labKey } } } }), 'utf8');
+    } catch (e) { running.delete(agent.id); throw e; }
+  }
   const handoffRel = `handoff/${stamp(startedAt)}-${agent.id}.md`;
-  const prompt = opts.prompt || buildPrompt(agent, task, handoffRel, attachments, opts.kind);
-  const { cmd, args, stdinJson } = cliArgs(agent, opts.maxTurns, opts.effort, opts.kind);
+  const prompt = opts.prompt || buildPrompt(agent, task, handoffRel, attachments, opts.kind, lab);
+  const { cmd, args, stdinJson } = cliArgs(agent, opts.maxTurns, opts.effort, opts.kind, lab, mcpFile);
 
   const run = {
     id: `${stamp(startedAt)}-${agent.id}`, agentId: agent.id, agentName: agent.name,
@@ -503,8 +541,9 @@ async function startRun(agent, task, attachments = [], opts = {}) {
   // Folder workspace do chính bạn chọn trong config.json nên tin cậy nó cho các lượt chạy Gemini.
   const env = { ...process.env, FORCE_COLOR: '0', ...(agent.engine === 'gemini' ? { GEMINI_CLI_TRUST_WORKSPACE: 'true' } : {}) };
   const entry = { proc: null, run, stopped: false, buf: '', textOut: '', stderr: '', lastBroadcast: 0, onDone: opts.onDone, handoffRel, continues: 0 };
+  if (labKey) { entry.labKey = labKey; entry.mcpFile = mcpFile; labKeys.set(labKey, { entry, agent, tools: lab }); }
   try { spawnInto(agent, entry, cmd, args, stdinJson ? JSON.stringify({ event: 'user', message: { content: prompt } }) + '\n' : prompt, env); }
-  catch (e) { running.delete(agent.id); throw e; }
+  catch (e) { running.delete(agent.id); if (labKey) { labKeys.delete(labKey); fsp.unlink(mcpFile).catch(() => {}); } throw e; }
   running.set(agent.id, entry);
 
   broadcast({ type: 'run', run: liveRun(run) }); // để giao diện biết việc đang làm và giờ bắt đầu
@@ -740,6 +779,7 @@ async function finishRun(agent, entry, code) {
   if (!running.has(agent.id)) return;
   clearTimeout(entry.timer);
   running.delete(agent.id);
+  if (entry.labKey) { labKeys.delete(entry.labKey); fsp.unlink(entry.mcpFile).catch(() => {}); }
   if (entry.buf.trim()) handleLine(agent, entry, entry.buf.trim());
   const run = entry.run;
   run.endedAt = new Date().toISOString();
@@ -2219,6 +2259,17 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, { ok: true, run });
     }
 
+    // Công cụ máy chủ cho agent, gọi qua cầu nối mcp/yogalab-mcp.js; khoá chỉ sống trong lúc lượt chạy
+    if (req.method === 'POST' && p.startsWith('/api/lab/')) {
+      const b = await readBody(req);
+      const lab = labKeys.get(String(b.key || ''));
+      if (!lab) return send(res, 403, { error: 'Khoá không hợp lệ hoặc lượt chạy đã xong' });
+      const what = p.slice('/api/lab/'.length);
+      if (what === '_list') return send(res, 200, { tools: congCu.danhSach(lab.tools) });
+      if (what === '_call') return send(res, 200, await congCu.goi(String(b.name || ''), b.args || {}, labCtx(lab), lab.tools));
+      return send(res, 404, { error: 'Không có' });
+    }
+
     if (req.method === 'POST' && p === '/api/plan') {
       const plan = await createPlan(await readBody(req));
       return send(res, 200, { ok: true, plan });
@@ -2355,6 +2406,8 @@ const server = http.createServer(async (req, res) => {
 
 (async () => {
   await ensureWorkspace();
+  // File cấu hình MCP của các lượt chạy dở lần trước: khoá đã hết hạn
+  for (const n of await fsp.readdir(path.join(stateDir(), 'mcp')).catch(() => [])) await fsp.unlink(path.join(stateDir(), 'mcp', n)).catch(() => {});
   await loadRuns();
   await loadPlans();
   await loadQuyetDinh();

@@ -1,158 +1,221 @@
-# Kế hoạch nâng cấp "trí não" cho Yoga Lab
+# Kế hoạch nâng cấp trí não Yoga Lab · bản 2
 
-Ngày 19/10/2026. Dựa trên mã `server.js` và dữ liệu thật trong `workspace/`: 87 lượt chạy, 11 kế hoạch, 7 file `kinh-nghiem.md`, hơn 60 bàn giao.
+Ngày 19/10/2026. Bản này thay bản 1.
+Số liệu lấy từ `workspace/.yogalab/runs.jsonl` (87 lượt chạy), `plans.json` (11 kế hoạch), các file bàn giao, file nhận xét và `kinh-nghiem.md`.
+Mục 8 ghi những chỗ bản 1 nói chưa đúng hoặc còn thiếu.
 
 ## 0. Tóm tắt
 
-Yoga Lab đã có khung tốt: máy chủ điều phối, brief và bảng dự án, bàn giao 7 mục, vòng duyệt tự động, nghiệm thu chấm điểm, bài học ghi vào `kinh-nghiem.md`.
-Chỗ yếu nằm ở **trí nhớ**. Mỗi dự án gần như làm lại từ đầu. Bài học là một danh sách chữ, không ai đo xem nó có tác dụng không.
-Các agent "nói chuyện" với nhau bằng văn xuôi mà máy chủ không hiểu.
+### Năm phát hiện
+1. **Chi phí ≈ số lượt × độ dài ngữ cảnh.** 91% token là đọc lại cache. Mỗi lượt thừa đều đọc lại toàn bộ ngữ cảnh: chờ trang Gemini, thử lệnh bị chặn, mở lại link cũ.
+2. **Sửa lỗi muộn đắt hơn làm đúng từ đầu.** Vòng duyệt → sửa → duyệt lại tốn ngang hoặc hơn chính bước làm.
+3. **Nhóm làm lại cùng một việc.** Suy giáp đã làm 6 bản. Khoảng 40% link mở ở v6 và v7 đã được mở ở bản trước. 11/12 ý tiêu biểu trong danh sách đã duyệt của v7 đã có trong file kiểm chứng v6.
+4. **Phần lớn bài học lặp lại không phải lỗi của agent.** Chúng là lỗi máy chủ, thiếu công cụ, thiếu bước trong quy trình, hoặc thiếu một sự thật. Ghi thêm bài học cho agent không chữa được những lỗi này.
+5. **Bạn gần như luôn để nhóm tự quyết** (26/27 câu hỏi), nhưng câu hỏi nào cũng làm dự án dừng chờ.
 
-Đề xuất xây 4 lớp nhớ. Lớp quan trọng nhất là **kho tri thức dạng Obsidian** (`tri-thuc/`), dùng chung cho mọi agent và cho chính bạn.
+### Năm trụ cột
 
-| Lớp | Trả lời câu hỏi | Hiện có | Cần thêm |
+| Trụ cột | Ý chính |
+|---|---|
+| T1 · Công cụ chung | Máy chủ cho agent gọi 4 công cụ ngay trong lúc làm: soát lỗi, kiểm link, tải hình, tra bộ não. Nối qua một MCP nội bộ nhỏ, agent vẫn không chạy được lệnh shell. |
+| T2 · Sổ vấn đề | Lỗi ghi theo bảng cố định cột, tự giao đúng người phụ trách file. Chef chỉ được gọi "giao ban" khi có tín hiệu cần xử lý. Câu hỏi mặc định không làm dừng dự án. |
+| T3 · Bộ não Obsidian | `tri-thuc/`: ý đã kiểm chứng, nguồn, tư thế, hình, quyết định, và quy tắc do chính bạn viết. |
+| T4 · Tự học có phân loại gốc lỗi | Mỗi lỗi được xếp vào agent, quy trình, công cụ, môi trường hoặc tri thức, rồi chuyển tới đúng nơi sửa. Lỗi còn lặp thì tự siết thêm một bậc. |
+| T5 · Kinh tế token | Deep Research hai pha, chế độ tiếp nối, nghiên cứu phần chênh, duyệt lại hẹp, chọn model theo loại bước. |
+
+Giữ nguyên nguyên tắc hiện tại: **máy chủ là người điều phối duy nhất, agent không gọi nhau trực tiếp.**
+Agent "nói chuyện" qua sổ vấn đề, bàn giao có cấu trúc và bộ não chung. Máy chủ đọc, rồi chuyển tới đúng người, đúng lúc.
+
+### Thứ tự
+Đợt 0 sửa lỗi và dọn nền → Đợt 1 sổ vấn đề và công cụ chung → Đợt 2 bộ não → Đợt 3 tự học → Đợt 4 tối ưu.
+Mỗi đợt có tiêu chí xong đo được (mục 3) và được chạy thử trên dự án thật trước khi sang đợt sau.
+
+## 1. Phát hiện
+
+### 1.1 Token đi đâu
+
+| Loại token (87 lượt) | Token thô | Phần trong token quy đổi |
+|---|---|---|
+| Đọc cache | 64,5 triệu (91% token thô) | khoảng 50% (tính 1/10) |
+| Ghi cache | 4,7 triệu | khoảng 37% |
+| Đầu ra | 1,4 triệu | khoảng 11% |
+| Đầu vào mới | 0,3 triệu | khoảng 2% |
+
+Chi phí gần như tỉ lệ với số lượt nhân độ dài ngữ cảnh. Ba nguồn lượt thừa lớn nhất:
+
+- **Chờ trên Chrome.** Trong các lượt Mai dùng Chrome, khoảng 45% thao tác là chờ hoặc tải lại trang Gemini. Mỗi lần chờ là một lượt đọc lại khoảng 44 nghìn token ngữ cảnh.
+  Mai và Nhi tốn nhất mỗi lần chạy: 250 nghìn và 268 nghìn token quy đổi. Nhi trung bình 59 lượt mỗi lần chạy.
+- **Thử công cụ không được cấp.** 46/87 lần chạy (53%) có gọi Bash (chưa tính PowerShell) để đếm chữ, ghi file, liệt kê thư mục. Bash không có trong `claudeTools` nên lần gọi nào cũng bị từ chối và mất lượt.
+  Bàn giao ghi rõ: "Không chạy được python để đếm chữ, đếm tay" (Lam, An), "không có công cụ tải" (Vy), "không chạy được script tải hình" (Mai).
+- **Vòng sửa** (ước tính theo lượt chạy của từng bước):
+
+| Kế hoạch | Bước làm | Duyệt + sửa + duyệt lại |
+|---|---|---|
+| v5 (plan-20261016-204631) | 0,40 triệu | 1,70 triệu |
+| v6 (plan-20261017-170653) | 1,68 triệu | 1,82 triệu |
+| v7 (đang tạm dừng) | 1,68 triệu | 0,81 triệu, chưa xong |
+
+Hệ quả cho thiết kế. Muốn rẻ hơn thì phải:
+- để máy chủ làm việc máy móc thay cho lượt của agent;
+- cho người làm tự kiểm bằng đúng công cụ người duyệt đang dùng, ngay trước khi bàn giao;
+- chỉ đưa vào ngữ cảnh đúng phần cần đọc.
+
+### 1.2 Làm lại cùng một việc
+- Suy giáp có 6 bản (v2 → v7). Bản nào cũng nghiên cứu, kiểm chứng, viết, thiết kế lại từ đầu; thư mục output đã 113 MB.
+- Link mở ở v6: khoảng 10/23 đã được mở ở bản trước. v7: khoảng 12/33.
+- Token quy đổi bước nguồn của Mai tăng dần: v5 0,60 → v6 1,23 → v7 2,14 triệu.
+- Lấy 12 ý tiêu biểu trong "Danh sách đã duyệt" của An ở v7 (liều i-ốt, giờ uống thuốc, Hashimoto, n=516…): 11 ý đã có trong file kiểm chứng v6.
+  Hiện không có chỗ nào để bản sau dùng lại những ý đã kiểm.
+
+### 1.3 Bài học lặp lại: gốc lỗi thật nằm ở đâu
+
+| Lỗi lặp lại | Có trong bài học của | Gốc lỗi thật | Chỗ sửa đúng |
 |---|---|---|---|
-| Làm việc | Bước này cần đọc gì? | brief, bảng dự án, bàn giao | Gói ngữ cảnh do máy chủ soạn |
-| Dự án | Còn lỗi gì, ai phải sửa? | văn xuôi trong file nhận xét | **Sổ vấn đề** có cấu trúc |
-| Tri thức | Nhóm đã biết chắc điều gì? | không có (rải rác trong v2…v7) | **Kho tri thức Obsidian** |
-| Kinh nghiệm | Lần trước sai ở đâu, tránh thế nào? | `kinh-nghiem.md` | **Bài học có vòng đời**, tự thăng cấp thành checklist hoặc luật máy soát |
+| Ảnh tốt nằm ở `hinh-moi/`, không vào `output/<chủ đề>/hinh/` | Hạ (2), Nhi (2), Chef (1) | **Máy chủ**: `imageDirOf` lấy thư mục từ chữ trong nhiệm vụ; nhiệm vụ không ghi đường dẫn thì rơi về `hinh-moi` | Sửa máy chủ (Đợt 0) |
+| Lỗi trong slides.md mà không ai giao Lam sửa (`CẦN GIAO LAM`) | Hạ, Chef, Lam | **Quy trình**: `handleReview` chỉ giao sửa cho người làm bước được duyệt | Giao theo chủ file (T2) |
+| Số 115 chưa có nguồn Việt Nam | Mai (2), An (2) | **Tri thức**: một sự thật phải tìm lại ở mỗi bản | Lưu vào bộ não (T3) |
+| Đếm chữ trên slide bằng tay, đếm sai | Lam, An | **Công cụ**: agent không có công cụ đếm; máy soát chỉ chạy cho người duyệt | `soat_loi` cho người làm (T1) |
+| Dòng Hình trong slides.md lệch thiet-ke.md | Lam (3), Hạ (1) | **Công cụ và quy trình**: hai file do hai người viết, không có gì đối chiếu tự động | Máy đối chiếu hai file (T1) |
+| StatPearls, Mayo, NICE trả 403 hoặc CAPTCHA | An, Hạ, Mai | **Môi trường và tri thức** | Ghi tình trạng và cách mở khác vào note nguồn (T3) |
+| Bàn giao báo "đã sửa" mà file chưa đổi | Hạ, Lam | **Agent**, nhưng máy kiểm được | Máy chủ đối chiếu với file đã ghi (Đợt 0) |
+| Ý trên slide thiếu tân ngữ, câu cụt | Lam | **Agent** | Bài học, đúng chỗ |
 
-Thứ tự: P0 dọn nền → P1 sổ vấn đề → P2 kho tri thức → P3 vòng tự học → P4 gói ngữ cảnh → P5 đo lường.
-P0 và P1 có tác dụng ngay ở dự án kế tiếp. P2 là phần "trí não" lớn nhất.
+Trong 8 nhóm lỗi lặp lại, chỉ 1–2 nhóm là lỗi của agent theo đúng nghĩa.
+Muốn "tự học" có tác dụng, hệ thống phải biết lỗi thuộc gốc nào để chuyển tới đúng nơi sửa.
 
-## 1. Hiện trạng: dữ liệu nói gì
+### 1.4 Kế hoạch tĩnh, tín hiệu giữa chừng không ai xử lý
+Chef chia việc một lần lúc đầu, rồi chỉ được gọi lại khi một bước lỗi hoặc lúc nghiệm thu.
+Trong lúc đó, mục "Vướng mắc" của bàn giao có những tín hiệu cần xử lý ngay nhưng không ai đọc tới:
+- "Dòng Hình chưa đối chiếu được với thiet-ke.md (Vy chưa viết)": Lam và An cùng để lại cho bước sau (v6).
+- "Máy chủ chưa tải 3 link Special:FilePath": Vy, Hạ, Chef cùng báo ở v6, việc này treo tới tận nghiệm thu.
+  Sau đó chính Chef rút bài học "nếu máy chủ không tải được thì giao tải tay ngay". Đây là một luật máy chủ làm được, không cần Chef phải nhớ.
+- v7: máy chủ tải hình nguồn hỏng 7/20 rồi 5/17 file. Lý do là "Commons không có file này" (tên file đề xuất không có thật) và HTTP 429 (tải dồn).
 
-### Đang tốt, giữ nguyên
-- Máy chủ là người điều phối duy nhất, agent không tự gọi nhau, nên kiểm soát được chi phí và thứ tự.
-- Máy soát lỗi (`lintText`) không tốn token và đã bắt được lỗi người duyệt bỏ sót.
-- Nghiệm thu chấm theo tiêu chí, có bằng chứng (xem `du-an/plan-20261017-170653/nghiem-thu.md`). Bài học viết cụ thể.
+### 1.5 Câu hỏi cho chủ dự án
+- 27 câu hỏi, 1 câu có câu trả lời cụ thể ("giữ với gạch thấp nhất 1–3 phút"). 26 câu còn lại là "nhóm tự quyết", do bạn bấm hoặc do máy chủ tự điền khi hết lượt hỏi.
+- Trong riêng v6: số 115 bị hỏi 4 lần, biểu tượng Canva 3 lần, chống chỉ định 5 tư thế 2 lần, mỗi lần một cách viết.
+  Bộ so trùng chỉ so 80 ký tự đầu (`qKey`).
+- 2 "câu hỏi" thật ra là câu trả lời "Không (…)" hoặc "Không. …", vì `parseQuestions` chỉ nhận chữ "Không" đứng một mình.
+- "Vui lòng cấp quyền Chrome" bị hỏi ở 2 dự án. Đây là lỗi môi trường, không phải câu hỏi dành cho chủ dự án.
 
-### Vấn đề 1: mỗi phiên bản nghiên cứu lại từ đầu, và ngày càng tốn hơn
-- Cùng chủ đề suy giáp đã làm 6 lần (v2 → v7). Token quy đổi bước nguồn của Mai: v5 0,60 triệu → v6 1,23 triệu → v7 2,14 triệu.
-- An mở lại các link đã kiểm ở bản trước (trung bình 5,9 lần WebFetch/WebSearch mỗi lượt).
-- Mai tốn nhiều token nhất (27,7 triệu tổng, 4,8 triệu quy đổi) và lỗi 6/19 lượt, phần lớn vì Chrome chưa cấp quyền nhưng tới lúc chạy mới biết.
-- Không có chỗ lưu "ý đã kiểm chứng + câu trích + nguồn" để bản sau dùng lại.
+### 1.6 Lỗi hệ thống tìm thấy khi rà
 
-### Vấn đề 2: bài học không biến thành hành vi
-- Bài học chỉ được ghi lúc nghiệm thu (`finishPlan`), dồn vào một danh sách phẳng, rồi cắt theo **độ mới**: `trimLessons` giữ 30 dòng gần nhất, không xét bài nào có giá trị hơn.
-- Bài học trùng lặp vì chỉ so 80 ký tự đầu (`qKey`). Mai có 2 bài về số 115, An có 2 bài gần như y hệt.
-- Cùng một lỗi lặp lại dù đã có bài học:
-  - "Ảnh tốt chưa nằm trong `hinh/`": có trong bài học của Hạ (2 bài), Nhi (2), Chef (1).
-  - "Lỗi trong slides.md nhưng không ai giao Lam sửa" (`CẦN GIAO LAM`): Hạ, Chef, Lam đều có; lặp từ v5 sang v6.
-  - "115 chưa có nguồn Việt Nam": Mai (2), An (2); lặp v5 → v6, tới v7 mới xong.
-- Mấy lỗi trên máy kiểm được (file có tồn tại không, hai file có khớp không), nhưng hệ thống vẫn trông vào trí nhớ của agent.
-- Mọi agent đọc toàn bộ bài học ở mọi lượt, kể cả bài không liên quan (bài về duyệt ảnh của Hạ vẫn hiện khi Hạ biên tập chữ).
+| # | Lỗi | Ở đâu | Hậu quả |
+|---|---|---|---|
+| L1 | Ảnh rơi vào `hinh-moi/` khi nhiệm vụ không ghi đường dẫn | `imageDirOf`, `placeImages` | 5 bài học ghi sai chỗ; ảnh tốt không vào bộ hình (v6) |
+| L2 | "Không (giải thích…)" bị coi là câu hỏi | `parseQuestions` | Dự án dừng chờ vô cớ |
+| L3 | So trùng câu hỏi và bài học chỉ theo 80 ký tự đầu | `qKey`, `newQuestions`, `appendLessons` | Câu hỏi và bài học bị trùng |
+| L4 | Mai không có WebSearch, kể cả ở bước sửa | `claudeToolsOf` không xét loại bước | Bước sửa phải đi vòng qua Chrome, có lúc bỏ cuộc ("không tìm được nguồn 115") |
+| L5 | Tải hình hỏng: tên file Commons không có thật, HTTP 429; v6 hỏng 3 link Special:FilePath chưa rõ lý do | `downloadSourceImages`, `downloadListedImages`, `imageUrlOf` | Thiếu hình y khoa tới nghiệm thu |
+| L6 | Kết quả máy soát chỉ đưa cho người duyệt | `pumpPlan`, `finishPlan` | Người làm đếm tay; lỗi máy móc dồn sang vòng duyệt |
+| L7 | `index.md` do agent tự nối thêm dòng | `buildPrompt`, quy tắc 5 | 85 dòng, tăng mãi, lượt nào cũng đọc |
 
-### Vấn đề 3: giao tiếp bằng văn xuôi
-- Nhận xét duyệt nằm trong `agents/<người duyệt>/...`. Người sửa phải đọc hết, người duyệt lại phải đọc lại.
-  Từ bước duyệt, máy chủ chỉ đọc được dòng `KẾT LUẬN` và mục câu hỏi.
-- Vòng sửa luôn trả về người làm bước được duyệt (`handleReview`), kể cả khi lỗi nằm trong file của người khác.
-- Bàn giao có thể báo "đã sửa" khi file chưa đổi (bài học của Hạ và Lam), trong khi máy chủ biết chính xác lượt đó đã ghi file nào (`run.files`).
-
-### Vấn đề 4: quyết định của chủ dự án không được nhớ
-- Câu trả lời chỉ sống trong một kế hoạch. Câu "115 chưa có nguồn" bị hỏi ít nhất 4 lần qua 2 dự án.
-  Câu "biểu tượng Canva có tính là hình có giấy phép không" bị hỏi 3 lần trong một dự án, mỗi lần một cách viết, nên bộ so trùng theo chữ không bắt được.
-- Kế hoạch v6 dùng hết 3 lượt hỏi, 10 câu sau đó bị bỏ qua tự động.
-
-### Vấn đề 5: `index.md` phình ra
-- 85 dòng và tăng sau mỗi lượt, vì quy tắc 5 trong `buildPrompt` bảo agent tự thêm dòng.
-  Mọi lượt đều đọc file này đầu tiên, mà phần lớn là file của v2–v6 đã cũ.
-
-## 2. Kiến trúc đích
+## 2. Thiết kế đích
 
 ```mermaid
-flowchart LR
-  subgraph DuAn[Một dự án]
-    B[Brief] --> S[Bước làm] --> R[Bước duyệt]
-    R -- vấn đề dạng JSON --> L[(Sổ vấn đề)]
-    L -- giao đúng chủ file --> F[Bước sửa] --> R
-    R --> N[Nghiệm thu]
+flowchart TB
+  subgraph MayChu[Máy chủ: người điều phối duy nhất]
+    KH[Kế hoạch] --> CHAY[Chạy từng bước]
+    SVD[(Sổ vấn đề)] -->|giao đúng chủ file| CHAY
+    SVD --> GB{Có tín hiệu?}
+    GB -->|có| CHEF[Chef giao ban ngắn] --> KH
   end
-  K[(tri-thuc/ trong Obsidian)] -- gói ngữ cảnh --> S
-  K -- gói ngữ cảnh --> R
-  R -- ý đã duyệt --> K
-  L -- thống kê lỗi lặp --> H[Hồi cứu]
-  N --> H
-  H -- bài học, checklist, luật máy soát --> K
-  H -- đề xuất sửa hướng dẫn --> O{Bạn duyệt}
+  subgraph Luot[Một lượt của agent]
+    GOI[Gói ngữ cảnh] --> LAM[Làm]
+    LAM <-->|soát lỗi, kiểm link, tải hình, tra cứu| CC[Công cụ chung]
+    LAM --> BG[Bàn giao + bảng vấn đề]
+  end
+  CHAY --> GOI
+  BG --> SVD
+  TT[(tri-thuc/ trong Obsidian)] --> GOI
+  CC <--> TT
+  BG -->|ý đã duyệt, nguồn, hình| TT
+  SVD --> HC[Hồi cứu sau dự án]
+  HC -->|bài học, checklist, luật soát| TT
+  HC -->|lỗi máy chủ, thiếu công cụ| LH[he-thong/lo-hong.md]
+  HC -->|đổi quy trình, hướng dẫn vai| DUYET{Bạn duyệt}
 ```
 
-Nguyên tắc:
-1. **Máy chủ vẫn là người điều phối duy nhất.** Agent "nói" với nhau qua dữ liệu có cấu trúc. Máy chủ hiểu dữ liệu đó và chuyển tới đúng người. Không agent nào gọi thẳng agent khác, nên vẫn giữ được ngân sách và thứ tự.
-2. **Việc gì máy làm được thì để máy làm**, không tốn token: kiểm link sống hay chết, kiểm file có tồn tại không, đối chiếu hai file, sinh index, gộp bài học trùng.
-3. **Tri thức là file Markdown thuần có frontmatter.** Agent đọc bằng Grep/Read như hiện nay, bạn đọc và sửa bằng Obsidian, Git giữ lịch sử.
-4. **Mọi thay đổi vào hướng dẫn của agent đều phải qua bạn duyệt.** Hệ thống tự học nhưng không tự đổi hướng.
+### T1 · Công cụ chung (MCP nội bộ)
 
-## 3. Lộ trình
+Hơn nửa số lần chạy có thử gọi shell, vì agent thiếu khả năng máy móc. Mở Bash thì không an toàn trên máy bạn.
+Thay vào đó, máy chủ cung cấp 4 công cụ an toàn:
 
-### P0 · Dọn nền (nhỏ, có lợi ngay)
+| Công cụ | Làm gì | Thay cho |
+|---|---|---|
+| `soat_loi(file)` | Chạy máy soát hiện có (dấu câu, từ cấm, cách gọi, số chữ từng trang). Thêm: đối chiếu slides.md ↔ thiet-ke.md theo trang; kiểm file trong "Danh sách hình" có thật trong `hinh/` | Đếm tay, thử Bash, lỗi máy móc dồn sang vòng duyệt |
+| `kiem_link(urls)` | Máy chủ mở link: sống, 403, 404, CAPTCHA, tiêu đề trang. Link Commons thì kiểm file có thật và đọc giấy phép. Kết quả lưu vào note nguồn, hỏi lại thì trả ngay | WebFetch chỉ để biết link sống; đề xuất hình Commons không có thật |
+| `tai_hinh(link, ten)` | Tải hình có giấy phép vào đúng thư mục chủ đề của dự án; Commons trả 429 thì xếp hàng thử lại sau | Thử script tải; ảnh sai thư mục |
+| `tra_cuu(tu_khoa, loai?)` | Tìm trong bộ não (ý, nguồn, tư thế, hình, quyết định), trả danh sách gọn kèm đường dẫn | Đọc cả file nguồn 40 KB để tìm một ý |
 
-| # | Việc | Sửa ở đâu | Lợi |
-|---|---|---|---|
-| 0.1 | Máy chủ tự sinh `index.md` từ dữ liệu nguồn gốc file (đã có `originIndex`): mỗi chủ đề chỉ ghi bản mới nhất và link dự án; phần cũ chuyển sang `luu-tru/index-cu.md`. Bỏ quy tắc "tự thêm dòng vào index.md". | `buildPrompt`, thêm `writeIndex()` gọi sau `finishRun` | Mọi lượt đọc ít hơn; agent không còn ghi chồng lên nhau trong index |
-| 0.2 | So trùng gần đúng cho bài học và câu hỏi: tách từ, bỏ dấu câu, Jaccard ≥ 0,6 thì coi là trùng. | `appendLessons`, `newQuestions` | Hết bài học đôi, hết hỏi câu Canva 3 lần |
-| 0.3 | **Sổ quyết định bền vững** `tri-thuc/quyet-dinh.md`. Mọi câu chủ dự án trả lời (kể cả "nhóm tự quyết") được ghi kèm chủ đề. Khi lập kế hoạch mới, quyết định cùng chủ đề được đưa vào prompt điều phối và mục "Quyết định đã chốt" của brief. Câu hỏi mới giống quyết định cũ thì tự trả lời. | `answerPlan`, `newQuestions`, `buildPlanPrompt` | Không hỏi lại chuyện 115, Canva, Viparita… |
-| 0.4 | Kiểm lời khai của bàn giao. Bước sửa mà không ghi vào file sản phẩm được giao thì máy chủ ghi vào bảng dự án và báo cho người duyệt lại ("bước sửa không làm thay đổi slides.md"). | `pumpPlan` (phần `onDone`) | Máy bắt lỗi "báo đã sửa mà file chưa đổi" |
-| 0.5 | Kiểm trước khi chạy: kế hoạch có agent dùng Chrome thì máy chủ thử kết nối bằng một lượt rất ngắn trước bước đầu; hỏng thì báo ngay. | `createPlan`, `resumePlan` | Tránh kiểu 6 lượt lỗi của Mai |
+Thiết kế:
+- **MCP chỉ dùng cho truy vấn và hành động.** Dữ liệu nhiều dòng (danh sách lỗi, danh sách ý đã duyệt) vẫn ghi thành bảng trong file.
+  Một lần Write rẻ hơn 30 lần gọi công cụ, vì mỗi lần gọi là một lượt đọc lại ngữ cảnh.
+- **Cách nối.** Thêm `mcp/yogalab-mcp.js` (stdio, không thêm thư viện). File này chuyển lời gọi về máy chủ qua `127.0.0.1`, kèm khoá riêng của lượt chạy.
+  - `startRun` ghi một file cấu hình MCP cho từng lượt.
+  - `cliArgs` thêm `--mcp-config <file>` cạnh `--strict-mcp-config` đang có. Dùng đường dẫn file chứ không dùng chuỗi JSON, vì `quoteWinArg` từ chối dấu nháy kép trên Windows.
+  - `claudeToolsOf` thêm `mcp__yogalab`, giống cách đang thêm `mcp__claude-in-chrome`.
+- Máy chủ biết lượt chạy thuộc dự án nào, nên công cụ tự biết thư mục chủ đề. Ảnh không thể rơi vào `hinh-moi/` nữa.
+- **Đường lui.** Engine chưa dùng được MCP (agy, Gemini CLI) vẫn có máy soát chạy sau lượt như hiện nay; các phần khác vẫn chạy bằng bảng trong file.
+- **Chi phí.** Phần định nghĩa 4 công cụ khoảng 1–2 nghìn token, nằm trong cache từ lượt thứ hai trở đi.
 
-### P1 · Sổ vấn đề: giao tiếp có cấu trúc
+### T2 · Sổ vấn đề và điều phối thích ứng
 
-Mục tiêu: người duyệt, người sửa và máy chủ dùng chung một ngôn ngữ.
+**Ghi vấn đề.** Người duyệt vốn đã viết gần đúng dạng này ("**Tr.26, dòng Hình** · BẮT BUỘC · …"), chỉ cần cố định cột thành bảng `## Danh sách vấn đề`:
 
-**1.1 Người duyệt trả vấn đề dạng JSON**, ở cuối bàn giao, giống khối JSON của nghiệm thu:
-```json
-{"van_de": [
-  {"file": "output/suy-giap-v7/slides.md", "vi_tri": "Trang 13", "muc": "BẮT BUỘC",
-   "loai": "thieu-nguon", "mo_ta": "Số 115 chưa có nguồn", "de_xuat": "Dẫn trang công khai của Bộ Y tế"}
-]}
-```
-`loai` lấy trong danh mục cố định (mục 3.3) để thống kê được.
+| Mã | File | Vị trí | Mức | Loại | Vấn đề | Đề xuất |
+|---|---|---|---|---|---|---|
+| V1 | output/suy-giap-v7/slides.md | Trang 13 | BẮT BUỘC | thieu-nguon | Số 115 chưa có nguồn | Dẫn trang công khai của Bộ Y tế |
 
-**1.2 Máy chủ ghi vào `du-an/<mã>/van-de.md`**: bảng gồm mã (V-001), file, vị trí, mức, loại, người phát hiện, **người phải sửa**, trạng thái, bước.
-Người phải sửa suy ra từ **chủ của file**: `slides.md` → Lam, `thiet-ke.md` → Vy, `agents/mai/*-nguon.md` → Mai, ảnh trong `hinh/` → Nhi.
-Bảng chủ file đặt trong config; mặc định lấy người đã ghi file đó trong dự án.
+Máy chủ đọc bảng (đã có `tableRows`) và ghi vào `du-an/<mã>/van-de.md`, thêm tiền tố bước vào mã. Bảng sai mẫu thì máy chủ ghi vào bảng dự án và nhắc ở bước sau, không bỏ qua im lặng.
 
-**1.3 Vòng sửa giao theo vấn đề.** `handleReview` chèn bước sửa cho **từng người còn vấn đề mở**, không chỉ người làm bước được duyệt.
-Đây là cách chữa tận gốc lỗi "CẦN GIAO LAM", thay vì trông vào việc Chef nhớ bài học.
+**Giao đúng người.** Chủ của file là người được giao file đó trong kế hoạch; mặc định là người đã ghi file đó trong dự án (`slides.md` → Lam, `thiet-ke.md` → Vy, file nguồn → Mai, ảnh → Nhi).
+`handleReview` chèn bước sửa cho **từng chủ file còn vấn đề BẮT BUỘC**, không chỉ cho người làm bước được duyệt. Hết lỗi kiểu `CẦN GIAO LAM`.
 
-**1.4 Người sửa báo trạng thái từng vấn đề**: `{"da_xu_ly": [{"ma": "V-003", "trang_thai": "da-sua", "ly_do": ""}]}`, trạng thái là `da-sua` hoặc `khong-sua`.
-Máy chủ đối chiếu với kiểm tra 0.4 (file có thật sự thay đổi không).
+**Người sửa báo kết quả** bằng bảng `## Đã xử lý` (cột: Mã · Đã sửa / Không sửa · Lý do).
+Máy chủ đối chiếu với file thật sự được ghi trong lượt đó (`run.files`). Báo "đã sửa" mà file không đổi thì vấn đề vẫn mở, và người duyệt lại được nhắc.
 
-**1.5 Bước duyệt lại chỉ nhận danh sách vấn đề còn mở**, kèm vị trí, thay vì cả file nhận xét. Bước duyệt lại ngắn hơn và rẻ hơn.
+**Duyệt lại hẹp.** Bước duyệt lại chỉ nhận danh sách vấn đề còn mở kèm vị trí, không nhận cả file nhận xét cũ.
 
-**1.6 Nhắn đồng đội**: mục tuỳ chọn `## Gửi đồng đội` trong bàn giao, mỗi dòng dạng `@lam: …`.
-Nếu là lỗi, máy chủ chuyển thành vấn đề. Nếu là thông tin, máy chủ đính kèm vào bước kế tiếp của người đó.
-Không ai phải đọc bàn giao của người khác để tìm việc của mình.
+**Tín hiệu từ bàn giao.** Thêm hai mục tuỳ chọn vào mẫu bàn giao:
+- `## Gửi đồng đội`: mỗi dòng dạng `@lam: …`. Máy chủ đưa dòng đó vào gói ngữ cảnh ở bước kế tiếp của người được nhắn. Nếu đó là lỗi trong file của họ thì ghi thành vấn đề.
+- `## Cho cả nhóm biết`: sự thật có ích cho mọi người, ví dụ "NICE trả 403, Mayo mở được qua Chrome". Máy chủ ghi vào bảng dự án. Lúc hồi cứu sẽ quyết định có đưa vào bộ não không.
 
-**1.7 (Tuỳ chọn, thử sau) Hỏi nhanh đồng nghiệp**: agent ghi câu hỏi cho đồng nghiệp (`@an hỏi: Mayo có cho trích nguyên văn không?`).
-Máy chủ chạy một lượt rất ngắn của người được hỏi (effort thấp, tối đa 4 lượt, chỉ đọc file của họ) và ghi câu trả lời vào bảng dự án.
-Giới hạn số lần mỗi dự án để không đội token.
+**Giao ban: Chef chỉ được gọi khi cần.**
+- Sau mỗi bước, máy chủ dò tín hiệu bằng luật, không tốn token: vấn đề chưa có chủ, hình tải hỏng, "Vướng mắc" nhắc tới file chưa có, tin `@chef`.
+- Có tín hiệu thì gọi Chef một lượt ngắn (effort thấp, tối đa 6 lượt) với bản tóm tắt tín hiệu. Chef trả JSON chèn tối đa 2 bước. Mỗi dự án tối đa 3 lần giao ban.
+- Có tín hiệu máy chủ tự xử lý luôn. Ví dụ: hình tải hỏng → tạo vấn đề cho người đề xuất link (đúng bài học Chef rút ra ở v6).
 
-Thẻ trên Bảng việc hiện thêm số vấn đề còn mở.
+**Câu hỏi không chặn.**
+- Mặc định, câu hỏi cho chủ dự án được ghi thành **giả định** theo phương án đề xuất, và dự án chạy tiếp.
+- Bạn xem danh sách "Giả định chờ xác nhận" lúc nào cũng được. Bạn đổi một giả định thì máy chủ tạo vấn đề cho người phụ trách.
+- Chỉ dừng chờ khi câu hỏi có nhãn `[CHẶN]` và thuộc an toàn học viên hoặc đổi phạm vi.
+- Câu hỏi về môi trường (bật Chrome, hết hạn mức) không đi vào đây, mà vào bước kiểm trước khi chạy.
 
-### P2 · Trí não chung trong Obsidian (`tri-thuc/`)
+### T3 · Bộ não trong Obsidian (`tri-thuc/`)
 
-Mục tiêu: điều nhóm đã kiểm chứng thì không phải tìm lại. Bạn mở Obsidian là thấy nhóm đang "biết" những gì.
-
-**Cấu trúc**
 ```
 workspace/tri-thuc/
-├── 00-ban-do.md          ← bản đồ chính (máy chủ sinh)
-├── chu-de/suy-giap.md    ← MOC chủ đề: mệnh đề, tư thế, nguồn, hình, dự án, quyết định
-├── menh-de/              ← mỗi ý y khoa đã kiểm chứng là một note
-├── nguon/                ← mỗi nguồn một note: link, tổ chức, tình trạng truy cập, câu trích
-├── tu-the/               ← mỗi tư thế: chống chỉ định, đạo cụ, biến thể, prompt ảnh đã đạt, lỗi AI hay vẽ sai
-├── hinh/                 ← thư viện hình có giấy phép: link tải thẳng, tác giả, giấy phép, vùng nhãn cần che
-├── quyet-dinh/           ← quyết định bền vững của chủ dự án (thay cho file đơn ở P0.3)
-├── thuat-ngu.md          ← từ nên dùng, từ cần tránh → máy chủ đọc ra lintBanned, lintVariants
-├── mau-tot/              ← ví dụ đạt chuẩn (P3.8)
-└── bai-hoc/              ← bài học có vòng đời (P3)
+├── 00-ban-do.md            ← bản đồ chính (máy chủ sinh, thay index.md cũ)
+├── quy-tac-cua-toi.md      ← BẠN viết: quy tắc cao nhất, luôn có trong gói ngữ cảnh
+├── chu-de/suy-giap.md      ← MOC chủ đề (máy chủ sinh)
+├── menh-de/                ← mỗi ý y khoa đã kiểm chứng là một note
+├── nguon/                  ← mỗi nguồn một note: link, tình trạng truy cập, câu trích, cách mở khác
+├── tu-the/                 ← chống chỉ định, đạo cụ, biến thể, prompt ảnh đã đạt, lỗi AI hay vẽ sai
+├── hinh/                   ← hình có giấy phép đã tải: tác giả, giấy phép, vùng nhãn cần che
+├── quyet-dinh/             ← quyết định và giả định theo chủ đề
+├── thuat-ngu.md            ← từ nên dùng, từ cần tránh → máy chủ sinh lintBanned, lintVariants
+├── ghi-chu-chuyen-mon/     ← BẠN, bác sĩ, giảng viên ghi nhận xét chuyên môn
+├── mau-tot/                ← ví dụ đạt chuẩn: một trang slide, một prompt ảnh, một file kiểm chứng gọn
+├── bai-hoc/                ← bài học có vòng đời (T4)
+└── he-thong/lo-hong.md     ← lỗi máy chủ, thiếu công cụ: việc của người phát triển
 ```
 
-**Ví dụ note mệnh đề** `menh-de/levothyroxine-uong-luc-doi.md`:
+Ví dụ note ý `menh-de/levothyroxine-uong-luc-doi.md`:
 ```markdown
 ---
 loai: menh-de
+ma: levothyroxine-uong-luc-doi
 chu-de: [suy-giap, thuoc]
 muc-bang-chung: manh          # manh | vua | so-bo | y-kien
 trang-thai: da-duyet          # nhap | da-duyet | can-xem-lai | bac-bo
@@ -172,145 +235,267 @@ Uống levothyroxine lúc đói, 30–60 phút trước bữa sáng.
 Không nói "cách 4 giờ" chung chung: 4 giờ chỉ áp dụng cho canxi carbonate và sắt sulfate.
 ```
 
-**Note nguồn** `nguon/nhs-levothyroxine.md`: `url`, `to-chuc`, `loai-nguon`, `truy-cap` (ok, 403, 404, captcha), `kiem-luc`,
-`cach-mo-khac` (ví dụ Europe PMC cho bài PMC), các câu trích đã dùng.
-
-**Note tư thế** `tu-the/viparita-karani.md`: chống chỉ định (có nguồn hay chỉ là ý kiến), đạo cụ, bản nhẹ, thời gian giữ đã dùng,
-**prompt ảnh đã đạt**, lỗi AI hay mắc (thừa bàn chân gần hông, bắp chân lơ lửng).
-Phần lớn bài học của Nhi nên chuyển về đây, vì đó là tri thức về tư thế chứ không phải về riêng Nhi.
+Note nguồn có `url`, `to-chuc`, `loai-nguon`, `truy-cap` (ok, 403, 404, captcha), `kiem-luc`, `cach-mo-khac` (ví dụ Europe PMC cho bài PMC), các câu trích đã dùng.
+Note tư thế gom phần lớn bài học hiện có của Nhi (gạch nằm phẳng, bắp chân nằm trọn trên ghế…), vì đó là tri thức về tư thế chứ không phải về riêng Nhi.
 
 **Ai ghi, ghi lúc nào**
 
-| Thời điểm | Ghi gì | Ai làm |
+| Nội dung | Ai cung cấp | Ai ghi note |
 |---|---|---|
-| An kết luận ĐẠT ở bước duyệt nguồn | Mệnh đề đã duyệt, nguồn, câu trích | An trả khối JSON `menh_de`; **máy chủ** viết note (định dạng thống nhất, không tốn lượt) |
-| Sau mỗi dự án, hoặc mỗi đêm | Kiểm link trong `nguon/`, cập nhật `truy-cap` | Máy chủ (HTTP GET, giống cách đang tải hình) |
-| Máy chủ tải được hình | Thêm note vào `hinh/` | Máy chủ |
-| Chủ dự án trả lời câu hỏi | Note trong `quyet-dinh/` | Máy chủ |
-| Nghiệm thu xong | Cập nhật MOC chủ đề, gắn dự án | Máy chủ |
-| Bất cứ lúc nào | Đổi `trang-thai: bac-bo`, thêm ghi chú của bác sĩ | Bạn, trong Obsidian |
+| Ý đã duyệt | An viết bảng `## Danh sách đã duyệt` cố định cột: Mã · Ý · Mức bằng chứng · Nguồn · Câu trích. Ô Mã lấy từ `tra_cuu` nếu ý đã có, để trống nếu ý mới | Máy chủ tạo hoặc cập nhật note; An không phải ghi từng note |
+| Nguồn | Bảng nguồn trong file của Mai thêm cột `Mã nguồn` (ví dụ `nhs-levothyroxine`), để số [n] của từng bản quy về một mã cố định | Máy chủ; `kiem_link` cập nhật tình trạng |
+| Hình | Máy chủ tải xong | Máy chủ |
+| Quyết định, giả định | Bạn trả lời, hoặc câu hỏi được ghi thành giả định | Máy chủ |
+| Tư thế | Khởi tạo từ v7 (ma trận chống chỉ định của An, prompt ảnh đạt của Nhi) | Cập nhật lúc hồi cứu |
+| MOC chủ đề, bản đồ | Sau mỗi dự án | Máy chủ |
+| Quy tắc của bạn, ghi chú chuyên môn | Bạn, trong Obsidian | Máy chủ không bao giờ ghi vào |
 
-**Agent dùng kho thế nào**
-- **Mai**: trước khi tìm, đọc `chu-de/<chủ đề>.md`. Chỉ tìm cho mục **chưa có mệnh đề đã duyệt, hoặc đã quá hạn xem lại** (nghiên cứu phần chênh). Deep Research chỉ chạy cho phần còn trống.
-- **An**: mệnh đề đã duyệt và còn hạn thì không mở lại link; chỉ kiểm mệnh đề mới hoặc vừa sửa. Tình trạng link lấy từ note nguồn, máy chủ đã kiểm sẵn.
-- **Lam**: trích theo mệnh đề; dòng nguồn trên slide lấy từ note nguồn, nên hết cảnh số [n] lệch giữa file nguồn và kịch bản (bài học của Mai).
-- **Vy, Nhi**: lấy hình từ `hinh/`, prompt từ `tu-the/`.
+**Agent dùng bộ não thế nào**
+- **Mai** đọc MOC chủ đề trước khi tìm. Mai chỉ tìm cho mục chưa có ý đã duyệt, hoặc ý đã quá hạn xem lại. Deep Research chỉ chạy cho phần còn trống.
+- **An** bỏ qua ý đã duyệt còn hạn, chỉ kiểm ý mới hoặc ý vừa sửa. Tình trạng link lấy từ note nguồn.
+- **Lam** trích theo mã ý, nên hết lệch số [n] giữa file nguồn và kịch bản (bài học của Mai ở v6).
+- **Vy, Nhi** lấy hình từ `hinh/`, lấy prompt đã đạt từ `tu-the/`.
+
+**Gói ngữ cảnh** do máy chủ soạn cho từng bước, thay cho "đọc index.md" và "đọc kinh-nghiem.md". Giới hạn khoảng 1.500 từ, gồm:
+- quy tắc của bạn;
+- quyết định và giả định của chủ đề;
+- vấn đề đang mở giao cho người này, tin `@` gửi cho họ;
+- bài học khớp loại bước;
+- danh sách liên quan trong bộ não (chỉ tên và đường dẫn, cần thì agent tự đọc).
 
 **Phần dành cho bạn trong Obsidian**
-- Graph view: thấy mệnh đề nào dựa trên nguồn nào, dự án nào đã dùng.
-- Plugin Dataview (plugin cộng đồng) cho các bảng: mệnh đề `can-xem-lai`; mệnh đề mức `y-kien` nằm trên trang an toàn; nguồn đang trả 403; tư thế chưa có ảnh đạt.
-- Đặt `workspace` trỏ vào vault (README đã hỗ trợ), hoặc mở thẳng `workspace/` làm vault.
-
-**Kho ban đầu**: nhập từ `agents/an/suy-giap-v7-*.md` ("Danh sách đã duyệt") và `agents/mai/suy-giap-v7-nguon.md`, nên không bắt đầu từ số 0.
+- Mở chính `workspace/` làm vault, hoặc trỏ `workspace` trong config vào vault của bạn. Obsidian bỏ qua thư mục ẩn `.yogalab`.
+- Bảng lọc theo thuộc tính: Bases (plugin lõi từ Obsidian 1.9) hoặc Dataview. Ví dụ: ý `can-xem-lai`, ý mức `y-kien` nằm trên trang an toàn, nguồn đang 403, tư thế chưa có ảnh đạt.
+- Graph view lọc theo `tri-thuc/`: thấy ý nào dựa trên nguồn nào, dự án nào đã dùng.
+- Mẫu note trong `tri-thuc/_mau/` để bạn tự thêm ý, quy tắc.
+- Trong giao diện web, nút mở thẳng note bằng `obsidian://open?...`.
 
 **Chống tri thức sai lan rộng**
-- Chỉ An (người kiểm chứng) được đưa mệnh đề lên `da-duyet`, và phải có câu trích.
-- Mỗi mệnh đề có hạn xem lại.
-- Mệnh đề `bac-bo` mà còn xuất hiện trong sản phẩm thì máy soát gắn cờ.
-- Mỗi dự án, bước duyệt vẫn kiểm ngẫu nhiên vài mệnh đề cũ.
+- Chỉ An được đưa ý lên `da-duyet`, và phải có câu trích.
+- Mỗi ý có hạn xem lại.
+- Bạn đánh `bac-bo` được. Ý `bac-bo` mà còn xuất hiện trong sản phẩm thì máy soát gắn cờ.
+- Mỗi dự án, bước duyệt kiểm ngẫu nhiên vài ý cũ.
 
-### P3 · Vòng tự học
+**Ghi an toàn khi Obsidian đang mở.** Máy chủ không ghi vào file của bạn. Với note dùng chung, máy chủ chỉ sửa các trường của nó. Note có `khoa: true` thì máy chủ không ghi.
 
-Mục tiêu: lỗi đã xảy ra thì lần sau không lặp lại. Nếu vẫn lặp, hệ thống tự siết thêm một bậc.
+### T4 · Vòng tự học có phân loại gốc lỗi
 
-**3.1 Học từ mọi vòng duyệt, không chỉ lúc nghiệm thu.** Mỗi vấn đề BẮT BUỘC trong sổ vấn đề là một tín hiệu để học: ai gây ra, loại lỗi gì, ở bước nào.
+**Tín hiệu để học**, mạnh dần:
+1. vấn đề trong sổ (loại và gốc);
+2. điểm nghiệm thu theo từng tiêu chí;
+3. số liệu lượt chạy: công cụ bị chặn, lỗi công cụ, quá giờ, số lượt so với trung vị;
+4. bạn đổi một giả định (tín hiệu mạnh nhất).
 
-**3.2 Bài học có vòng đời** (`tri-thuc/bai-hoc/<mã>.md`, hoặc một bảng chung):
+**Năm gốc lỗi và nơi sửa**
+
+| Gốc | Ví dụ | Đi đâu |
+|---|---|---|
+| `agent` | Câu cụt; báo cáo sai sự thật | Bài học theo phạm vi, chỉ hiện ở đúng loại bước |
+| `quy-trinh` | Lỗi trong file người khác mà không ai được giao sửa | Đề xuất sửa quy trình hoặc hướng dẫn vai (bạn duyệt) |
+| `cong-cu` | Ảnh sai thư mục; thiếu công cụ đếm | `he-thong/lo-hong.md`, việc của người phát triển |
+| `moi-truong` | Chrome chưa bật; trang 403; hết hạn mức | Kiểm trước khi chạy; ghi vào note nguồn |
+| `tri-thuc` | 115 thiếu nguồn Việt Nam | Bộ não |
+
+Người duyệt ghi `Loại` theo danh mục cố định. Máy chủ gán gốc mặc định theo luật; ví dụ công cụ bị chặn → `cong-cu`. Chef xác nhận lúc hồi cứu.
+
+**Danh mục loại lỗi** (khởi đầu từ dữ liệu hiện có):
+`thieu-nguon`, `nguon-khong-khop`, `phong-dai`, `an-toan-thieu-ccd`, `lech-hai-file`, `file-khong-ton-tai`, `anh-sai-tu-the`,
+`anh-sai-thu-muc`, `chinh-ta-dau-cau`, `qua-chu`, `thieu-muc-brief`, `link-chet`, `bao-cao-sai-su-that`.
+
+**Bài học có vòng đời** (`tri-thuc/bai-hoc/<mã>.md`):
 ```yaml
 ma: BH-017
+goc: agent
 pham-vi: vai:bien-tap        # nhom | vai:<vai> | agent:<id> | chu-de:<chủ đề>
 ap-dung-khi: [duyet, hinh]   # loại bước, loại file
-loai-loi: anh-sai-thu-muc
+loai-loi: lech-hai-file
 tu-van-de: [V-031, V-058]
 bac: 1                       # 1 bài học · 2 checklist · 3 máy kiểm · 4 đổi quy trình
 lan-tai-pham: 2
 trang-thai: khong-hieu-qua   # moi | hieu-qua | khong-hieu-qua | da-thang-cap | huy
 ```
 
-**3.3 Danh mục loại lỗi cố định**, khởi đầu từ dữ liệu hiện có:
-`thieu-nguon`, `nguon-khong-khop`, `phong-dai`, `an-toan-thieu-ccd`, `lech-hai-file`, `file-khong-ton-tai`, `anh-sai-tu-the`,
-`anh-sai-thu-muc`, `chinh-ta-dau-cau`, `qua-chu`, `thieu-muc-brief`, `link-chet`, `bao-cao-sai-su-that`.
+**Thang thăng cấp**
 
-**3.4 Thang thăng cấp**, cốt lõi của "tự học":
-
-| Bậc | Hình thức | Khi nào lên bậc | Ví dụ từ dữ liệu |
+| Bậc | Hình thức | Khi nào lên bậc | Ví dụ |
 |---|---|---|---|
 | 1 | Bài học chữ, chỉ hiện ở đúng loại bước | mặc định | "Đọc lại từng ý như một câu trọn nghĩa" |
-| 2 | Dòng bắt buộc trong mục "Tự kiểm" của bàn giao | lỗi lặp lại sau khi đã có bài học | "Đã đối chiếu dòng Hình của mọi trang tư thế với thiet-ke.md" |
-| 3 | Luật máy soát hoặc kiểm tra của máy chủ | vẫn lặp ở bậc 2, và máy kiểm được | Ảnh trong "Danh sách hình" phải có thật trong `hinh/`; dòng Hình trong slides.md phải khớp thiet-ke.md |
-| 4 | Đổi quy trình hoặc hướng dẫn vai | Chef đề xuất, bạn duyệt | Chèn bước "kiểm file hình" trước bước duyệt ảnh |
-| (khác) | Chuyển thành tri thức | khi bài học thật ra là một sự thật | "115 cần nguồn Bộ Y tế" thành note `menh-de` có nguồn, không còn là bài học |
+| 2 | Dòng bắt buộc trong mục "Tự kiểm" của bàn giao | Lỗi tái phạm sau khi đã có bài học | "Đã chạy `soat_loi` cho slides.md, còn 0 lỗi BẮT BUỘC" |
+| 3 | Luật máy soát hoặc kiểm tra của máy chủ | Vẫn tái phạm ở bậc 2 và máy kiểm được | Dòng Hình của slides.md phải khớp thiet-ke.md |
+| 4 | Đổi quy trình hoặc hướng dẫn vai | Chef đề xuất, bạn duyệt | Chèn bước kiểm file hình trước bước duyệt ảnh |
+| (khác) | Chuyển thành tri thức | Bài học thật ra là một sự thật | "115 cần nguồn Bộ Y tế" thành note ý có nguồn |
 
-**3.5 Đo hiệu quả.** Sau mỗi dự án, với mỗi bài học có `loai-loi`, máy chủ đếm vấn đề cùng loại trong cùng phạm vi.
+**Đo hiệu quả.** Sau mỗi dự án, với mỗi bài học, máy chủ đếm vấn đề cùng loại trong cùng phạm vi.
 Không còn thì đánh `hieu-qua`. Còn thì `lan-tai-pham` cộng 1 và đề xuất lên bậc.
 
-**3.6 Hồi cứu sau dự án**, thay cho mục "lessons" trong nghiệm thu hiện nay.
-Chef nhận số liệu máy chủ đã tổng hợp (vấn đề theo loại, theo người, bài học tái phạm) và trả về JSON gồm:
-bài học cần gộp hoặc viết lại, đề xuất lên bậc, và đề xuất **sửa hướng dẫn riêng** của từng agent dưới dạng dòng cũ → dòng mới.
+**Hồi cứu sau dự án**, thay cho mục "lessons" trong nghiệm thu hiện nay.
+- Máy chủ tổng hợp số liệu: vấn đề theo loại, gốc, người; bài học tái phạm; công cụ bị chặn; token theo loại bước.
+- Chef trả JSON gồm: bài học cần gộp hoặc viết lại; đề xuất lên bậc; đề xuất sửa hướng dẫn vai dưới dạng dòng cũ → dòng mới; mục mới cho `lo-hong.md`; ý mới cho bộ não.
 
-**3.7 Bạn duyệt đề xuất.** Giao diện có thêm mục **Đề xuất cải tiến**, mỗi đề xuất là một thẻ với ba nút Duyệt / Sửa / Bỏ.
-Duyệt thì máy chủ ghi vào config và giữ bản cũ để hoàn tác. Hướng dẫn của agent không bao giờ tự đổi khi bạn chưa duyệt.
+**Bạn duyệt.**
+- Giao diện có mục **Đề xuất cải tiến**, mỗi đề xuất một thẻ với ba nút Duyệt, Sửa, Bỏ. Config được lưu phiên bản để hoàn tác.
+- Bài học và tri thức thì không cần duyệt từng cái (quá nhiều và nhỏ), nhưng luôn hiện rõ và hoàn tác được.
+- Hướng dẫn vai, quy trình, luật soát chỉ đổi khi bạn bấm Duyệt.
 
-**3.8 Mẫu tốt.** Bài học tích cực ("làm tốt, giữ lại") và sản phẩm được chấm cao được lưu thành ví dụ trong `tri-thuc/mau-tot/`:
-một trang slide đạt, một prompt ảnh đạt, một file kiểm chứng gọn. Agent đọc một ví dụ đúng loại thay vì đọc một đoạn mô tả dài.
+**Mẫu tốt.** Sản phẩm được chấm cao và bài học tích cực ("làm tốt, giữ lại") được lưu thành ví dụ trong `mau-tot/`.
+Agent đọc một ví dụ đúng loại, thay vì đọc một đoạn mô tả dài.
 
-### P4 · Gói ngữ cảnh và Thủ thư
+### T5 · Kinh tế token
+1. **Deep Research hai pha.**
+   - Pha khởi chạy: mở Gemini, gửi prompt, duyệt kế hoạch nghiên cứu, ghi link cuộc chat, rồi kết thúc lượt.
+   - Máy chủ hẹn giờ chờ, không tốn token.
+   - Pha thu hoạch: một lượt mới, ngữ cảnh sạch. Mở link; chưa xong thì hẹn lại sau 10 phút; xong thì lấy báo cáo và tổng hợp.
+   - Bỏ được phần chờ đang chiếm khoảng 45% thao tác Chrome của Mai. Prompt hiện đã có ý "dùng lại báo cáo đã lưu" và "ghi link cuộc chat", nên thay đổi gọn.
+2. **Chế độ tiếp nối.** Dự án mới cho chủ đề đã có bắt đầu từ bản cuối, mục "Phần còn thiếu" của nghiệm thu, các vấn đề còn mở và bộ não. Chef chỉ lập kế hoạch cho phần chênh.
+   File chữ được chép sang thư mục bản mới. Hình dùng lại qua thư viện, không chép lại 113 MB.
+3. **Nghiên cứu phần chênh** (T3) và **duyệt lại hẹp** (T2).
+4. **Người làm tự soát trước khi bàn giao** bằng `soat_loi` (T1), để lỗi máy móc không dồn sang vòng duyệt.
+5. **Gọn phần đọc bắt buộc.** Gói ngữ cảnh thay cho index và kinh-nghiem. Brief tách thành phần lõi (mục tiêu, tiêu chí, ràng buộc) và phụ lục: brief v7 dài 16 KB mà bước nào cũng đọc.
+6. **Mai được WebSearch ở bước sửa** (L4). Tìm vài nguồn cụ thể bằng WebSearch rẻ hơn mở Chrome hỏi Gemini.
+7. **Chọn model theo loại bước.** Bước duyệt lại các vấn đề máy móc chạy Haiku. Không áp dụng cho agent cần Chrome, vì Haiku không dùng được Claude in Chrome.
+8. **Chạy song song các bước độc lập** của những người khác nhau: rút ngắn thời gian chờ, không giảm token.
 
-**4.1 Gói ngữ cảnh.** Thay cho "đọc index.md + đọc kinh-nghiem.md", máy chủ soạn sẵn cho từng bước một khối ngắn (tối đa khoảng 2.000 từ):
-- quyết định đã chốt của chủ đề;
-- bài học bậc 1–2 có `ap-dung-khi` khớp với bước này (không phải cả 30 bài);
-- vấn đề đang mở giao cho người này;
-- danh sách mệnh đề, tư thế, hình liên quan: chỉ tên và đường dẫn, cần thì agent tự Read.
+## 3. Lộ trình theo đợt
 
-Truy hồi bằng thẻ và từ khoá trên frontmatter. Với vài trăm note thì chưa cần vector DB.
+### Đợt 0 · Sửa lỗi và dọn nền
 
-**4.2 Thủ thư (tuỳ chọn).** Phần lớn việc giữ kho do máy chủ làm.
-Chỉ khi cần tóm lược (gộp mệnh đề trùng, viết lại MOC chủ đề cho dễ đọc) mới thêm agent "Thủ thư" chạy Haiku, effort thấp, sau mỗi dự án.
-Nếu máy chủ làm đủ ở P2 thì bỏ qua bước này.
+| Việc | Sửa ở đâu |
+|---|---|
+| L1: lấy thư mục ảnh theo chủ đề của dự án (từ brief hoặc các bước trước), không rơi về `hinh-moi/`; không xác định được thì ghi vào bảng dự án | `imageDirOf`, `placeImages` |
+| L2: "Không" kèm giải thích nghĩa là không có câu hỏi | `parseQuestions` |
+| L3: so trùng gần đúng (tách từ, bỏ dấu, Jaccard ≥ 0,6) cho câu hỏi và bài học | `newQuestions`, `appendLessons` |
+| L4: xét loại bước khi chọn công cụ; Mai được WebSearch ở bước sửa | `claudeToolsOf`, `cliArgs` |
+| L6: đưa kết quả máy soát vào việc của người sửa, không chỉ người duyệt | `pumpPlan` |
+| L7: máy chủ sinh `index.md` (dưới 30 dòng) từ `originIndex`; bỏ quy tắc 5 | `buildPrompt`, hàm mới gọi sau `finishRun` |
+| Bước sửa không ghi vào file được giao thì ghi chú cho người duyệt lại | `pumpPlan`, phần `onDone` |
+| Câu hỏi không chặn; sổ quyết định và giả định (bản đầu là một file `tri-thuc/quyet-dinh.md`) | `newQuestions`, `askOwner`, `answerPlan`, `buildPlanPrompt` |
+| Kiểm trước khi chạy cho agent dùng Chrome, bằng một lượt rất ngắn | `createPlan`, `resumePlan` |
+| L5: xếp hàng và thử lại lâu hơn khi Commons trả 429; tái hiện 3 link hỏng ở v6 | `fetchImage`, `downloadSourceImages` |
+| Thử nghiệm kỹ thuật MCP trên máy bạn (Windows): một công cụ `soat_loi`; kiểm `claude -p` thấy và gọi được; đo token tăng thêm | `mcp/yogalab-mcp.js` |
+| Khung kiểm thử bằng `node --test` (có sẵn trong Node 18, không thêm thư viện), dữ liệu mẫu lấy từ workspace hiện tại | `test/` |
 
-**4.3 Chế độ tiếp nối.** Khi giao dự án mới cho chủ đề đã có (ví dụ v8), điều phối viên nhận bản cuối gần nhất,
-mục "Phần còn thiếu" của nghiệm thu và kho tri thức của chủ đề. Họ lập kế hoạch **chỉ cho phần chênh**, không làm lại từ đầu.
-Hiện mỗi phiên bản là một thư mục output đầy đủ (113 MB cho 6 bản).
+**Xong khi**
+- Kiểm thử trên dữ liệu thật đều qua:
+  - 2 bài học về 115 của Mai gộp thành 1;
+  - 3 câu Canva ở v6 gộp thành 1;
+  - "Không (3 câu…)" không bị coi là câu hỏi;
+  - nhiệm vụ không ghi đường dẫn vẫn ra đúng `output/<chủ đề>/hinh/`.
+- `index.md` dưới 30 dòng.
+- Thử nghiệm MCP chạy được trên máy bạn. Nếu không chạy được thì biết rõ vì sao, và T1 chuyển hẳn sang phương án chạy sau lượt.
 
-### P5 · Đo lường
+### Đợt 1 · Sổ vấn đề và công cụ chung
 
-Thêm vào trang Báo cáo, hoặc làm note Dataview trong Obsidian:
-- tỉ lệ dùng lại tri thức: số mệnh đề dùng lại so với số mệnh đề mới, theo từng dự án;
-- vấn đề theo loại × người × dự án, và loại nào đang tái phạm;
-- bài học: bao nhiêu bài đang hiệu quả, đang tái phạm, đã thăng cấp;
-- token theo loại bước (làm, duyệt, sửa, duyệt lại), số vòng sửa, điểm nghiệm thu lần đầu.
+| Việc | Sửa ở đâu |
+|---|---|
+| Bảng "Danh sách vấn đề" và "Đã xử lý" cố định cột; máy chủ đọc bảng, ghi `van-de.md`, báo khi bảng sai mẫu | `lib/van-de.js` (mới), `handleReview` |
+| Bảng chủ file; giao sửa theo chủ file; duyệt lại hẹp | `handleReview`, `pumpPlan` |
+| Mục "Gửi đồng đội", "Cho cả nhóm biết" trong mẫu bàn giao; máy chủ chuyển tin | `buildPrompt`, `pumpPlan` |
+| Giao ban theo tín hiệu, có giới hạn | `pumpPlan`, `runCoordinator` |
+| MCP: `soat_loi` (kèm đối chiếu hai file, kiểm file hình), `kiem_link`, `tai_hinh` | `mcp/yogalab-mcp.js`, `lib/cong-cu.js` (mới), `startRun`, `cliArgs`, `claudeToolsOf` |
+| Bảng việc hiện số vấn đề mở trên từng thẻ; ngăn chi tiết liệt kê vấn đề | `public/index.html` |
 
-Chỉ tiêu cho dự án kế tiếp cùng chủ đề:
+**Xong khi** chạy thử một dự án và thấy:
+- Mọi vấn đề BẮT BUỘC trong file nhận xét đều có trong `van-de.md` và đều có chủ.
+- Không còn vấn đề nào nằm trong file của người không được giao sửa.
+- Số lần chạy có gọi Bash giảm từ 53% xuống dưới 5%.
+- Không có ảnh nào nằm ngoài `output/<chủ đề>/`.
 
-| Chỉ số | Hiện tại (v6, v7) | Mục tiêu |
+### Đợt 2 · Bộ não
+
+| Việc | Sửa ở đâu |
+|---|---|
+| Khung `tri-thuc/`, mẫu note, bộ ghi của máy chủ (tạo, cập nhật note từ bảng; chỉ sửa trường của mình) | `lib/tri-thuc.js` (mới) |
+| Nhập kho ban đầu từ v7: "Danh sách đã duyệt" của An, bảng nguồn và bảng hình của Mai, ma trận chống chỉ định, prompt ảnh đạt. Ý chưa có câu trích để `nhap`, chờ An xác nhận ở dự án sau | script một lần |
+| Công cụ `tra_cuu`; gói ngữ cảnh có phần "bộ não liên quan" | `lib/cong-cu.js`, `buildPrompt` |
+| Sửa hướng dẫn Mai (nghiên cứu phần chênh), An (bỏ qua ý đã duyệt còn hạn), Lam (trích theo mã) | `config.json` |
+| `thuat-ngu.md` sinh `lintBanned`, `lintVariants` | `lintText` |
+| Chế độ tiếp nối khi tạo dự án | `createPlan`, `buildPlanPrompt`, giao diện Dự án |
+| Nút mở note trong Obsidian | `public/index.html` |
+
+**Xong khi** chạy v8 tiếp nối từ v7 và thấy:
+- Token quy đổi bước nguồn của Mai dưới 0,8 triệu (v7: 2,14 triệu).
+- Link mở lại dù đã có trong note nguồn còn hạn: dưới 10% (v7: khoảng 36%).
+- Bạn mở Obsidian thấy MOC suy giáp và lọc được các ý cần xem lại.
+
+### Đợt 3 · Tự học
+
+| Việc | Sửa ở đâu |
+|---|---|
+| Danh mục loại lỗi, gốc lỗi; máy chủ gán gốc mặc định theo luật | `lib/bai-hoc.js` (mới) |
+| Chuyển bài học trong 7 file `kinh-nghiem.md` sang dạng mới: gắn loại, phạm vi, "áp dụng khi"; tách các bài thật ra là lỗi máy chủ hoặc tri thức | script một lần + bạn xem lại |
+| Gói ngữ cảnh chỉ đưa bài học khớp loại bước | `buildPrompt` |
+| Đếm tái phạm, đề xuất lên bậc | `lib/bai-hoc.js` |
+| Hồi cứu sau dự án thay cho mục "lessons" của nghiệm thu | `finishPlan` |
+| Giao diện "Đề xuất cải tiến" (duyệt, sửa, bỏ); lưu phiên bản config để hoàn tác | `public/index.html`, `saveConfig` |
+| Thư mục `mau-tot/` | `finishPlan` |
+
+**Xong khi**, sau 2 dự án:
+- Bài học nào cũng có trạng thái hiệu quả hoặc tái phạm.
+- Ít nhất một lỗi lặp lại đã được thăng cấp thành luật máy soát và không tái phạm.
+- Không còn bài học gốc `cong-cu` nằm trong bài học của agent.
+
+### Đợt 4 · Tối ưu và đo
+- Deep Research hai pha.
+- Model theo loại bước (key mới `stepModel` trong config, cùng kiểu với `stepEffort`).
+- Chạy song song các bước độc lập.
+- (Thử nghiệm) Hỏi nhanh đồng nghiệp. Agent hỏi một câu; máy chủ chạy một lượt rất ngắn của người được hỏi và trả lời ngay trong lượt đó. Có giới hạn số lần mỗi dự án.
+- Trang Báo cáo thêm các chỉ số ở mục 5.
+
+**Xong khi** các chỉ số ở mục 5 đạt mục tiêu trong 2 dự án liên tiếp.
+
+## 4. Lựa chọn thiết kế và lý do
+
+| Câu hỏi | Chọn | Vì sao | Không chọn |
+|---|---|---|---|
+| Agent có gọi nhau trực tiếp không? | Không; máy chủ chuyển tin | Giữ được ngân sách, thứ tự, nhật ký | Agent tự gọi agent: khó kiểm chi phí, khó lần lại |
+| Dữ liệu có cấu trúc ghi bằng gì? | Bảng Markdown cố định cột trong file | Bạn đọc được trong Obsidian; chỉ ghi một lần; máy chủ đã có `tableRows` | Khối JSON riêng (ghi hai lần cùng nội dung); gọi công cụ cho từng dòng (mỗi lần là một lượt) |
+| MCP dùng để làm gì? | Chỉ truy vấn và hành động, 4 công cụ | Cho agent đúng khả năng họ đang thiếu mà không mở shell | Mở Bash: rủi ro trên máy bạn |
+| Mỗi ý một note, hay mỗi chủ đề một file? | Mỗi ý một note, do máy chủ viết | Trạng thái và nguồn theo từng ý; có graph trong Obsidian; agent đọc qua `tra_cuu` nên không tốn thêm lượt | Một file lớn: phải đọc cả file, khó đánh dấu từng ý |
+| Tìm trong bộ não bằng gì? | Thẻ và từ khoá trên frontmatter | Vài trăm note là đủ; không thêm phụ thuộc | Vector DB: thêm hạ tầng khi chưa cần |
+| Có tự sửa hướng dẫn agent không? | Chỉ đề xuất, bạn duyệt | Tránh trôi hướng; có hoàn tác | Tự áp dụng |
+| Bài học và tri thức có cần duyệt không? | Không, nhưng hiện rõ và hoàn tác được | Nhiều và nhỏ; duyệt từng cái sẽ thành gánh nặng | Duyệt từng bài |
+
+## 5. Chỉ số và mục tiêu
+
+| Chỉ số | Hiện tại | Mục tiêu |
 |---|---|---|
-| Token quy đổi bước nguồn của Mai | 2,1 triệu | dưới 1 triệu |
-| Câu hỏi lặp lại gửi chủ dự án | ít nhất 4 | 0 |
-| Lỗi cùng loại đã có bài học bậc 2 trở lên | lặp nhiều lần | 0 |
-| Điểm nghiệm thu lần đầu | 80–87 | từ 85, không cần vòng sửa lớn |
-| `index.md` | 85 dòng, tăng mãi | dưới 30 dòng, ổn định |
+| Token quy đổi bước nguồn của Mai | 2,14 triệu (v7) | dưới 0,8 triệu khi tiếp nối |
+| Link mở lại dù bản trước đã kiểm | khoảng 36–43% | dưới 10% |
+| Lần chạy có gọi Bash | 53% | dưới 5% |
+| Vòng duyệt–sửa so với bước làm | 1,1–4,2 lần | dưới 0,6 lần |
+| Câu hỏi làm dự án dừng | mọi câu (27) | chỉ câu `[CHẶN]` |
+| Câu hỏi trùng trong một dự án | 115 hỏi 4 lần, Canva 3 lần | 0 |
+| Lỗi cùng loại tái phạm khi đã có bài học bậc 2 trở lên | nhiều | 0 |
+| Điểm nghiệm thu lần đầu | 87 (v5), 80 (v6) | từ 85 trở lên |
+| `index.md` | 85 dòng, tăng mãi | dưới 30 dòng |
+| Ảnh nằm ngoài `output/<chủ đề>/` | có (v6) | 0 |
 
-## 4. Ý tưởng thêm
-
-- **Chạy song song các bước độc lập.** Trường `from` đã cho ra đồ thị phụ thuộc. Hai bước không phụ thuộc nhau và do hai người khác nhau làm thì chạy cùng lúc
-  (ví dụ Vy dựng khung thiết kế trong khi An duyệt kịch bản). Hiện `pumpPlan` chạy tuần tự từng bước.
-- **Chọn model theo loại bước.** Duyệt lại những lỗi máy móc thì chạy Haiku; giữ Sonnet hoặc Opus cho bước làm và bước duyệt lần đầu.
-- **Máy đối chiếu hai file.** So từng trang slides.md với thiet-ke.md (dòng Hình, đạo cụ, thời gian giữ). Lỗi này xuất hiện ở cả v5 và v6.
-- **Ảnh tư thế thật.** Tư thế nào AI vẽ sai nhiều lần (tr.17) thì ghi "cần ảnh thật" vào note tư thế, lần sau đi thẳng phương án đó.
-- **Tách mã.** `server.js` đã khoảng 150 KB. Phần mới nên đặt trong `lib/` (ví dụ `lib/tri-thuc.js`, `lib/van-de.js`, `lib/bai-hoc.js`) để dễ đọc và dễ kiểm thử.
-
-## 5. Rủi ro
+## 6. Rủi ro
 
 | Rủi ro | Cách chặn |
 |---|---|
-| Tri thức sai lan sang mọi dự án sau | Chỉ An đưa lên `da-duyet`; bắt buộc câu trích; có hạn xem lại; bạn đánh `bac-bo` được; mỗi dự án kiểm ngẫu nhiên vài mệnh đề cũ |
-| Hướng dẫn agent dần lệch đi vì tự sửa | Mọi thay đổi hướng dẫn qua bạn duyệt; lưu phiên bản để hoàn tác |
-| Gói ngữ cảnh làm prompt dài thêm | Giới hạn cứng số từ; chỉ đưa tên và đường dẫn, agent tự Read khi cần |
-| Bạn sửa note trong Obsidian đúng lúc máy chủ ghi | Máy chủ chỉ ghi các trường của nó và ghi nguyên tử; note có `khoa: true` thì máy chủ không ghi |
-| Kho tri thức bị coi như thay cho bác sĩ | Mục "Việc cần người thật kiểm tra" giữ nguyên; mệnh đề mức `y-kien` trên trang an toàn luôn bị gắn cờ |
+| MCP chạy không ổn với Claude Code trên Windows | Thử nghiệm ngay Đợt 0; tính năng nào cũng có đường lui chạy sau lượt |
+| Bảng sai mẫu, máy chủ đọc sai | Bộ đọc dễ dãi; sai mẫu thì ghi bảng dự án và nhắc ở bước sau |
+| Tri thức sai lan sang dự án sau | Chỉ An đưa lên `da-duyet`; bắt buộc câu trích; có hạn xem lại; bạn đánh `bac-bo`; kiểm ngẫu nhiên ý cũ |
+| Hướng dẫn agent trôi dần | Mọi thay đổi qua bạn duyệt, có phiên bản và hoàn tác |
+| Giao ban làm phình kế hoạch | Chỉ gọi khi có tín hiệu; tối đa 3 lần, mỗi lần tối đa 2 bước; vẫn tính vào ngân sách |
+| Câu hỏi không chặn bỏ qua chuyện quan trọng | Nhãn `[CHẶN]` cho an toàn và phạm vi; danh sách giả định luôn hiện để bạn xem |
+| Bạn sửa note đúng lúc máy chủ ghi | Máy chủ không ghi vào file của bạn; chỉ sửa trường của mình; tôn trọng `khoa: true` |
+| `server.js` (150 KB) khó sửa thêm | Phần mới đặt trong `lib/`, có kiểm thử `node --test` |
 
-## 6. Đề xuất bắt đầu
+## 7. Cần bạn quyết
+1. Bạn mở `workspace/` bằng Obsidian, hay có vault riêng? Câu trả lời quyết định chỗ đặt `tri-thuc/`.
+2. Đồng ý để câu hỏi mặc định không chặn, chỉ chặn với an toàn học viên và đổi phạm vi?
+3. Đồng ý thêm 4 công cụ MCP nội bộ? Agent vẫn không chạy được lệnh shell.
+4. Dự án chạy thử của Đợt 2: tiếp nối v7 thành v8, hay một chủ đề mới?
 
-1. **Toàn bộ P0 và P1.1–1.5** trong một đợt. Chủ yếu sửa máy chủ, thử ngay ở dự án kế tiếp.
-2. **P2 cho riêng chủ đề suy giáp**: nhập kho ban đầu từ v7, rồi thử chế độ tiếp nối (4.3) cho v8.
-3. **P3** sau khi đã có 1–2 dự án ghi sổ vấn đề, vì cần dữ liệu thật để đo hiệu quả của bài học.
+## 8. Khác gì bản 1
+- **Sửa số liệu.**
+  - Câu 115 bị hỏi 4 lần trong cùng v6, không phải qua 2 dự án.
+  - Mai lỗi 6/19 lượt nhưng chỉ 3 lượt do quyền Chrome; 3 lượt còn lại do Gemini CLI chưa tin thư mục, agy chặn lệnh, và chờ Gemini quá giờ.
+  - Việc cắt bài học theo độ mới chưa xảy ra (Mai nhiều nhất 16/30 bài). Đó là rủi ro tương lai, chưa phải lỗi hiện tại.
+- **Thêm phân tích chi phí**: đọc cache chiếm 91% token thô; vòng sửa tốn ngang hoặc hơn bước làm; thời gian chờ trên Chrome; số lần thử lệnh bị chặn.
+- **Thêm phân loại gốc lỗi**, sau khi thấy nhiều "bài học lặp lại" thật ra là lỗi máy chủ hoặc thiếu công cụ (ví dụ ảnh vào `hinh-moi/` do `imageDirOf`).
+- **Thêm công cụ chung qua MCP.** Bản 1 chỉ có phân tích bàn giao sau lượt.
+- **Bỏ khối JSON trong bàn giao của người duyệt**, thay bằng bảng cố định cột trong file nhận xét: đọc được trong Obsidian, không phải ghi hai lần.
+- **Thêm** câu hỏi không chặn, giao ban theo tín hiệu, Deep Research hai pha, danh sách lỗi hệ thống, và tiêu chí xong cho từng đợt.

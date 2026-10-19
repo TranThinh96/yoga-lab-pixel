@@ -17,6 +17,7 @@ const { spawn, execFile } = require('child_process');
 const os = require('os');
 const https = require('https');
 const { soatVanBan } = require('./lib/soat-loi');
+const { vietBanDo } = require('./lib/ban-do');
 const { docCauHoi: parseQuestions, locBaiHocMoi, phanLoaiCauHoi, chonChuDe, chuDeTu } = require('./lib/van-ban');
 
 const ROOT = __dirname;
@@ -97,9 +98,6 @@ File này là thứ đầu tiên mọi agent đọc. Giữ nó NGẮN — mỗi 
 - agents/<tên>/ — nháp riêng của từng agent; agents/<tên>/kinh-nghiem.md là bài học tích luỹ của người đó
 - du-an/<mã dự án>/ — brief.md (yêu cầu + tiêu chí hoàn thành), bang.md (bảng dự án), nghiem-thu.md
 - output/    — sản phẩm cuối (bài workshop, outline slide…)
-
-## File quan trọng
-(agent tự thêm một dòng khi tạo file đáng chú ý)
 `;
 
 async function ensureWorkspace() {
@@ -347,7 +345,7 @@ function buildPrompt(agent, task, handoffPath, attachments, kind) {
     `4. Khi xong, ghi bản bàn giao (tối đa ~350 chữ) vào đúng file: ${handoffPath}`,
     `   Đúng 7 mục: "## Đã làm", "## File tạo ra", "## Tự kiểm theo brief" (từng tiêu chí: đạt / chưa + lý do), "## Quyết định & giả định",`,
     `   "## Vướng mắc", "## Câu hỏi cho chủ dự án" (ghi "Không" nếu không có), "## Gợi ý bước sau".`,
-    `5. Tạo file quan trọng nào thì thêm một dòng mô tả vào index.md.`,
+    `5. Không sửa index.md: máy chủ tự cập nhật bản đồ sau mỗi lượt.`,
     `   Mỗi lượt đọc lại toàn bộ những gì bạn đã mở, nên càng ít lượt và càng ít chữ thừa thì càng rẻ:`,
     `   - File lớn (trên ~20 KB): dùng Grep tìm đúng mục rồi Read đoạn đó (offset/limit); không đọc lại cả file nhiều lần.`,
     `   - Đừng mở lại link mà người trước đã kiểm (có trong file kiểm chứng/bàn giao), trừ khi cần đối chiếu một ý cụ thể.`,
@@ -744,6 +742,7 @@ async function finishRun(agent, entry, code) {
   if (entry.onDone) { try { entry.onDone(run, fullSummary); } catch (e) { console.error('Lỗi kế hoạch:', e.message); } }
   // Có kế hoạch đang chờ agent này rảnh thì chạy tiếp
   for (const p of plans) if (p.waiting) pumpPlan(p);
+  scheduleIndex();
 }
 
 function lastLines(s) {
@@ -1917,6 +1916,34 @@ function subordinates(bossId) {
   return out;
 }
 
+// index.md do máy chủ viết lại (dự án gần đây, sản phẩm mới nhất). Bản agent tự ghi trước đây chép sang luu-tru/ một lần.
+async function writeIndex() {
+  const ps = plans.slice(-3).reverse().map(p => ({ id: p.id, goal: p.goal, status: p.status, score: p.score, topic: planTopic(p),
+    brief: wsExists(briefPath(p)) ? briefPath(p) : null, nghiemThu: p.acceptFile || null }));
+  const by = new Map();
+  for (const f of await walkOutputs()) {
+    const parts = f.path.split('/'), ten = parts[1];
+    if (!ten) continue;
+    const t = by.get(ten) || { ten, mtime: 0, files: [] };
+    t.mtime = Math.max(t.mtime, f.mtime);
+    if (parts.length === 3 && /\.md$/i.test(f.name)) t.files.push(f);
+    by.set(ten, t);
+  }
+  const origin = originIndex(runs);
+  const topics = [...by.values()].sort((a, b) => b.mtime - a.mtime).slice(0, 3).map(t => ({
+    ten: t.ten, files: t.files.sort((a, b) => b.mtime - a.mtime).slice(0, 6).map(f => ({ path: f.path, by: (origin.get(f.path) || {}).agentName || '' }))
+  }));
+  const cur = readWs('index.md');
+  if (/^## File quan trọng/m.test(cur) && !wsExists('luu-tru/index-cu.md')) {
+    await fsp.mkdir(insideWorkspace('luu-tru'), { recursive: true });
+    await fsp.writeFile(insideWorkspace('luu-tru/index-cu.md'), cur, 'utf8');
+  }
+  const md = vietBanDo({ plans: ps, topics, coTriThuc: wsExists('tri-thuc/00-ban-do.md'), coBanCu: wsExists('luu-tru/index-cu.md') });
+  if (md !== cur) await fsp.writeFile(insideWorkspace('index.md'), md, 'utf8');
+}
+let indexTimer = null;
+const scheduleIndex = () => { clearTimeout(indexTimer); indexTimer = setTimeout(() => writeIndex().catch(e => console.error('Không ghi được index.md:', e.message)), 2000); };
+
 async function readAllRuns() {
   try {
     return (await fsp.readFile(runsFile(), 'utf8')).split('\n').filter(Boolean)
@@ -2213,6 +2240,7 @@ const server = http.createServer(async (req, res) => {
   await ensureWorkspace();
   await loadRuns();
   await loadPlans();
+  scheduleIndex();
   loadLimits();
   scanAgyQuota().catch(() => {});
   server.listen(PORT, HOST, () => {

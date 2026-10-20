@@ -120,9 +120,20 @@ async function ensureWorkspace() {
   }
   // Chỉ chép mẫu còn thiếu, không ghi đè bản bạn đã sửa trong workspace
   for (const f of await fsp.readdir(TEMPLATES_DIR).catch(() => [])) {
+    if (f === 'tri-thuc') continue;
     const dst = path.join(ws, 'templates', f);
     if (!fs.existsSync(dst)) await fsp.copyFile(path.join(TEMPLATES_DIR, f), dst).catch(() => {});
   }
+  // Bộ não chung: khung thư mục + mẫu note (cũng chỉ chép file còn thiếu)
+  for (const d of ['menh-de', 'nguon', 'tu-the', 'hinh', 'chu-de', 'ghi-chu-chuyen-mon']) await fsp.mkdir(path.join(ws, 'tri-thuc', d), { recursive: true });
+  const chepThieu = async (src, dst) => {
+    for (const e of await fsp.readdir(src, { withFileTypes: true }).catch(() => [])) {
+      const s = path.join(src, e.name), d = path.join(dst, e.name);
+      if (e.isDirectory()) { await fsp.mkdir(d, { recursive: true }); await chepThieu(s, d); }
+      else if (!fs.existsSync(d)) await fsp.copyFile(s, d).catch(() => {});
+    }
+  };
+  await chepThieu(path.join(TEMPLATES_DIR, 'tri-thuc'), path.join(ws, 'tri-thuc'));
   const idx = path.join(ws, 'index.md');
   if (!fs.existsSync(idx)) await fsp.writeFile(idx, INDEX_TEMPLATE, 'utf8');
 }

@@ -7,3 +7,5 @@ Bài học rút ra sau mỗi dự án (mới nhất ở cuối). Mỗi dòng m�
 - (2026-10-17) Trong Danh sách hình, cột nguồn của hình loại C phải chứa link tải thẳng (Special:FilePath hoặc upload.wikimedia.org) để máy chủ tải được; link trang File: chỉ để ghi giấy phép.
 - (2026-10-17) Cập nhật cột Trạng thái của Danh sách hình theo file có thật trong hinh/ sau mỗi vòng tạo/tải ảnh.
 - (2026-10-17) Ghi link tải thẳng và vùng nhãn cần che cho hình C ngay từ bản thiết kế đầu, và mở từng ảnh AI để ghi vị trí logo thay vì giả định giống nhau.
+- (2026-10-20) Prompt ảnh tư thế có cách đặt đạo cụ đặc biệt (bắp chân gác trọn lên ghế) thì ngay từ thiết kế phải ghi sẵn phương án ảnh chụp thật hoặc hình có giấy phép, đừng để AI thử nhiều lần.
+- (2026-10-20) Mô tả trong prompt phải đúng với ảnh: đừng gọi 'legs-up rest' cho ảnh mà chân không hề nâng.

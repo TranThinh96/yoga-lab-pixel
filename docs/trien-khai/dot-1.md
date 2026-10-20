@@ -663,3 +663,28 @@ Chef đã tự rút bài học "giao tải tay ngay". Đây là luật máy ch�
   - Lam gọi `kiem_link` (3 link: Commons có thật kèm giấy phép, Commons không có, NHS mở được) và `tai_hinh` (tải `giai-phau-tuyen-giap.jpg` 124 KB, ghi `danh-sach.md` kèm tác giả CFCF, CC BY-SA 3.0).
   - Dự án 2 bước (Lam viết 1 trang có lỗi "tạp thở", Hạ duyệt): Hạ ghi bảng, máy chủ đặt VD-1 giao Lam, Lam báo "Đã sửa" trong bảng "Đã xử lý", Hạ duyệt lại và đóng VD-1. `van-de.md` và mục "Vấn đề" trong `bang.md` đúng.
   - Chưa thử thật: giao sửa cho nhiều chủ file cùng lúc, hình tải hỏng tự giao, giao ban. Ba phần này đã kiểm bằng cách chạy riêng hàm trên dữ liệu mẫu.
+- Dự án thử 1 trên máy chủ dự án (2026-10-20, `plan-20261020-220605`, "Yoga phục hồi cho người mất ngủ", 12 trang, `labTools: true`):
+  - Commit Đợt 1 đã ghi nhầm đường dẫn tạm của môi trường viết code vào `"workspace"` trong `config.json` (văn phòng sẽ chạy với workspace trống). Đã trả về `./workspace`.
+  - Số liệu so với v6 (`plan-20261017-170653`, 29 trang):
+
+    | | v6 | mất ngủ v1 |
+    |---|---|---|
+    | Lượt chạy | 22 | 26 |
+    | Lượt có "Dùng công cụ Bash" | 18 | 5 (An bước 2, 4; Nhi 14; Hạ 15; Vy 21) |
+    | Token quy đổi | 3,83 triệu | 3,58 triệu |
+    | Bước sửa máy chủ chèn | 4 | 9 (+4 sau nghiệm thu) |
+    | Nghiệm thu lần 1 → lần 2 | 80 → 83 | 82 → 88 |
+    | Giao ban | 0 | 2 |
+
+    v7 (`plan-20261019-193827`) dừng giữa chừng nên không so được.
+  - Chạy đúng: sổ vấn đề có cột "Người sửa", giao đúng chủ file (nguồn → Mai, slides → Lam, thiết kế → Vy, ảnh → Nhi). Hạ duyệt thiết kế thấy lỗi `slides.md` thì máy chủ tự chèn bước Lam sửa. Duyệt lại đóng từng mã kèm ghi chú. Giao ban xét tín hiệu rồi không chèn bước thừa. "Không hỏi lại câu giống câu đã trả lời" (Đợt 0) hoạt động.
+  - **Lỗi, đã sửa:** người duyệt ghi nối vòng duyệt lại vào cùng file nên file có hai mục "## Danh sách vấn đề". `docBang` chỉ đọc mục đầu, nên sổ nạp lại 12 vấn đề cũ (VD-13…24 trùng VD-1…12) và **mất** 3 vấn đề mới của vòng duyệt lại (có 1 BẮT BUỘC). Sửa: `docBang` gộp mọi mục cùng tiêu đề; `ganVanDe` bỏ dòng trùng file và nội dung với vấn đề đã có. Thêm kiểm thử trong `test/van-de.test.js`.
+  - **Đã sửa:** trả lời câu hỏi không chạy lại bước đã hỏi. Mai (bước 1) đề xuất "chạy lại bước 1" và Nhi (bước 14) đề xuất "tạo lại ảnh"; chủ dự án đồng ý, nhưng máy chủ đi tiếp sang bước sau. Ảnh tr.8 cuối cùng chỉ được tạo lại nhờ Hạ ghi vấn đề.
+    Sửa: câu hỏi của bước làm/sửa có "(làm tiếp sau khi trả lời)" (quy tắc E mới) hoặc đề xuất "chạy lại bước / làm lại bước / tạo lại / thử lại" được đánh dấu `lamTiep`. Trả lời xong (hoặc nhóm tự quyết khi đã hỏi đủ lần), `chenLamTiep` chèn ngay một bước làm tiếp (`contOf`) cho người hỏi; `latest` trỏ sang bước đó nên người duyệt và người sau đọc bản làm tiếp. "Chạy lại kế hoạch" bỏ các bước này như bỏ bước sửa.
+  - **Đã sửa:** bước sửa không đối chiếu "Trả lời của chủ dự án". Chủ dự án đã chốt bỏ "dù có đủ cơ hội ngủ", nhưng Hạ nêu lại (VD-35) và Lam thêm vào lời giảng. Hạ tự bắt lại ở VD-41; nghiệm thu thì giao Mai tìm trích NHLBI thay vì bỏ ý.
+    Sửa: mọi bước nhận khối "QUYẾT ĐỊNH ĐÃ CHỐT CỦA CHỦ DỰ ÁN" (`quyetDinhDaChot`, tối đa 8 câu gần nhất). Người duyệt được dặn không nêu thành vấn đề chỗ làm đúng theo quyết định; người sửa ghi "Không sửa" và dẫn quyết định.
+  - **Đã sửa:** Chef vẫn lập bước kiểu cũ "Sửa theo các dòng 'CẦN GIAO LAM'" (bước 13). Bước này chạy thừa một lượt, vì máy chủ đã tự chèn bước sửa.
+    Nguồn gốc là 3 bài học cũ trong `kinh-nghiem.md` của Chef, Hạ, Lam; đã thay bằng bài học theo sổ vấn đề. Prompt lập kế hoạch thêm quy tắc: không lập bước "sửa theo CẦN GIAO …".
+  - Không thấy dòng "Kiểm n link" hay "Tải hình …": Mai mở 32 link bằng WebFetch, Vy không gọi `kiem_link`/`tai_hinh`. Agent có công cụ (Mai gọi `soat_loi`) nhưng hướng dẫn vai chưa nhắc dùng `kiem_link` thay WebFetch để kiểm link.
+    Đã siết lời dặn: từ 3 link trở lên thì gọi `kiem_link` cho cả loạt trước, chỉ WebFetch link mở được cần đọc nội dung, không WebFetch lại link bị chặn; hình có link giấy phép mà chưa có file thì gọi `tai_hinh` ngay.
+  - Deep Research của Gemini không xuất báo cáo sau hơn 60 phút. Bước nguồn đầu tốn 3,95 triệu token thô mà chỉ ra khung.

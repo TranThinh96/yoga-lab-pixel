@@ -384,6 +384,7 @@ function buildPrompt(agent, task, handoffPath, attachments, kind, lab = []) {
     `C. Tự lập kế hoạch ngắn trong đầu, rồi làm. Gặp chỗ chưa rõ mà tự quyết được thì quyết, ghi rõ giả định.`,
     `D. Trước khi bàn giao, TỰ KIỂM: đối chiếu sản phẩm với từng tiêu chí trong brief và với nhiệm vụ được giao; thiếu thì làm tiếp, đừng bàn giao sản phẩm biết là chưa đạt.`,
     `E. Quyết định thuộc về chủ dự án (đổi phạm vi, mâu thuẫn giữa tài liệu mẫu và nguyên tắc an toàn, chọn giữa hai hướng ngang nhau) thì KHÔNG tự âm thầm bỏ hay đổi: làm phần không bị chặn, rồi ghi câu hỏi vào mục "Câu hỏi cho chủ dự án" (tối đa 3 câu, mỗi câu kèm phương án bạn đề xuất).`,
+    `   Nếu phải có câu trả lời thì mới làm xong phần của chính bạn (vd chờ kết quả để lấy tiếp, cần làm lại một phần), ghi "(làm tiếp sau khi trả lời)" ở cuối câu hỏi đó: trả lời xong, máy chủ giao ngay bạn một lượt làm tiếp, trước người sau.`,
     ``,
     `QUY TẮC TIẾT KIỆM (bắt buộc):`,
     `1. Đọc index.md trước. Chỉ mở những file thật sự cần cho việc này, không quét cả folder.`,
@@ -406,8 +407,8 @@ function buildPrompt(agent, task, handoffPath, attachments, kind, lab = []) {
   if (usesChrome(agent)) lines.push('', ...chromePrompt(agent, kind));
   if (lab.length) lines.push('', 'CÔNG CỤ CỦA MÁY CHỦ (gọi như công cụ thường):',
     ...(lab.includes('soat_loi') ? ['- soat_loi(file): soát lỗi máy móc và đếm chữ từng trang của một file .md; với slides.md, thiet-ke.md còn đối chiếu hai file và kiểm file hình. Trước khi bàn giao, gọi soat_loi cho từng file sản phẩm bạn vừa ghi hoặc sửa, rồi sửa những chỗ đúng là lỗi.'] : []),
-    ...(lab.includes('tai_hinh') ? ['- tai_hinh(link, ten): máy chủ tải một hình có giấy phép (trang File: của Commons hoặc link thẳng .jpg/.png/.webp) vào output/<chủ đề>/hinh-nguon/ (hoặc hinh/) và ghi danh-sach.md. Dùng khi cần hình thật; đừng thử tự tải bằng lệnh.'] : []),
-    ...(lab.includes('kiem_link') ? ['- kiem_link(urls): máy chủ mở thử tối đa 10 link: còn mở được, bị chặn (403, CAPTCHA), không có (404); link Commons thì kiểm file có thật và đọc giấy phép. Dùng khi chỉ cần biết link sống hay chết; muốn đối chiếu nội dung vẫn dùng WebFetch.'] : []),
+    ...(lab.includes('tai_hinh') ? ['- tai_hinh(link, ten): máy chủ tải một hình có giấy phép (trang File: của Commons hoặc link thẳng .jpg/.png/.webp) vào output/<chủ đề>/hinh-nguon/ (hoặc hinh/) và ghi danh-sach.md. Hình có link giấy phép mà file chưa có trong thư mục hình: gọi tai_hinh ngay, đừng chỉ ghi "chưa có file". Đừng thử tự tải bằng lệnh.'] : []),
+    ...(lab.includes('kiem_link') ? ['- kiem_link(urls): máy chủ mở thử tối đa 10 link một lần: còn mở được, bị chặn (403, CAPTCHA), không có (404); link Commons thì kiểm file có thật và đọc giấy phép. Có từ 3 link trở lên cần mở (bảng nguồn, Danh sách hình, khi duyệt): gọi kiem_link cho cả loạt TRƯỚC, rồi chỉ WebFetch những link mở được mà bạn cần đọc nội dung; link bị chặn thì không WebFetch lại, ghi "bị chặn" và tìm nguồn khác.'] : []),
     '- Không có Bash: đừng thử chạy lệnh, script hay python. Việc máy móc thì dùng công cụ trên.');
   if (agent.instructions && agent.instructions.trim()) {
     lines.push('', 'HƯỚNG DẪN RIÊNG CHO VAI CỦA BẠN:', agent.instructions.trim());
@@ -1067,6 +1068,7 @@ function buildPlanPrompt(coord, plan, failedIdx) {
     '{"chu_de":"<chu-de>","questions":[],"steps":[{"agent":"<id>","task":"<việc cụ thể, có file đầu ra>","from":[<các bước trước cần đọc bàn giao>]},{"agent":"<id người khác>","task":"Duyệt …","from":[1],"checks":1}]}', '```',
     `Quy tắc: tối đa ${max - offset} bước; mỗi bước một người hợp vai; "from" để trống thì bước đó đọc bàn giao của bước ngay trước.`,
     `- Mỗi bước tạo ra sản phẩm chính (nguồn, kịch bản, thiết kế…) nên có một bước DUYỆT ngay sau, do người khác làm, ghi "checks": <số bước được duyệt>. Người duyệt không sửa hộ; nếu họ kết luận CẦN SỬA, máy chủ tự trả về người làm để sửa rồi duyệt lại (bạn không cần thêm bước sửa).`,
+    ...(config.issueLedger !== false ? [`- Lỗi người duyệt thấy trong file của người khác (vd duyệt thiết kế mà lỗi ở slides.md) cũng được máy chủ tự giao cho người phụ trách file đó. KHÔNG lập bước kiểu "sửa theo các dòng CẦN GIAO …" hay "nếu có lỗi thì sửa": bước đó chạy thừa.`] : []),
     `- Ghi rõ trong "task" file đầu ra mong đợi (nháp trong agents/<id>/, sản phẩm cuối trong output/<chu-de>/), và nhắc đọc brief ${brief}.`,
     `- Mỗi "task" ngắn gọn (tối đa ~500 ký tự): chi tiết yêu cầu đã nằm trong brief, chỉ cần nêu việc, đầu ra và tiêu chí nào cần chú ý.`,
     `- Không thêm bước tổng kết: cuối dự án bạn sẽ tự nghiệm thu theo tiêu chí trong brief.`,
@@ -1126,12 +1128,14 @@ function newQuestions(plan, list, from, step) {
   // Câu giống câu đã trả lời: không hỏi lại, ghi kèm câu trả lời cũ để người hỏi thấy trong bảng dự án
   for (const { q, i } of trung) plan.answers.push({ q, from, step, a: `(Giống câu đã trả lời: "${snippet(plan.answers[i].q)}" → ${plan.answers[i].a})` });
   if (trung.length) plan.log.push(`Không hỏi lại ${trung.length} câu giống câu đã trả lời`);
-  const out = moi.map(q => ({ q, from, step }));
+  const lamTiep = q => !!step && !(plan.steps[step - 1] || {}).checks && LAM_TIEP_RE.test(q);
+  const out = moi.map(q => ({ q, from, step, ...(lamTiep(q) ? { lamTiep: true } : {}) }));
   if (out.length && (plan.askRounds || 0) >= cfgNum('maxAskRounds', 3)) {
     const tu = out.map(x => ({ ...x, a: '(Đã hỏi đủ số lần cho phép: nhóm tự quyết theo phương án đề xuất)' }));
     plan.answers = (plan.answers || []).concat(tu);
     ghiSoQuyetDinh(plan, tu);
     plan.log.push(`Bỏ qua ${out.length} câu hỏi mới (đã dừng hỏi ${plan.askRounds} lần) → nhóm tự quyết theo đề xuất`);
+    chenLamTiep(plan, tu);
     return [];
   }
   return out;
@@ -1169,6 +1173,7 @@ function answerPlan(plan, answers, skip) {
   const after = plan.afterAnswer || 'running';
   plan.afterAnswer = null;
   if (after === 'plan') return runCoordinator(plan);
+  if (after === 'running') chenLamTiep(plan, moi);
   plan.status = after; plan.note = '';
   emitPlan(plan); pumpPlan(plan);
 }
@@ -1189,7 +1194,7 @@ function insertSteps(plan, at, newSteps) {
   const k = newSteps.length, sh = x => (x > at ? x + k : x);
   for (const s of plan.steps) {
     s.from = s.from.map(sh);
-    for (const f of ['checks', 'fixOf', 'latest']) if (s[f]) s[f] = sh(s[f]);
+    for (const f of ['checks', 'fixOf', 'latest', 'contOf']) if (s[f]) s[f] = sh(s[f]);
   }
   for (const v of plan.issues || []) for (const f of ['lastStep', 'fixStep', 'ownerStep']) if (v[f]) v[f] = sh(v[f]);
   for (const m of plan.messages || []) if (m.step) m.step = sh(m.step);
@@ -1297,6 +1302,7 @@ function pumpPlan(plan) {
     proj.length ? `Brief và bảng dự án: ${proj.join(', ')} — đọc trước. Mục "Trả lời của chủ dự án" trong bảng là quyết định đã chốt.` : '',
     '', s.task,
     ...(kind === 'fix' && (s.issueIds || []).length ? ['', vanDeChoNguoiSua(plan, s.issueIds)] : []),
+    ...quyetDinhDaChot(plan, kind),
     ...(loiSua.length ? ['', lintBlockFix(loiSua)] : []),
     ...(s.prevFiles && s.prevFiles.length ? ['', `LẦN TRƯỚC bước này bị ngắt giữa chừng (${snippet(s.lastError || 'lỗi')}), nhưng đã ghi: ${s.prevFiles.join(', ')}. ` +
       `Đọc lại các file đó trước: nếu đã đủ thì chỉ kiểm tra, sửa chỗ thiếu và viết bàn giao; đừng làm lại từ đầu.`] : []),
@@ -1503,6 +1509,37 @@ function vanDeChoNguoiSua(plan, ids) {
     ...ds.map(x => `  - ${x.id} · ${x.file} · ${x.where} · ${x.level} · ${x.kind}: ${x.text}${x.fix ? ' → Đề xuất: ' + x.fix : ''}`),
     'Mỗi vấn đề BẮT BUỘC: sửa, hoặc giải thích vì sao không sửa. Vấn đề NÊN: sửa nếu hợp lý. Sửa thẳng vào file sản phẩm.',
     'Trong bàn giao, ghi bảng "## Đã xử lý" với cột | Mã | Kết quả | Ghi chú |; Kết quả là "Đã sửa" hoặc "Không sửa" (Không sửa thì ghi lý do vào Ghi chú). Máy chủ đối chiếu với file bạn thật sự đã ghi.'].join('\n');
+}
+
+// Câu trả lời của chủ dự án đưa thẳng vào việc giao: chỉ nằm trong bảng dự án thì người duyệt / người sửa hay bỏ sót
+function quyetDinhDaChot(plan, kind) {
+  const cat = (t, n) => { t = String(t || '').replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n - 1) + '…' : t; };
+  const ds = (plan.answers || []).filter(x => x.a && !/^\(Giống câu đã trả lời/.test(x.a)).slice(-8);
+  if (!ds.length) return [];
+  return ['', 'QUYẾT ĐỊNH ĐÃ CHỐT CỦA CHỦ DỰ ÁN (ưu tiên hơn nhận xét của người duyệt và việc sửa sau nghiệm thu):',
+    ...ds.map(x => `- (bước ${x.step || 'điều phối'}) ${cat(x.q, 200)} → ${cat(x.a, 240)}`),
+    ...(kind === 'review' || kind === 'rereview' ? ['- Chỗ đã làm đúng theo các quyết định này thì không nêu thành vấn đề.']
+      : kind === 'fix' ? ['- Vấn đề nào trái các quyết định này: không sửa theo, ghi "Không sửa" và dẫn quyết định trong Ghi chú.'] : [])];
+}
+
+// Câu hỏi của bước làm / sửa mà người hỏi cần câu trả lời mới làm xong phần mình (tự đánh dấu, hoặc đề xuất chạy lại / tạo lại):
+// trả lời xong thì chèn ngay một lượt làm tiếp cho chính người đó, các bước sau đọc bản làm tiếp
+const LAM_TIEP_RE = /làm tiếp sau khi trả lời|chạy lại bước|làm lại bước|chạy tiếp bước|tạo lại|thử lại/iu;
+function chenLamTiep(plan, qs) {
+  const name = id => (config.agents.find(a => a.id === id) || {}).name || id;
+  const buoc = [...new Set(qs.filter(x => x.lamTiep).map(x => x.step))].sort((a, b) => b - a);
+  for (const k of buoc) {
+    const s = plan.steps[k - 1];
+    if (!s || s.status !== 'done' || s.checks) continue;
+    if (plan.steps.length + 1 > cfgNum('maxTotalSteps', 20)) { plan.log.push(`Bước ${k}: ${name(s.agentId)} cần làm tiếp sau câu trả lời nhưng đã chạm trần số bước`); continue; }
+    const files = (s.files || []).filter(f => f !== s.handoff && f !== 'index.md' && !/\/kinh-nghiem\.md$/.test(f)).slice(0, 6);
+    insertSteps(plan, k, [{ agentId: s.agentId, from: [k], contOf: k, ...blankStep,
+      task: `Làm tiếp bước ${k} của bạn theo câu trả lời của chủ dự án (khối "Quyết định đã chốt" bên dưới).` +
+        (files.length ? ` Đọc lại ${files.join(', ')}, giữ phần đã làm, chỉ làm phần còn thiếu hoặc phần câu trả lời thay đổi.` : '') +
+        ` Việc gốc: ${s.task}` }]);
+    s.latest = k + 1;
+    plan.log.push(`Bước ${k}: chủ dự án đã trả lời → ${name(s.agentId)} làm tiếp (bước ${k + 1})`);
+  }
 }
 
 // Bảng có thể nằm trong bàn giao, câu trả lời cuối, hoặc file nhận xét agent ghi trong agents/
@@ -2245,7 +2282,7 @@ async function retryPlan(old) {
   const coord = config.agents.find(a => a.id === old.coordinatorId);
   if (!coord) throw Object.assign(new Error('Điều phối viên của kế hoạch này không còn trong văn phòng'), { status: 400 });
   const kept = [], pos = new Map();
-  old.steps.forEach((s, i) => { if (!s.fixOf && s.kind !== 'fix' && !s.round) { kept.push(s); pos.set(i + 1, kept.length); } });
+  old.steps.forEach((s, i) => { if (!s.fixOf && s.kind !== 'fix' && !s.round && !s.contOf) { kept.push(s); pos.set(i + 1, kept.length); } });
   if (!kept.length) throw Object.assign(new Error('Kế hoạch này chưa có bước nào để chạy lại: dùng "Lập kế hoạch" với cùng mục tiêu'), { status: 400 });
   const now = new Date(), id = `plan-${stamp(now)}`;
   const steps = cleanSteps(kept.map((s, i) => ({

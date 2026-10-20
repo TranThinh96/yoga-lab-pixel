@@ -13,3 +13,5 @@ Bài học rút ra sau mỗi dự án (mới nhất ở cuối). Mỗi dòng m�
 - (2026-10-17, suy-giap-v6) Khi duyệt kịch bản, rà cả những câu an toàn do chính mình viết ở bước kiểm nguồn ("huyết áp có thể thấp" chưa có nguồn): đã lọt sang slide. Đếm tay chữ trên slide dễ sai, máy gắn cờ mới đáng tin; các trang 41–44 chữ ghi NÊN.
 - (2026-10-17) Khi chấm TC5, ý an toàn nào thiếu nguồn (vd số 115, dấu hiệu cấp cứu) thì ghi BẮT BUỘC tìm nguồn ở vòng đầu, chỉ chấp nhận 'Việc còn mở' khi đã thử và ghi rõ đã tìm ở đâu.
 - (2026-10-17) Khi một ý trên trang an toàn (như 115, dấu hiệu cấp cứu) chưa có nguồn, đánh BẮT BUỘC tìm nguồn ngay vòng duyệt đầu thay vì chấp nhận nhãn 'ý kiến nhóm'.
+- (2026-10-20) Khi có tin '@an kiểm giúp' một câu trích mới sau vòng duyệt, mở link và ghi kết quả vào file kiểm chứng ngay trong lượt kế tiếp; ở mat-ngu-v1, câu NHLBI tr.2 bị treo đến lúc nghiệm thu.
+- (2026-10-20) Khi duyệt kịch bản, kiểm tên Phạn có đúng thực chất tư thế không (vd 'Viparita Karani' thì chân phải cao hơn hông); khi đạo cụ đổi, phải soát lại cả nhãn tên lẫn dòng chống chỉ định.

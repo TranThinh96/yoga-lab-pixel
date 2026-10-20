@@ -104,3 +104,15 @@ test('vietSoVanDe', () => {
   assert.match(md, /^# Sổ vấn đề · plan-x/);
   assert.match(md, /\| VD-4 \| Mở \| BẮT BUỘC \| anh-sai-tu-the \| output\/thu\/hinh\/trang-17-ghe\.png · Trang 17 \|.*\| NHI \|/);
 });
+
+test('duyệt lại ghi nối vào cùng file: không nạp lại vấn đề cũ, vẫn nhận vấn đề mới', () => {
+  const plan = taoVanDe();
+  const moi = `| V5 | output/thu/slides.md | Trang 3 | BẮT BUỘC | thieu-nguon | Ý mới chưa có trích | Thêm trích |`;
+  const banGhi = `${readFixture('van-de-mau.md')}\n\n## Kết quả duyệt lại\n| Mã | Kết luận | Ghi chú |\n|---|---|---|\n| VD-1 | Đóng | |\n\n` +
+    `## Danh sách vấn đề\n| Mã | File | Vị trí | Mức | Loại | Vấn đề | Đề xuất |\n|---|---|---|---|---|---|---|\n${moi}\n`;
+  assert.equal(vd.docVanDe(banGhi).length, 5);
+  const them = vd.ganVanDe(plan, vd.docVanDe(banGhi), { buoc: 6, tu: 'ha', chuDe: 'thu', chuFileFn: f => vd.chuFile(steps, f, 5) });
+  assert.deepEqual(them.map(x => [x.id, x.maGoc, x.text]), [['VD-5', 'V5', 'Ý mới chưa có trích']]);
+  assert.equal(plan.issues.length, 5);
+  assert.equal(vd.docDuyetLai(banGhi)[0].ma, 'VD-1');
+});

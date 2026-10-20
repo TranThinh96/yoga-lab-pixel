@@ -1,11 +1,12 @@
 {
-  "workspace": "/tmp/claude-0/-home-user-yoga-lab-pixel/351aa764-3f09-568c-89c1-73a99f892882/scratchpad/ws",
+  "workspace": "./workspace",
   "claudeCommand": "claude",
   "geminiCommand": "gemini",
   "antigravityCommand": "agy",
   "maxTurns": 30,
   "timeoutMinutes": 20,
   "skipMcp": true,
+  "labTools": true,
   "claudeTools": [
     "Read",
     "Write",

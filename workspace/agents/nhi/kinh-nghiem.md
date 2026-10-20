@@ -11,3 +11,5 @@ Bài học rút ra sau mỗi dự án (mới nhất ở cuối). Mỗi dòng m�
 - (2026-10-17) Sau khi tải ảnh tạo lại, kiểm tên và vị trí file trong output/<chu-de>/hinh/ rồi ghi vào bàn giao.
 - (2026-10-17) Với tư thế AI hay vẽ sai, mô tả hình học từ lần tạo đầu (đùi thẳng đứng, cẳng chân song song sàn nằm trọn trên mặt ghế, mông sát chân ghế) và nếu 2 lần vẫn sai thì báo ngay phương án dự phòng.
 - (2026-10-17) Sau khi tải ảnh, kiểm tên và giờ sửa file trong output/<chu-de>/hinh/ để chắc bản đạt đã nằm đúng thư mục.
+- (2026-10-20) Trước khi tải ảnh, kiểm vị trí đạo cụ theo đúng câu trong prompt; nếu sai thì viết prompt cụ thể hơn (số bolster, gót nhấc khỏi thảm, gối cao hơn hông) thay vì tự nhận ảnh đạt.
+- (2026-10-20) Ảnh tạo lại vẫn sai thì không tải và giữ ảnh cũ (làm đúng); sau 2 lần sai cùng một kiểu đạo cụ, báo ngay đề xuất chụp ảnh thật, đừng dùng hết lượt cho các biến thể prompt.

@@ -1323,7 +1323,8 @@
   "reviewRunId": null,
   "reviewHandoff": null,
   "summary": "",
-  "retryOf": "plan-20261017-164516"
+  "retryOf": "plan-20261017-164516",
+  "topic": "suy-giap-v6"
  },
  {
   "id": "plan-20261017-170653",
@@ -1889,7 +1890,8 @@
   "reviewRunId": "20261017-191118-chef",
   "reviewHandoff": "handoff/20261017-191118-chef.md",
   "summary": "Nghiệm thu lần 2 (lần cuối) cho dự án được **83/100** (lần 1 là 80). Kịch bản slide đạt TC1–4, TC6–8 và TC12; Lam đã sửa đủ 4 trang còn lệch. Phần hình vẫn chưa xong:\n- Chưa có 3 file hình giải phẫu cho tr.4 và tr.5.\n- Ảnh tư thế tr.17 vẫn sai: bắp chân không nằm trên mặt ghế.\n- Bản tr.21 tốt hơn vẫn còn ở `hinh-moi/`, chưa chép vào `hinh/`.\n- Số 115 trên trang an toàn (tr.13) chưa có nguồn.\n\n4 chỗ máy soát đều nằm trong ghi chú của người duyệt, không có trên slide hay lời giảng, nên không trừ điểm. Phần còn thiếu, việc làm tay trước khi dựng slide và việc cần bác sĩ/giảng viên kiểm tra nằm trong `du-an/plan-20261017-170653/nghiem-thu.md`. Ba câu hỏi cho chủ dự án nằm trong bản bàn giao.",
-  "retryOf": "plan-20261017-165013"
+  "retryOf": "plan-20261017-165013",
+  "topic": "suy-giap-v6"
  },
  {
   "id": "plan-20261019-193827",
@@ -1905,7 +1907,7 @@
   ],
   "autoStart": false,
   "review": true,
-  "status": "paused",
+  "status": "stopped",
   "steps": [
    {
     "agentId": "mai",
@@ -2014,12 +2016,16 @@
     ],
     "checks": 5,
     "status": "error",
-    "runId": "20261019-205117-an",
+    "runId": "20261020-212044-an",
     "handoff": null,
-    "summary": "You've hit your session limit · resets 12:30am (Asia/Ho_Chi_Minh)",
-    "error": "You've hit your session limit · resets 12:30am (Asia/Ho_Chi_Minh)",
+    "summary": "Giờ ghi bản bàn giao.",
+    "error": "Bạn đã dừng agent",
     "tokens": 296457,
-    "lastError": "You've hit your session limit · resets 12:30am (Asia/Ho_Chi_Minh)"
+    "lastError": "Bạn đã dừng agent",
+    "retries": 0,
+    "prevFiles": [
+     "agents/an/suy-giap-v7-kiem-slides.md"
+    ]
    },
    {
     "agentId": "vy",
@@ -2034,7 +2040,8 @@
     "handoff": null,
     "summary": "",
     "error": "",
-    "tokens": 0
+    "tokens": 0,
+    "retries": 0
    },
    {
     "agentId": "ha",
@@ -2049,7 +2056,8 @@
     "handoff": null,
     "summary": "",
     "error": "",
-    "tokens": 0
+    "tokens": 0,
+    "retries": 0
    },
    {
     "agentId": "lam",
@@ -2062,7 +2070,8 @@
     "handoff": null,
     "summary": "",
     "error": "",
-    "tokens": 0
+    "tokens": 0,
+    "retries": 0
    },
    {
     "agentId": "nhi",
@@ -2075,7 +2084,8 @@
     "handoff": null,
     "summary": "",
     "error": "",
-    "tokens": 0
+    "tokens": 0,
+    "retries": 0
    },
    {
     "agentId": "ha",
@@ -2091,7 +2101,8 @@
     "handoff": null,
     "summary": "",
     "error": "",
-    "tokens": 0
+    "tokens": 0,
+    "retries": 0
    }
   ],
   "replans": 0,
@@ -2102,9 +2113,10 @@
    "Hỏi chủ dự án 3 câu (bước 2)",
    "Chủ dự án để nhóm tự quyết",
    "Máy chủ tải hình y khoa từ nguồn (agents/mai/suy-giap-v7-nguon.md → output/suy-giap-v7/hinh-nguon): 1 mới, 11 đã có, 5 không tải được (giai-phau-tuyen-giap-sau.jpg: HTTP 429; dong-mach-giap-tren-duoi.png: HTTP 429; nang-gi…)",
-   "Bước 6: hết hạn mức → tạm dừng, hẹn tự chạy tiếp 00:32"
+   "Bước 6: hết hạn mức → tạm dừng, hẹn tự chạy tiếp 00:32",
+   "Tự chạy tiếp sau khi hạn mức được làm mới"
   ],
-  "note": "Bước 6 dừng vì hết hạn mức tài khoản: You've hit your session limit · resets 12:30am (Asia/Ho_Chi_Minh). Sẽ tự chạy tiếp lúc 00:32 (hoặc bấm \"Chạy tiếp\" sớm hơn).",
+  "note": "Bạn đã dừng kế hoạch",
   "waiting": null,
   "tokens": 18680388,
   "questions": [],
@@ -2136,14 +2148,1938 @@
   "score": null,
   "acceptFile": null,
   "reviewDone": false,
-  "resumeAt": "2026-10-19T17:32:00.000Z",
+  "resumeAt": null,
   "budgetX": 1,
   "createdAt": "2026-10-19T12:38:27.427Z",
-  "endedAt": null,
+  "endedAt": "2026-10-20T14:24:59.002Z",
   "planRunId": "20261019-193827-chef",
   "replanRunIds": [],
   "reviewRunId": null,
   "reviewHandoff": null,
-  "summary": ""
+  "summary": "",
+  "topic": "suy-giap-v7"
+ },
+ {
+  "id": "plan-20261020-212512",
+  "goal": "Làm slide workshop 60 phút “Yoga cân bằng phục hồi cho người suy giáp” cho học viên yoga không chuyên y, khoảng 25 trang. Gồm: khái niệm, tuyến giáp hoạt động thế nào, nguyên nhân (Hashimoto…), triệu chứng, biến chứng, nhóm nguy cơ, giải pháp y khoa trước – yoga hỗ trợ, 5 tư thế có đạo cụ, hơi thở, thư giãn, ăn uống, tinh thần, tóm lược. Thư mục chủ đề: suy-giap-v7.",
+  "coordinatorId": "chef",
+  "team": [
+   "mai",
+   "an",
+   "lam",
+   "vy",
+   "ha",
+   "nhi"
+  ],
+  "autoStart": false,
+  "review": false,
+  "status": "done",
+  "steps": [
+   {
+    "agentId": "mai",
+    "task": "VIỆC THỬ NHỎ: dùng Gemini trên Chrome tìm 1 nguồn uy tín (NIH hoặc NHS) về lợi ích của thở chậm với người suy giáp. Ghi 3 dòng vào agents/mai/thu-chrome.md (ý · link · mức bằng chứng). Không làm gì thêm.",
+    "from": [],
+    "status": "done",
+    "runId": "20261020-212619-mai",
+    "handoff": null,
+    "summary": "Xong việc thử: Chrome và Gemini chạy bình thường (đã đăng nhập, không bị CAPTCHA hay hết quota). Gemini đưa ra Zaccaro 2018 (PMC6137615), tổng quan hệ thống về thở chậm, tăng HRV và giảm stress. Nguồn này không riêng cho suy giáp, tôi chưa tự mở link và hạ mức bằng chứng từ \"cao\" xuống \"vừa\". Ba dòng đã ghi vào `agents/mai/thu-chrome.md`. Tôi chưa ghi bản bàn giao `handoff/20261020-212619-mai.md`, vì bạn dặn không làm gì thêm.",
+    "error": "",
+    "tokens": 406252,
+    "retries": 0,
+    "prevFiles": null,
+    "files": [
+     "agents/mai/thu-chrome.md"
+    ]
+   }
+  ],
+  "replans": 0,
+  "log": [
+   "Chạy lại từ plan-20261019-193827",
+   "Kiểm Chrome trước bước 1: chưa sẵn sàng → tạm dừng",
+   "Bước 1: Mai không ghi file bàn giao, người sau chỉ nhận câu trả lời cuối"
+  ],
+  "note": "",
+  "waiting": null,
+  "tokens": 406252,
+  "topic": "suy-giap-v7",
+  "questions": [],
+  "answers": [
+   {
+    "q": "Tr.4 thiếu hình thực quản/TK quặt ngược: thử tải lại, nếu không có thì bỏ 2 nhãn (đề xuất).",
+    "from": "an",
+    "step": 2,
+    "a": "(Chủ dự án để nhóm tự quyết theo phương án đề xuất)"
+   },
+   {
+    "q": "Tr.14 nam giới: giữ \"ít mắc hơn\" [2], bỏ chi tiết sinh lý nếu không có nguồn (đề xuất).",
+    "from": "an",
+    "step": 2,
+    "a": "(Chủ dự án để nhóm tự quyết theo phương án đề xuất)"
+   },
+   {
+    "q": "Giữ \"ngủ đủ, tránh thức khuya\" làm Ý kiến lối sống không nguồn (đề xuất).",
+    "from": "an",
+    "step": 2,
+    "a": "(Chủ dự án để nhóm tự quyết theo phương án đề xuất)"
+   }
+  ],
+  "afterAnswer": null,
+  "askRounds": 0,
+  "fixRounds": 0,
+  "wtokens": 80300,
+  "costUsd": 0.27,
+  "score": null,
+  "acceptFile": null,
+  "reviewDone": false,
+  "resumeAt": null,
+  "budgetX": 1,
+  "createdAt": "2026-10-20T14:25:12.311Z",
+  "endedAt": "2026-10-20T14:27:39.513Z",
+  "planRunId": "20261019-193827-chef",
+  "replanRunIds": [],
+  "reviewRunId": null,
+  "reviewHandoff": null,
+  "summary": "",
+  "retryOf": "plan-20261019-193827"
+ },
+ {
+  "id": "plan-20261020-220605",
+  "goal": "Làm slide workshop 30 phút: Yoga phục hồi cho người mất ngủ, khoảng 12 trang. Cho học viên yoga không chuyên y. Gồm: mất ngủ là gì, vì sao khó ngủ, khi nào cần gặp bác sĩ, yoga hỗ trợ ra sao, 4 tư thế phục hồi có đạo cụ, một bài thở chậm, thư giãn trước khi ngủ, tóm lược. Thư mục chủ đề: mat-ngu-v1.",
+  "coordinatorId": "chef",
+  "team": [
+   "mai",
+   "an",
+   "lam",
+   "vy",
+   "ha",
+   "nhi"
+  ],
+  "autoStart": true,
+  "review": true,
+  "status": "done",
+  "steps": [
+   {
+    "agentId": "mai",
+    "task": "Đọc brief du-an/plan-20261020-220605/brief.md. Một lượt Deep Research gộp, tìm nguồn theo từng trang của Khung trang (ưu tiên tr.2–6, 9–10): định nghĩa và mốc mất ngủ mạn tính, dấu hiệu cần khám, CBT-I là điều trị đầu tay, bằng chứng yoga/thở chậm cho giấc ngủ (ghi mức), thói quen ngủ, số 115 lấy nguồn Việt Nam. Mỗi ý có link + mức bằng chứng + câu trích nguyên văn, đánh số [n]. Có bảng '## Hình & sơ đồ trong nguồn' (Special:FilePath, tác giả, giấy phép). Đầu ra: agents/mai/mat-ngu-v1-nguon.md",
+    "from": [],
+    "status": "done",
+    "runId": "20261020-220929-mai",
+    "handoff": "handoff/20261020-220929-mai.md",
+    "summary": "Bước 1 chưa xong: Gemini Deep Research chạy hơn 60 phút (131 trang đã duyệt) mà vẫn \"Đang tạo báo cáo\", nên chưa có toàn văn báo cáo.\n\n`agents/mai/mat-ngu-v1-nguon.md` mới chỉ là khung và danh sách nguồn ứng viên. Chưa mở link nào, chưa có câu trích, chưa đánh số [n], chưa có nguồn Việt Nam cho số 115, chưa có bảng hình.\n\nLink cuộc chat để lấy kết quả sau: https://gemini.google.com/app/c86f3ec49a93a9e1. Bản bàn giao ở `handoff/20261020-220929-mai.md`, kèm đề xuất giao lại Mai lấy toàn văn từ link này và chưa chuyển sang bước 2 của An.",
+    "error": "",
+    "tokens": 3954876,
+    "prevFiles": null,
+    "files": [
+     "agents/mai/mat-ngu-v1-nguon.md"
+    ],
+    "images": [],
+    "latest": 3
+   },
+   {
+    "agentId": "an",
+    "task": "Đọc brief du-an/plan-20261020-220605/brief.md. Duyệt agents/mai/mat-ngu-v1-nguon.md: mở link, chấm từng ý Đúng/Sửa/Bỏ, kiểm câu trích và mức bằng chứng yoga; lập ma trận 4 tư thế × chống chỉ định + bài thở; xem hình trong output/mat-ngu-v1/hinh-nguon/; liệt kê ý đã duyệt cho Lam. Chú ý TC5, TC6, TC7. Đầu ra: agents/an/mat-ngu-v1-kiem-chung.md, kết luận ĐẠT/CẦN SỬA.",
+    "from": [
+     1
+    ],
+    "checks": 1,
+    "status": "done",
+    "runId": "20261020-225932-an",
+    "handoff": "handoff/20261020-225932-an.md",
+    "summary": "Kết luận duyệt bước 1 là **CẦN SỬA**. File nguồn của Mai chỉ là khung và tên nguồn ứng viên, chính Mai ghi \"CHƯA HOÀN THÀNH\". Không có link đầy đủ để mở, không có câu trích nguyên văn, [n], mức bằng chứng hay hình, nên tôi chưa chấm được Đúng/Sửa/Bỏ cho ý nào và danh sách ý đã duyệt cho Lam đang rỗng.\n\nThư mục `output/mat-ngu-v1/` chưa tồn tại, nên không có hình nào để xem. TC5, TC6 và TC7 đều chưa đạt. Bảng dự án đang ghi bước 1 là \"done\" dù sản phẩm chưa xong, nên cần giao lại Mai trước khi sang bước Lam.\n\n`agents/an/mat-ngu-v1-kiem-chung.md` có 12 vấn đề (11 BẮT BUỘC, 1 NÊN), ma trận 4 tư thế × chống chỉ định và yêu cầu cho bài thở. Ma trận do tôi viết từ chuyên môn, chưa có nguồn, nên chưa dùng để viết slide được. Bản bàn giao nằm ở `handoff/20261020-225932-an.md`, kết thúc bằng \"KẾT LUẬN: CẦN SỬA\". Bước tiếp theo là giao lại Mai làm xong bước 1, rồi tôi duyệt lại trước khi giao cho Lam.",
+    "error": "",
+    "tokens": 422045,
+    "prevFiles": null,
+    "files": [
+     "agents/an/mat-ngu-v1-kiem-chung.md"
+    ],
+    "images": [],
+    "verdict": "fix",
+    "latest": 4
+   },
+   {
+    "agentId": "mai",
+    "from": [
+     1,
+     2
+    ],
+    "fixOf": 1,
+    "round": 1,
+    "kind": "fix",
+    "issueIds": [
+     "VD-1",
+     "VD-2",
+     "VD-3",
+     "VD-4",
+     "VD-5",
+     "VD-6",
+     "VD-7",
+     "VD-8",
+     "VD-9",
+     "VD-10",
+     "VD-12",
+     "VD-11"
+    ],
+    "status": "done",
+    "runId": "20261020-230122-mai",
+    "handoff": "handoff/20261020-230122-mai.md",
+    "summary": "Mình đã viết lại `agents/mai/mat-ngu-v1-nguon.md`, nhưng chưa đủ nguồn cho hết các trang. Báo cáo Gemini vẫn ở trạng thái \"Đang tạo báo cáo\". Vì vậy mình mở từng nguồn bằng WebFetch/WebSearch, theo quyết định của chủ dự án.\n\nFile mới có câu trích, [n] và mức bằng chứng cho từng ý, kèm 19 nguồn và mục Khoảng trống. Số 115 lấy từ trang Trung tâm Cấp cứu 115 TP.HCM. Bài thở là thở bụng hít 4, thở ra 6, ghi \"kinh nghiệm thực hành\". Về hình, mình tìm được một hình đồng hồ sinh học trên Commons cho tr.3 (CC BY-SA, nhãn tiếng Anh).\n\nCác chỗ còn thiếu hoặc yếu:\n- **Mayo, ACP và NINDS:** bị chặn 403, nên không dùng làm trích. NICE chỉ mở được qua trang tổng hợp thứ cấp, cũng không dùng.\n- **Câu về thuốc ngủ:** không có nguồn nào chứa nguyên văn câu \"không tự dùng, đổi hay ngưng thuốc ngủ\". Mình chỉ có nguồn gần nghĩa, đã ghi rõ.\n- **Ghi nhận cho An:** AAO xếp Cây cầu vào nhóm tư thế đảo ngược, nên cần thêm thận trọng tăng nhãn áp cho Cây cầu.\n- **Còn trong Khoảng trống:** áp lực buồn ngủ, dấu hiệu dừng tập (ngoài \"đau\") và chống chỉ định mới mổ/thoát vị cổ.\n\nBàn giao nằm ở `handoff/20261020-230122-mai.md`.",
+    "error": "",
+    "tokens": 1182904,
+    "task": "Sửa các vấn đề An giao cho bạn: VD-1, VD-2, VD-3, VD-4, VD-5, VD-6, VD-7, VD-8, VD-9, VD-10, VD-12, VD-11 (danh sách chi tiết kèm theo).",
+    "fileSua": [
+     "agents/mai/mat-ngu-v1-nguon.md"
+    ],
+    "prevFiles": null,
+    "files": [
+     "agents/mai/mat-ngu-v1-nguon.md"
+    ],
+    "images": []
+   },
+   {
+    "agentId": "an",
+    "from": [
+     2,
+     3
+    ],
+    "checks": 3,
+    "round": 1,
+    "status": "done",
+    "runId": "20261020-230501-an",
+    "handoff": "handoff/20261020-230501-an.md",
+    "summary": "Duyệt lại xong: 11 trong 12 vấn đề đã đóng, còn một lỗi BẮT BUỘC mở nên kết luận là CẦN SỬA. Lỗi còn lại là V15 (tr.10): ý \"rời giường nếu thức ~20 phút\" và \"phòng tối mát\" chỉ có tóm lược [19], chưa có câu trích. Mai cần lấy câu nguyên văn từ NHS hoặc AASM, hoặc ghi \"kinh nghiệm thực hành\" và bỏ con số 20 phút.\n\nHai lỗi NÊN mới: V13 là hình đồng hồ sinh học tr.3 có hình người khỏa thân và nhãn tiếng Anh thừa, cần dựng lại; V14 là cụm \"dù có đủ cơ hội ngủ\" ở tr.2 chưa có nguồn.\n\nTôi đã cập nhật ma trận chống chỉ định (thêm tăng nhãn áp cho Cây cầu) và viết danh sách ý đã duyệt cho Lam. Kết quả nằm trong `agents/an/mat-ngu-v1-kiem-chung.md` (phần \"Duyệt lại vòng 1\") và bản bàn giao `handoff/20261020-230501-an.md`.",
+    "error": "",
+    "tokens": 573026,
+    "task": "Duyệt lại sau khi sửa (vòng 1): kiểm các vấn đề trong danh sách kèm theo; chỉ nêu lỗi còn lại hoặc lỗi mới phát sinh.",
+    "prevFiles": null,
+    "files": [
+     "agents/an/mat-ngu-v1-kiem-chung.md"
+    ],
+    "images": [],
+    "verdict": "fix-left"
+   },
+   {
+    "agentId": "lam",
+    "task": "Đọc brief du-an/plan-20261020-220605/brief.md và templates/kich-ban-slide.md. Viết kịch bản 12 trang đúng Khung trang, chỉ dùng ý An đã duyệt; đầu file có bảng mục tiêu→trang và bảng phút (tổng 30, thực hành ≥15); trang tư thế chỉ có tên + ảnh, chi tiết ghi ở Lời giảng/An toàn; Setu dùng gạch thấp nhất 1–3 phút. Cuối file có Nguồn tham khảo và Việc còn mở. Đầu ra: output/mat-ngu-v1/slides.md",
+    "from": [
+     1,
+     2
+    ],
+    "status": "done",
+    "runId": "20261020-230647-lam",
+    "handoff": "handoff/20261020-230647-lam.md",
+    "summary": "Kịch bản 12 trang đã xong ở `output/mat-ngu-v1/slides.md`, kèm bàn giao `handoff/20261020-230647-lam.md`. Bảng mục tiêu→trang phủ đủ 8 mục, tổng đúng 30 phút và thực hành tr.7–10 là 17 phút. `soat_loi` không báo lỗi máy móc; tr.4 là 91 chữ, sát ngưỡng ~90.\n\nCó một ý chưa có nguồn. Ý \"rời giường nếu thức lâu, phòng tối mát\" ở tr.10 mới có tóm lược [19], chưa có câu trích. Tôi đánh dấu \"(chờ kiểm)\" và bỏ con số 20 phút.\n\nTôi không dùng \"áp lực buồn ngủ\" và cụm \"dù có đủ cơ hội ngủ\" theo An. Hình đồng hồ sinh học ở tr.3 cần Vy dựng lại. Giảng viên và ngày giờ ở bìa còn để trống.",
+    "error": "",
+    "tokens": 548716,
+    "prevFiles": null,
+    "files": [
+     "output/mat-ngu-v1/slides.md"
+    ],
+    "images": [],
+    "latest": 7
+   },
+   {
+    "agentId": "an",
+    "task": "Đọc brief du-an/plan-20261020-220605/brief.md. Duyệt output/mat-ngu-v1/slides.md theo tiêu chí 1–8: đếm trang và phút, đếm chữ tr.2–6, kiểm đủ chi tiết 4 tư thế, trang bác sĩ/An toàn/115, bài thở không nín thở, [n] trỏ đúng nguồn, từ cấm. Ghi danh sách sửa theo trang (BẮT BUỘC/NÊN/cần chuyên gia). Đầu ra: agents/an/mat-ngu-v1-kiem-slides.md, kết luận ĐẠT/CẦN SỬA.",
+    "from": [
+     2,
+     5
+    ],
+    "checks": 5,
+    "status": "done",
+    "runId": "20261020-230849-an",
+    "handoff": "handoff/20261020-230849-an.md",
+    "summary": "Kết luận: CẦN SỬA, chỉ vì một lỗi BẮT BUỘC (V16). Ở tr.10, ý \"ra khỏi giường khi thức lâu / phòng tối mát\" mới có tóm lược [19], chưa có câu trích. Chữ \"(chờ kiểm [19])\" cũng còn nguyên trong lời giảng. Hướng sửa: Mai bổ sung câu trích, hoặc Lam bỏ ý này.\n\nCác tiêu chí còn lại đạt: 12 trang đúng khung, tổng đúng 30 phút (thực hành 17 phút), bốn tư thế đủ chi tiết, tr.4/tr.6/115, bài thở không nín thở, không có từ cấm. Tr.4 có 91 chữ, sát ngưỡng ~90; tôi ghi NÊN cắt vài chữ (V20). Mười link kiểm bằng kiem_link đều không chết; PMC chặn 403 và NCCIH hiện CAPTCHA, Mai đã mở được bằng WebFetch. Ngoài V16 còn 7 mục NÊN (V17–V23): tr.5 chưa nêu nhóm phụ nữ, bản nhẹ tr.7 mơ hồ, tr.8 thiếu mang thai và đau lưng–cổ, tr.9 thiếu câu chóng mặt trong lời giảng, thời gian lấy đạo cụ cho lớp 20 người.\n\nTôi gửi chủ dự án hai câu hỏi. Một là có chấp nhận bỏ \"dù có đủ cơ hội ngủ\" và \"áp lực buồn ngủ\" (chưa có nguồn) không. Hai là nếu Mai không có trích thì bỏ hẳn ý ở V16.\n\nFile: `agents/an/mat-ngu-v1-kiem-slides.md`, `handoff/20261020-230849-an.md`",
+    "error": "",
+    "tokens": 837734,
+    "prevFiles": null,
+    "files": [
+     "agents/an/mat-ngu-v1-kiem-slides.md"
+    ],
+    "images": [],
+    "verdict": "fix",
+    "latest": 8
+   },
+   {
+    "agentId": "lam",
+    "from": [
+     5,
+     6
+    ],
+    "fixOf": 5,
+    "round": 1,
+    "kind": "fix",
+    "issueIds": [
+     "VD-25",
+     "VD-26",
+     "VD-27",
+     "VD-28",
+     "VD-29",
+     "VD-30",
+     "VD-31",
+     "VD-32"
+    ],
+    "status": "done",
+    "runId": "20261020-231143-lam",
+    "handoff": "handoff/20261020-231143-lam.md",
+    "summary": "Cả 8 vấn đề VD-25 đến VD-32 đã sửa xong trong `output/mat-ngu-v1/slides.md`, và `soat_loi` không thấy lỗi nào. Trang 4 còn 89 chữ, trang 5 có 66 chữ.\n\n- **VD-25, VD-26:** Chưa có câu trích cho ý \"ra khỏi giường nếu thức lâu, phòng tối mát\", nên tôi xoá ý đó khỏi trang 10 và bỏ nguồn [19] ở trang 10, trang 12 và danh sách nguồn. Danh sách nguồn nay là [1]–[18]. Nếu Mai tìm được câu nguyên văn từ NHS hoặc AASM thì có thể thêm lại.\n- **VD-27 đến VD-31:** Đã sửa đúng theo đề xuất của An, gồm bản nhẹ rõ nghĩa ở trang 7, thẻ bằng chứng ở trang 5, cắt chữ ở trang 4, thêm mang thai và đau lưng–cổ cho Nằm gác chân ở trang 8, và câu \"chóng mặt thì dừng\" vào lời giảng trang 9.\n- **VD-32:** Ghi \"đạo cụ bày sẵn theo bộ\" vào mục \"Việc còn mở\"; tổng 30 phút giữ nguyên.\n\nBản bàn giao có bảng \"Đã xử lý\" ở `handoff/20261020-231143-lam.md`.",
+    "error": "",
+    "tokens": 310410,
+    "task": "Sửa các vấn đề An giao cho bạn: VD-25, VD-26, VD-27, VD-28, VD-29, VD-30, VD-31, VD-32 (danh sách chi tiết kèm theo).",
+    "fileSua": [
+     "output/mat-ngu-v1/slides.md"
+    ],
+    "prevFiles": null,
+    "files": [
+     "output/mat-ngu-v1/slides.md"
+    ],
+    "images": [],
+    "latest": 11
+   },
+   {
+    "agentId": "an",
+    "from": [
+     6,
+     7
+    ],
+    "checks": 7,
+    "round": 1,
+    "status": "done",
+    "runId": "20261020-231237-an",
+    "handoff": "handoff/20261020-231237-an.md",
+    "summary": "Cả 8 vấn đề VD-25 đến VD-32 đã đóng, và không còn lỗi BẮT BUỘC.\n\nVới VD-25, Lam bỏ hẳn ý \"ra khỏi giường nếu thức lâu\" và nguồn [19] khỏi slide cho đến khi có câu trích. Tôi chấp nhận cách này vì ý đó không bắt buộc theo brief. Tôi chưa chạy `soat_loi` lại cho file này. Số chữ tr.4 (VD-29) là theo kết quả máy soát mà bạn báo, tôi không tự đếm.\n\nCó một lỗi mới, mức NÊN (V1). Ở tr.10, dòng \"An toàn\" dính vào cuối dòng Lời giảng, nên có thể mất mục An toàn khi dựng slide.\n\nKết luận ghi trong `handoff/20261020-231237-an.md` và chi tiết trong `agents/an/mat-ngu-v1-duyet-lai-slides.md`: KẾT LUẬN: ĐẠT.",
+    "error": "",
+    "tokens": 192783,
+    "task": "Duyệt lại sau khi sửa (vòng 1): kiểm các vấn đề trong danh sách kèm theo; chỉ nêu lỗi còn lại hoặc lỗi mới phát sinh.",
+    "prevFiles": null,
+    "files": [
+     "agents/an/mat-ngu-v1-duyet-lai-slides.md"
+    ],
+    "images": [],
+    "verdict": "pass"
+   },
+   {
+    "agentId": "vy",
+    "task": "Đọc brief du-an/plan-20261020-220605/brief.md, templates/thiet-ke.md, ảnh mẫu sources/slide-mau-suy-giap/. Thiết kế 12 trang theo output/mat-ngu-v1/slides.md, bảng màu Oải hương, mỗi trang ghi 'Theo kiểu mẫu tr.x'. Viết prompt A/B/D (dòng người mẫu chép y nguyên vào 4 prompt tư thế, đạo cụ đặt đúng như kịch bản). Hình y khoa (C) lấy từ hinh-nguon/ có giấy phép, không dùng AI. Cuối file có '## Danh sách hình' đủ 12 trang. Đầu ra: output/mat-ngu-v1/thiet-ke.md",
+    "from": [
+     5,
+     6
+    ],
+    "status": "done",
+    "runId": "20261020-231307-vy",
+    "handoff": "handoff/20261020-231307-vy.md",
+    "summary": "Mình đã viết xong thiết kế 12 trang bảng Oải hương, mỗi trang ghi \"Theo kiểu mẫu tr.x\", cuối file có \"Danh sách hình\" đủ 12 trang. Còn chờ: 9 ảnh AI (A/B/D) chưa tạo, nên trong `hinh/` chưa có file thật. `soat_loi` chỉ báo một lỗi nhỏ ở trang 4, mình đã sửa.\n\n- **Prompt:** 4 ảnh tư thế chép y nguyên dòng người mẫu và cảnh, đạo cụ đặt đúng kịch bản (gạch phẳng thấp nhất, bolster dọc, bắp chân trọn trên ghế).\n- **Hình y khoa (tr.3):** dùng hình đồng hồ sinh học CC BY-SA 3.0. Mình đã ghi cách che hình người khỏa thân và các nhãn tiếng Anh thừa, chỉ giữ 3 mốc melatonin và ngủ sâu, kèm nhãn Việt.\n- **Không có file ảnh:** tr.4 và tr.5 dựng bằng Canva, tr.6 và tr.12 không hình (có ghi lý do). Trong Danh sách hình các trang này ghi dòng \"khong-hinh-trang-xx\", không phải tên file thật.\n\nBàn giao ở `handoff/20261020-231307-vy.md`, không có câu hỏi cho chủ dự án.\n\nFiles are in D:\\work\\yoga-lab-pixel\\workspace:\n- output/mat-ngu-v1/thiet-ke.md\n- handoff/20261020-231307-vy.md",
+    "error": "",
+    "tokens": 455471,
+    "prevFiles": null,
+    "files": [
+     "output/mat-ngu-v1/thiet-ke.md"
+    ],
+    "images": [],
+    "latest": 17
+   },
+   {
+    "agentId": "ha",
+    "task": "Đọc brief du-an/plan-20261020-220605/brief.md. Duyệt output/mat-ngu-v1/thiet-ke.md đặt cạnh ảnh mẫu và slides.md theo TC3, TC9–12: loại hình từng trang, hình C có giấy phép và không AI, prompt tư thế cùng người mẫu và đạo cụ đúng, ≤90 chữ, chính tả, dòng Hình khớp giữa hai file. Lỗi thuộc slides.md thì ghi 'CẦN GIAO LAM'. Đầu ra: agents/ha/mat-ngu-v1-bien-tap.md, kết luận ĐẠT/CẦN SỬA.",
+    "from": [
+     5,
+     9
+    ],
+    "checks": 9,
+    "status": "done",
+    "runId": "20261020-231507-ha",
+    "handoff": "handoff/20261020-231507-ha.md",
+    "summary": "Kết luận: **CẦN SỬA**. Còn một lỗi BẮT BUỘC nằm ở `slides.md`; `thiet-ke.md` không có lỗi BẮT BUỘC.\n\n- **Lỗi BẮT BUỘC (V1, giao Lam):** tr.10 bị dính hai mục Lời giảng và An toàn trên cùng một dòng.\n- **Đạt:** loại hình từng trang, hình C ở tr.3 (đã đối chiếu ảnh thật, che đủ nhãn thừa và hình người khỏa thân), không dùng AI cho hình y khoa, prompt tư thế (cùng người mẫu, gạch và ghế đặt đúng).\n- **Ghi NÊN:** V2–V3 giao Lam, V4–V7 giao Vy (lệch dòng Hình ở tr.6, số dòng checklist tr.9, prompt Em bé, tên file trong Danh sách hình).\n- **Chưa duyệt:** ảnh AI, vì thư mục `hinh/` chưa có.\n\nFile: `agents/ha/mat-ngu-v1-bien-tap.md` (biên bản và bảng vấn đề), `handoff/20261020-231507-ha.md` (bàn giao).",
+    "error": "",
+    "tokens": 504801,
+    "prevFiles": null,
+    "files": [
+     "agents/ha/mat-ngu-v1-bien-tap.md"
+    ],
+    "images": [],
+    "verdict": "fix",
+    "latest": 12
+   },
+   {
+    "agentId": "lam",
+    "from": [
+     7,
+     10
+    ],
+    "fixOf": 7,
+    "round": 1,
+    "kind": "fix",
+    "issueIds": [
+     "VD-34",
+     "VD-35",
+     "VD-36"
+    ],
+    "status": "done",
+    "runId": "20261020-231627-lam",
+    "handoff": "handoff/20261020-231627-lam.md",
+    "summary": "Mình đã sửa cả ba vấn đề trong `output/mat-ngu-v1/slides.md`.\n- **VD-34 (trang 10):** tách \"- An toàn:\" thành dòng riêng.\n- **VD-35 (trang 2):** thêm \"dù bạn có đủ cơ hội để ngủ\" vào Lời giảng; slide giữ nguyên.\n- **VD-36 (trang 6):** dòng Hình sửa thành \"Canva Elements: lá nhỏ ở góc, tuỳ chọn\", khớp thiet-ke.\n\n`soat_loi` không báo lỗi máy móc. Bản bàn giao có bảng \"Đã xử lý\" nằm ở `handoff/20261020-231627-lam.md`.",
+    "error": "",
+    "tokens": 232432,
+    "task": "Sửa các vấn đề Hạ giao cho bạn: VD-34, VD-35, VD-36 (danh sách chi tiết kèm theo).",
+    "fileSua": [
+     "output/mat-ngu-v1/slides.md"
+    ],
+    "prevFiles": null,
+    "files": [
+     "output/mat-ngu-v1/slides.md"
+    ],
+    "images": []
+   },
+   {
+    "agentId": "ha",
+    "from": [
+     10,
+     11
+    ],
+    "checks": 11,
+    "round": 1,
+    "status": "done",
+    "runId": "20261020-231659-ha",
+    "handoff": "handoff/20261020-231659-ha.md",
+    "summary": "Cả ba lỗi VD-34, VD-35 và VD-36 đã được sửa đúng chỗ, nhưng phát sinh hai lỗi mới nên kết luận là CẦN SỬA.\n\n- **V1 (BẮT BUỘC):** cụm \"dù có đủ cơ hội ngủ\" ở trang 2 chưa có nguồn. File nguồn của Mai không có câu nào nói ý này, nên cần Mai tìm câu trích.\n- **V2 (NÊN):** dòng V14 ở mục \"Việc còn mở\" vẫn ghi là đã bỏ cụm đó. Điều này trái với nội dung hiện tại của trang 2.\n\nNhận xét nằm ở `agents/ha/mat-ngu-v1-duyet-lai-slides-2.md`, bản bàn giao ở `handoff/20261020-231659-ha.md`.",
+    "error": "",
+    "tokens": 244958,
+    "task": "Duyệt lại sau khi sửa (vòng 1): kiểm các vấn đề trong danh sách kèm theo; chỉ nêu lỗi còn lại hoặc lỗi mới phát sinh.",
+    "prevFiles": null,
+    "files": [
+     "agents/ha/mat-ngu-v1-duyet-lai-slides-2.md"
+    ],
+    "images": [],
+    "verdict": "fix-left"
+   },
+   {
+    "agentId": "lam",
+    "task": "Đọc brief du-an/plan-20261020-220605/brief.md. Sửa output/mat-ngu-v1/slides.md theo các dòng 'CẦN GIAO LAM' trong agents/ha/mat-ngu-v1-bien-tap.md, giữ đúng tiêu chí 1–8 (30 phút, 12 trang, nguồn). Nếu không có dòng nào thì ghi 'không cần sửa' trong bàn giao. Liệt kê thay đổi theo trang.",
+    "from": [
+     10
+    ],
+    "status": "done",
+    "runId": "20261020-231738-lam",
+    "handoff": "handoff/20261020-231738-lam.md",
+    "summary": "Mình đã sửa xong `slides.md` và ghi bản bàn giao vào `handoff/20261020-231738-lam.md`. `soat_loi` không báo lỗi.\n\n- **V1, V2, V3:** Hạ đã duyệt lại và đóng ở bước 12, nên mình không sửa thêm.\n- **Trang 2:** mình gắn nguồn cho ý \"dù có đủ cơ hội ngủ\" vào `[3]` (NHLBI): \"This happens even if you have the time and the right environment to sleep well.\" Trang NHS `[1]` không có câu này.\n- **Dòng V14 ở \"Việc còn mở\":** đã sửa thành \"cụm đã thêm lại, có nguồn `[3]`\".\n- **Chưa đối chiếu bằng mắt:** mình lấy câu NHLBI qua WebFetch (một mô hình nhỏ tóm tắt trang), chưa mở trang gốc để so. Mình đã nhờ An kiểm lại.\n\nSố trang, thời lượng và các trang khác giữ nguyên.",
+    "error": "",
+    "tokens": 384525,
+    "prevFiles": null,
+    "files": [
+     "output/mat-ngu-v1/slides.md"
+    ],
+    "images": []
+   },
+   {
+    "agentId": "nhi",
+    "task": "Đọc brief du-an/plan-20261020-220605/brief.md. Tạo ảnh AI loại A/B/D theo prompt trong output/mat-ngu-v1/thiet-ke.md, đặt tên file đúng 'Danh sách hình', lưu vào output/mat-ngu-v1/hinh/. Không tạo hình y khoa (loại C do máy chủ tải). Tự kiểm TC11: cùng người mẫu, đạo cụ đúng, cổ trung tính, đủ ngón, không chữ, đã cắt logo AI. Bàn giao liệt kê file đã tạo.",
+    "from": [
+     9,
+     10
+    ],
+    "status": "done",
+    "runId": "20261020-231829-nhi",
+    "handoff": "handoff/20261020-231829-nhi.md",
+    "summary": "Đã tải 8/9 ảnh AI (bìa, biểu tượng tr.2, Em bé, Cây cầu, Góc cố định, sóng thở, người nằm trăng sao, tóm lược), tên ghi trong `agents/nhi/anh-gemini.txt`. Ảnh Gác chân lên ghế **chưa đạt** sau 3 lần tạo (bàn chân tì vào lưng ghế, bắp chân không nằm trọn trên mặt ghế) nên tôi không tải. Ảnh Góc cố định chấp nhận có lưu ý: bolster ngắn, chỉ tới thắt lưng.\n\nMọi ảnh còn logo ngôi sao Gemini ở góc dưới bên phải, cần cắt hoặc che. Tôi chưa mở thư mục `hinh/` để kiểm file đã vào đúng chỗ.\n\nBàn giao ở `handoff/20261020-231829-nhi.md`, kèm câu hỏi: dùng phương án bolster dưới bắp chân cho ảnh gác chân, hay dựng trên Canva?",
+    "error": "",
+    "tokens": 4368464,
+    "prevFiles": null,
+    "files": [],
+    "images": [
+     "output/mat-ngu-v1/hinh/trang-07-em-be.png",
+     "output/mat-ngu-v1/hinh/trang-07-cay-cau.png",
+     "output/mat-ngu-v1/hinh/trang-08-goc-co-dinh.png",
+     "output/mat-ngu-v1/hinh/trang-01-bia.png",
+     "output/mat-ngu-v1/hinh/trang-02-bieu-tuong-giac-ngu.png",
+     "output/mat-ngu-v1/hinh/trang-09-song-tho.png",
+     "output/mat-ngu-v1/hinh/trang-10-nguoi-nam-trang-sao.png",
+     "output/mat-ngu-v1/hinh/trang-11-tom-luoc.png"
+    ],
+    "latest": 16
+   },
+   {
+    "agentId": "ha",
+    "task": "Đọc brief du-an/plan-20261020-220605/brief.md. Duyệt ảnh trong output/mat-ngu-v1/hinh/: liệt kê từng file thật có trong thư mục (tên, loại), đối chiếu 'Danh sách hình' đủ 12 trang (TC9). Mở từng ảnh kiểm TC10–11. Xác nhận các sửa CẦN GIAO LAM đã vào slides.md. Đầu ra: agents/ha/mat-ngu-v1-duyet-anh.md, kết luận ĐẠT/CẦN SỬA.",
+    "from": [
+     9,
+     13,
+     14
+    ],
+    "checks": 14,
+    "status": "done",
+    "runId": "20261020-234322-ha",
+    "handoff": "handoff/20261020-234322-ha.md",
+    "summary": "Kết luận: CẦN SỬA. Trong `hinh/` có 8 ảnh thật, thiếu 2 file so với \"Danh sách hình\" (TC9) và còn 1 lỗi logo (TC11).\n\n- **Thiếu ảnh:** chưa có `trang-08-gac-chan-ghe.png` (Nhi tạo 3 lần vẫn chưa đạt, nên không tải) và `trang-03-dong-ho-sinh-hoc.png` (file nguồn chỉ nằm trong `hinh-nguon/`).\n- **Logo AI:** cả 8 ảnh có ngôi sao Gemini ở góc dưới bên phải, mà TC11 yêu cầu không có logo AI. `thiet-ke.md` chưa ghi cách cắt hoặc che.\n- **Các điểm đạt:** TC10 đạt, không ảnh AI nào vẽ cơ thể hay cơ chế y khoa. TC11 đạt ở 3 ảnh tư thế đã có: cùng người mẫu, không chữ, đủ ngón, đạo cụ đúng. Ba sửa V1–V3 giao Lam ở bước 10 đã vào `slides.md`.\n- **Lưu ý nhỏ (mức NÊN):** ảnh Góc cố định có bolster ngắn, chỉ từ lưng trên đến thắt lưng.\n\nCâu hỏi cho chủ dự án (đề xuất): tạo lại ảnh Gác chân bằng bolster dưới bắp chân.\n\nFile đã ghi: `agents/ha/mat-ngu-v1-duyet-anh.md` (có bảng \"Danh sách vấn đề\") và `handoff/20261020-234322-ha.md`.",
+    "error": "",
+    "tokens": 537182,
+    "prevFiles": null,
+    "files": [
+     "agents/ha/mat-ngu-v1-duyet-anh.md"
+    ],
+    "images": [],
+    "verdict": "fix",
+    "latest": 18
+   },
+   {
+    "agentId": "nhi",
+    "from": [
+     14,
+     15
+    ],
+    "fixOf": 14,
+    "round": 1,
+    "kind": "fix",
+    "issueIds": [
+     "VD-43",
+     "VD-45"
+    ],
+    "status": "done",
+    "runId": "20261020-234431-nhi",
+    "handoff": "handoff/20261020-234431-nhi.md",
+    "summary": "Tôi đã tạo lại ảnh Gác chân (VD-43) ở chat Gemini mới bằng prompt dự phòng, và ảnh đạt ngay lần đầu. Ảnh có lưng phẳng, hông không nâng, cổ trung tính, và bolster nằm dưới đầu gối và bắp chân. Ảnh này không có ghế, nên kịch bản trang 8 cần sửa cho khớp. Tôi đã tải ảnh và ghi tên vào `agents/nhi/anh-gemini.txt`.\n\nVD-45 (Góc cố định) tôi không tạo lại, vì Hạ đã đánh giá là chấp nhận được. Gemini cũng từng trả gần như cùng một ảnh 3 lần. Tạo lại ở chat mới thì người mẫu sẽ lệch so với 2 ảnh còn lại.\n\nBàn giao nằm ở `handoff/20261020-234431-nhi.md`. Tôi chưa chạy `soat_loi` vì lượt này không ghi file `.md` sản phẩm nào.",
+    "error": "",
+    "tokens": 602802,
+    "task": "Sửa các vấn đề Hạ giao cho bạn: VD-43, VD-45 (danh sách chi tiết kèm theo).",
+    "fileSua": [],
+    "prevFiles": null,
+    "files": [],
+    "images": [
+     "output/mat-ngu-v1/hinh/trang-08-gac-chan-ghe.png"
+    ]
+   },
+   {
+    "agentId": "vy",
+    "from": [
+     9,
+     15
+    ],
+    "fixOf": 9,
+    "round": 1,
+    "kind": "fix",
+    "issueIds": [
+     "VD-44",
+     "VD-46"
+    ],
+    "status": "done",
+    "runId": "20261020-234627-vy",
+    "handoff": "handoff/20261020-234627-vy.md",
+    "summary": "Mình đã sửa xong VD-44 và VD-46 trong `output/mat-ngu-v1/thiet-ke.md`, và `soat_loi` không báo lỗi.\n\n- **VD-44:** ô tên file ở tr.3 trong \"Danh sách hình\" giờ là `hinh-nguon/dong-ho-sinh-hoc-nguoi.png`, file có thật.\n- **VD-46:** mục \"Kiểm tra cả bộ\" có hướng dẫn cắt hoặc che logo Gemini ở góc dưới phải (3% rộng × 3% cao) cho cả 8 ảnh AI khi dựng Canva.\n- **Việc thêm từ tin của Nhi:** prompt ảnh phải tr.8 đã đổi thành bản dự phòng, bolster dưới bắp chân. Ảnh Gác chân vẫn chờ Nhi tạo lại, nên `trang-08-gac-chan-ghe.png` chưa có. Nếu dùng bản bolster thì cần đổi nhãn tr.8 và báo Lam.\n\nBản bàn giao nằm ở `handoff/20261020-234627-vy.md`, có bảng \"Đã xử lý\" cho hai mã.",
+    "error": "",
+    "tokens": 292545,
+    "task": "Sửa các vấn đề Hạ giao cho bạn: VD-44, VD-46 (danh sách chi tiết kèm theo).",
+    "fileSua": [
+     "output/mat-ngu-v1/thiet-ke.md"
+    ],
+    "prevFiles": null,
+    "files": [
+     "output/mat-ngu-v1/thiet-ke.md"
+    ],
+    "images": []
+   },
+   {
+    "agentId": "ha",
+    "from": [
+     15,
+     16,
+     17
+    ],
+    "checks": 16,
+    "round": 1,
+    "status": "done",
+    "runId": "20261020-234702-ha",
+    "handoff": "handoff/20261020-234702-ha.md",
+    "summary": "Cả 4 vấn đề VD-43 đến VD-46 đều đóng, nhưng còn 2 lỗi mới nên kết luận là CẦN SỬA.\n\n- **Đã đóng:**\n  - VD-43: ảnh Gác chân mới đạt, tư thế an toàn, không ghế, chân tay đủ.\n  - VD-44: hình đồng hồ sinh học là hình Commons, nằm ở `hinh-nguon/` đúng như danh sách hình ghi.\n  - VD-45: mức NÊN, chấp nhận.\n  - VD-46: `thiet-ke.md` đã ghi cách cắt hoặc che logo cho cả 8 ảnh.\n- **Lỗi mới (V1, V2, BẮT BUỘC, lệch hai file):** ảnh trang 8 giờ là bolster dưới gối, còn `slides.md` và `thiet-ke.md` vẫn ghi \"gác chân lên ghế\". `slides.md` cần đổi ở tr.8, tr.15 và phần An toàn tr.107. `thiet-ke.md` cần đổi nhãn Canva và mô tả ảnh.\n- **File:** nhận xét ở `agents/ha/mat-ngu-v1-duyet-anh-lai.md`, bàn giao ở `handoff/20261020-234702-ha.md`.",
+    "error": "",
+    "tokens": 252086,
+    "task": "Duyệt lại sau khi sửa (vòng 1): kiểm các vấn đề trong danh sách kèm theo; chỉ nêu lỗi còn lại hoặc lỗi mới phát sinh.",
+    "prevFiles": null,
+    "files": [
+     "agents/ha/mat-ngu-v1-duyet-anh-lai.md"
+    ],
+    "images": [],
+    "verdict": "fix-left"
+   },
+   {
+    "agentId": "nhi",
+    "task": "Tạo lại output/mat-ngu-v1/hinh/trang-08-gac-chan-ghe.png ở chat Gemini mới (lần cuối trong giới hạn chủ dự án cho): hai bắp chân nằm trọn trên bolster (có thể hai bolster chồng), gót không chạm thảm, lưng phẳng, chăn dưới đầu, cùng người mẫu (TC11); nếu vẫn sai thì giữ ảnh cũ và báo.",
+    "from": [],
+    "status": "done",
+    "runId": "20261020-235012-nhi",
+    "handoff": "handoff/20261020-235012-nhi.md",
+    "summary": "Ảnh trang 8 tạo lại lần cuối vẫn chưa đạt, nên tôi không tải về và giữ nguyên ảnh cũ `trang-08-gac-chan-ghe.png`. Gemini vẽ hai bolster chồng lên nhau, gối gập 90° và bàn chân đặt trên đỉnh chồng. Bắp chân không nằm trọn trên bolster. Lưng phẳng, có chăn dưới đầu và người mẫu khớp bộ ảnh. `agents/nhi/anh-gemini.txt` để rỗng.\n\nBản bàn giao ở `handoff/20261020-235012-nhi.md`, kèm link chat Gemini và gợi ý: thử thêm một lượt với bolster đặt ngang, hoặc giữ ảnh cũ. Nhãn và mô tả vẫn cần đổi \"ghế\" thành \"bolster\".",
+    "error": "",
+    "tokens": 400190,
+    "att": [
+     "du-an/plan-20261020-220605/nghiem-thu.md"
+    ],
+    "kind": "fix",
+    "fileSua": [],
+    "prevFiles": null,
+    "files": [],
+    "images": []
+   },
+   {
+    "agentId": "lam",
+    "task": "Sửa output/mat-ngu-v1/slides.md: đổi tư thế 4 thành 'Nằm gác chân lên bolster' ở bảng mục tiêu, tr.6 An toàn, tr.8 (Nhãn, Hình, Lời giảng, An toàn), tr.11 và Việc còn mở; ghế chỉ là lựa chọn trong Lời giảng; mô tả đạo cụ khớp ảnh cuối (TC4, TC12).",
+    "from": [],
+    "status": "done",
+    "runId": "20261020-235139-lam",
+    "handoff": "handoff/20261020-235139-lam.md",
+    "summary": "Tôi đã sửa xong `slides.md`: tư thế 4 giờ là \"Nằm gác chân lên bolster\" ở bảng mục tiêu, tr.6, tr.8, tr.11 và Việc còn mở. Mô tả đạo cụ khớp ảnh cuối, tức là một bolster đặt ngang dưới khoeo và bắp chân trên, gối gập, không có ghế; ghế chỉ còn là một lựa chọn trong Lời giảng tr.8.\n\n`soat_loi` còn báo một lệch: `thiet-ke.md` tr.8 vẫn ghi \"ghế\". Đó là file của Vy nên tôi không sửa, và đã nhắn Vy đổi trong bản bàn giao `handoff/20261020-235139-lam.md`.",
+    "error": "",
+    "tokens": 350002,
+    "att": [
+     "du-an/plan-20261020-220605/nghiem-thu.md"
+    ],
+    "kind": "fix",
+    "fileSua": [
+     "output/mat-ngu-v1/slides.md"
+    ],
+    "prevFiles": null,
+    "files": [
+     "output/mat-ngu-v1/slides.md"
+    ],
+    "images": []
+   },
+   {
+    "agentId": "vy",
+    "task": "Sửa output/mat-ngu-v1/thiet-ke.md: tr.8 nhãn, Kiểm ảnh và mục Kiểm tra cả bộ sang bolster; cột Trạng thái của Danh sách hình đổi thành 'có file' cho các ảnh đã có trong hinh/; tr.9 sửa '3 dòng' cho khớp số mục và bỏ lặp 'Thở bụng nhẹ'; thẻ bằng chứng tr.5 chép đúng chữ slides.md (TC9, TC12).",
+    "from": [],
+    "status": "done",
+    "runId": "20261020-235219-vy",
+    "handoff": "handoff/20261020-235219-vy.md",
+    "summary": "Tôi đã sửa xong `output/mat-ngu-v1/thiet-ke.md` và `soat_loi` không báo lỗi. Tôi chưa mở lại ảnh trong `hinh/` để đối chiếu với mô tả.\n- **Tr.8:** nhãn, mô tả Kiểm ảnh, prompt ảnh phải và mục Kiểm tra cả bộ đã sang bolster, khớp `slides.md`.\n- **Tr.5:** thẻ bằng chứng chép đúng chữ `slides.md`.\n- **Tr.9:** bỏ lặp \"Thở bụng nhẹ\", còn 2 dòng tích cho khớp số mục.\n- **Danh sách hình:** các ảnh đã có trong `hinh/` đổi thành \"có file\". Hình tr.3 vẫn ở `hinh-nguon/` nên giữ trạng thái cũ.\n\nBản bàn giao nằm ở `handoff/20261020-235219-vy.md`.",
+    "error": "",
+    "tokens": 465862,
+    "att": [
+     "du-an/plan-20261020-220605/nghiem-thu.md"
+    ],
+    "kind": "fix",
+    "fileSua": [
+     "output/mat-ngu-v1/thiet-ke.md"
+    ],
+    "prevFiles": null,
+    "files": [
+     "output/mat-ngu-v1/thiet-ke.md"
+    ],
+    "images": []
+   },
+   {
+    "agentId": "mai",
+    "task": "Thêm vào agents/mai/mat-ngu-v1-nguon.md mục tr.2 câu NHLBI nguyên văn 'This happens even if you have the time and the right environment to sleep well.' kèm [3], mức Mạnh (TC7).",
+    "from": [],
+    "status": "done",
+    "runId": "20261020-235315-mai",
+    "handoff": "handoff/20261020-235315-mai.md",
+    "summary": "Mai đã thêm vào mục Tr.2 của `agents/mai/mat-ngu-v1-nguon.md` câu NHLBI nguyên văn \"This happens even if you have the time and the right environment to sleep well.\" kèm [3], mức Mạnh (TC7). Tôi mở lại trang NHLBI để kiểm nên câu này đúng nguyên văn, và `soat_loi` không thấy lỗi máy móc.\n\nChưa làm: câu NHS/AASM về \"rời giường khi thức lâu, phòng tối mát\" mà An và Lam hỏi, vì ngoài nhiệm vụ lượt này. Tôi đã ghi việc đó vào gợi ý bước sau trong bản bàn giao `handoff/20261020-235315-mai.md`.",
+    "error": "",
+    "tokens": 331552,
+    "att": [
+     "du-an/plan-20261020-220605/nghiem-thu.md"
+    ],
+    "kind": "fix",
+    "fileSua": [
+     "agents/mai/mat-ngu-v1-nguon.md"
+    ],
+    "prevFiles": null,
+    "files": [
+     "agents/mai/mat-ngu-v1-nguon.md"
+    ],
+    "images": []
+   }
+  ],
+  "replans": 0,
+  "log": [
+   "Máy chủ tải hình y khoa từ nguồn (agents/mai/mat-ngu-v1-nguon.md → output/mat-ngu-v1/hinh-nguon): 0 mới, 0 đã có",
+   "Hỏi chủ dự án 1 câu (bước 1)",
+   "Chủ dự án đã trả lời 1 câu hỏi",
+   "Bước 2: An kết luận CẦN SỬA → Mai sửa (bước 3), duyệt lại ở bước 4",
+   "Giao ban sau bước 2: 1 tín hiệu",
+   "Giao ban: không chèn bước · Máy chủ đã chèn sẵn bước 3 (Mai sửa VD-1 đến VD-12) và bước 4 (An duyệt lại), Lam chỉ làm sau đó, nên tin của An không cần chèn thêm bước. Cứ để bước 3 chạy tiếp.",
+   "Máy chủ tải hình y khoa từ nguồn (agents/mai/mat-ngu-v1-nguon.md → output/mat-ngu-v1/hinh-nguon): 1 mới, 0 đã có",
+   "Bước 4: vẫn CẦN SỬA nhưng đã hết vòng sửa → chuyển tiếp, để nghiệm thu xử lý",
+   "Bước 6: An kết luận CẦN SỬA → Lam sửa (bước 7), duyệt lại ở bước 8",
+   "Hỏi chủ dự án 2 câu (bước 6)",
+   "Chủ dự án đã trả lời 2 câu hỏi",
+   "Bước 10: Hạ kết luận CẦN SỬA → Lam sửa (bước 11), duyệt lại ở bước 12",
+   "Bước 12: vẫn CẦN SỬA nhưng đã hết vòng sửa → chuyển tiếp, để nghiệm thu xử lý",
+   "Hỏi chủ dự án 1 câu (bước 14)",
+   "Chủ dự án đã trả lời 1 câu hỏi",
+   "Bước 15: Hạ kết luận CẦN SỬA → Nhi, Vy sửa (bước 16–17), duyệt lại ở bước 18",
+   "Không hỏi lại 1 câu giống câu đã trả lời",
+   "Bước 18: vẫn CẦN SỬA nhưng đã hết vòng sửa → chuyển tiếp, để nghiệm thu xử lý",
+   "Nghiệm thu lần 1: 82/100",
+   "Bỏ qua 2 câu hỏi mới (đã dừng hỏi 3 lần) → nhóm tự quyết theo đề xuất",
+   "Điểm 82 < 85 → giao 4 việc sửa, xong sẽ nghiệm thu lại",
+   "Server ghi 7 bài học vào kinh-nghiem.md",
+   "Máy chủ tải hình y khoa từ nguồn (agents/mai/mat-ngu-v1-nguon.md → output/mat-ngu-v1/hinh-nguon): 0 mới, 1 đã có",
+   "Nghiệm thu lần 2: 88/100",
+   "Bỏ qua 1 câu hỏi mới (đã dừng hỏi 3 lần) → nhóm tự quyết theo đề xuất",
+   "Server ghi 7 bài học vào kinh-nghiem.md"
+  ],
+  "note": "",
+  "waiting": null,
+  "tokens": 20177247,
+  "questions": [],
+  "answers": [
+   {
+    "q": "Báo cáo Gemini chưa ra sau hơn 60 phút. Đề xuất: chạy lại bước 1 sau vài phút để Mai lấy toàn văn từ link chat trên (không chạy lại Deep Research). Nếu vẫn không ra, cho phép Mai mở từng nguồn bằng WebFetch.",
+    "from": "mai",
+    "step": 1,
+    "a": "Đồng ý theo đề xuất: chạy lại bước 1, Mai lấy toàn văn báo cáo từ link chat Gemini https://gemini.google.com/app/c86f3ec49a93a9e1, không chạy lại Deep Research. Nếu vẫn chưa ra thì mở từng nguồn ứng viên bằng WebFetch."
+   },
+   {
+    "q": "Chấp nhận bỏ \"dù có đủ cơ hội ngủ\" và \"áp lực buồn ngủ\" vì chưa có nguồn? Đề xuất: bỏ.",
+    "from": "an",
+    "step": 6,
+    "a": "Đồng ý bỏ cả hai: \"dù có đủ cơ hội ngủ\" (tr.2) và \"áp lực buồn ngủ\" (tr.3)."
+   },
+   {
+    "q": "Nếu Mai không có câu trích cho \"ra khỏi giường khi thức lâu / phòng tối mát\": bỏ hẳn ý này khỏi tr.10. Đề xuất: bỏ.",
+    "from": "an",
+    "step": 6,
+    "a": "Đồng ý: không có câu trích thì bỏ hẳn ý \"ra khỏi giường khi thức lâu / phòng tối mát\" khỏi tr.10, giữ các ý đã có trích."
+   },
+   {
+    "q": "Ảnh Gác chân lên ghế: dùng phương án dự phòng trong thiet-ke.md (bolster dưới bắp chân, tạo lại 2 lần nữa) hay chấp nhận cách dựng trên Canva? Đề xuất: tạo lại bằng bolster dưới bắp chân.",
+    "from": "nhi",
+    "step": 14,
+    "a": "Đồng ý: tạo lại ảnh Gác chân theo phương án dự phòng trong thiet-ke.md (bolster dưới bắp chân), tối đa 2 lần."
+   },
+   {
+    "q": "Tạo lại ảnh Gác chân bằng bolster dưới bắp chân (đề xuất), hay dùng cách khác?",
+    "from": "ha",
+    "step": 15,
+    "a": "(Giống câu đã trả lời: \"Ảnh Gác chân lên ghế: dùng phương án dự phòng trong thiet-ke.md (bolster dưới bắp chân,…\" → Đồng ý: tạo lại ảnh Gác chân theo phương án dự phòng trong thiet-ke.md (bolster dưới bắp chân), tối đa 2 lần.)"
+   },
+   {
+    "q": "Giữ cụm \"dù có đủ cơ hội ngủ\" ở tr.2 (nay có nguồn NHLBI, Chef đã kiểm nguyên văn)? Đề xuất: giữ, chỉ trong Lời giảng.",
+    "from": "chef",
+    "step": 0,
+    "a": "(Đã hỏi đủ số lần cho phép: nhóm tự quyết theo phương án đề xuất)"
+   },
+   {
+    "q": "Đổi tên tư thế 4 thành \"Nằm gác chân lên bolster\" (ghế là lựa chọn nói trong Lời giảng) cho khớp ảnh? Đề xuất: đổi.",
+    "from": "chef",
+    "step": 0,
+    "a": "(Đã hỏi đủ số lần cho phép: nhóm tự quyết theo phương án đề xuất)"
+   },
+   {
+    "q": "Tư thế 4: giữ ảnh hiện tại và đổi nhãn thành \"Nằm co gối có đỡ\" (bỏ Viparita Karani), hay chụp ảnh thật gác bắp chân lên ghế? Đề xuất: chụp ảnh thật với ghế, vì đó mới đúng tư thế trong mục tiêu; nếu không kịp thì đổi nhãn.",
+    "from": "chef",
+    "step": 0,
+    "a": "(Đã hỏi đủ số lần cho phép: nhóm tự quyết theo phương án đề xuất)"
+   }
+  ],
+  "afterAnswer": null,
+  "askRounds": 3,
+  "fixRounds": 1,
+  "wtokens": 3582656,
+  "costUsd": 14.12,
+  "score": 88,
+  "acceptFile": "du-an/plan-20261020-220605/nghiem-thu.md",
+  "reviewDone": true,
+  "resumeAt": null,
+  "budgetX": 1,
+  "createdAt": "2026-10-20T15:06:05.641Z",
+  "endedAt": "2026-10-20T16:55:44.781Z",
+  "planRunId": "20261020-220605-chef",
+  "replanRunIds": [],
+  "reviewRunId": "20261020-235349-chef",
+  "reviewHandoff": "handoff/20261020-235349-chef.md",
+  "summary": "Nghiệm thu lần 2 cho mat-ngu-v1 được 88/100 (lần 1 là 82). Phần nguồn, an toàn và thời lượng đều đạt, và kịch bản, thiết kế, hình nay đã khớp nhau. Điểm còn yếu nhất là tư thế 4: ảnh chỉ có bolster đặt dưới khoeo, bàn chân phẳng trên thảm, chân không được nâng lên. Vì vậy nhãn \"Viparita Karani nhẹ\" không đúng với ảnh, và tư thế này gần giống Savasana ở trang 10. Phần còn thiếu, việc cần người thật kiểm tra trước buổi và câu hỏi cho chủ dự án (chụp ảnh thật với ghế, hay đổi nhãn) nằm trong `du-an/plan-20261020-220605/nghiem-thu.md` và `handoff/20261020-235349-chef.md`.",
+  "topic": "mat-ngu-v1",
+  "notes": [
+   {
+    "from": "mai",
+    "text": "Gemini Deep Research với prompt 7 mục (131 trang) mất hơn 60 phút; nút \"Bắt đầu nghiên cứu\" lần đầu có thể báo lỗi, dùng Redo.",
+    "step": 1
+   },
+   {
+    "from": "mai",
+    "text": "Gọi javascript_tool chờ quá ~45 giây sẽ bị timeout, chờ tối đa 43 giây mỗi lần.",
+    "step": 1
+   },
+   {
+    "from": "mai",
+    "text": "Mayo Clinic, ACP, NINDS chặn WebFetch (403); NCBI Bookshelf bị CAPTCHA; NHS, NHLBI, NCCIH, PMC (pmc.ncbi.nlm.nih.gov), AAO mở được.",
+    "step": 3
+   },
+   {
+    "from": "vy",
+    "text": "Hình Biological clock human.svg có hình người khỏa thân và nhiều nhãn Anh; khi dùng phải che và ghi CC BY-SA 3.0, adapted.",
+    "step": 9
+   },
+   {
+    "from": "nhi",
+    "text": "Gemini trả lại ảnh cũ nếu đổi prompt nhẹ trong cùng chat; muốn đổi thật thì mở chat mới và chép đủ mô tả người mẫu.",
+    "step": 14
+   },
+   {
+    "from": "nhi",
+    "text": "Ảnh Gemini luôn có logo ngôi sao nhỏ ở góc dưới bên phải.",
+    "step": 14
+   },
+   {
+    "from": "ha",
+    "text": "Ảnh Gemini 2752x1536, có logo ngôi sao góc dưới phải.",
+    "step": 15
+   },
+   {
+    "from": "ha",
+    "text": "KẾT LUẬN: CẦN SỬA",
+    "step": 15
+   },
+   {
+    "from": "nhi",
+    "text": "Prompt tư thế yêu cầu \"chair\" bị Gemini vẽ sai nhiều lần; đổi sang bolster dưới bắp chân ở chat mới ra đạt ngay.",
+    "step": 16
+   },
+   {
+    "from": "vy",
+    "text": "Ảnh Gemini có logo ngôi sao góc dưới phải; cắt 3% khi dựng Canva.",
+    "step": 17
+   },
+   {
+    "from": "nhi",
+    "text": "Prompt \"bolster dưới bắp chân\" cho ra gối gập gác lên chồng bolster, bắp chân vẫn treo; mô tả gác chân bằng bolster cần cách diễn đạt khác (bolster nằm ngang, chân duỗi nhẹ).",
+    "step": 19
+   }
+  ],
+  "messages": [
+   {
+    "from": "an",
+    "to": "mai",
+    "text": "làm lại bước 1 theo V1–V12 trong `agents/an/mat-ngu-v1-kiem-chung.md`, ưu tiên 115 Việt Nam, nguồn câu \"không tự dùng, đổi hay ngưng thuốc ngủ\", bài thở và bằng chứng yoga (ghi nhóm đối tượng).",
+    "step": 2,
+    "delivered": true
+   },
+   {
+    "from": "an",
+    "to": "chef",
+    "text": "chưa chuyển bước 3 (Lam) vì chưa có ý nào được duyệt.",
+    "step": 2,
+    "delivered": true
+   },
+   {
+    "from": "mai",
+    "to": "an",
+    "text": "tr.6 ma trận CCĐ — thêm tăng nhãn áp cho Cây cầu theo [14].",
+    "step": 3,
+    "delivered": true
+   },
+   {
+    "from": "mai",
+    "to": "lam",
+    "text": "không dùng ACP/NICE/Mayo làm trích; \"áp lực buồn ngủ\" chưa có nguồn.",
+    "step": 3,
+    "delivered": true
+   },
+   {
+    "from": "an",
+    "to": "mai",
+    "text": "V15 cần trích nguyên văn từ NHS insomnia hoặc AASM cho ý rời giường khi thức lâu, phòng tối mát; V14 nguồn cho \"dù có đủ cơ hội ngủ\".",
+    "step": 4,
+    "delivered": true
+   },
+   {
+    "from": "an",
+    "to": "lam",
+    "text": "viết theo \"Danh sách đã duyệt\" cuối `agents/an/mat-ngu-v1-kiem-chung.md`; không dùng \"áp lực buồn ngủ\" có cơ chế; 115 viết \"gọi 115 hoặc đến cơ sở y tế gần nhất\".",
+    "step": 4,
+    "delivered": true
+   },
+   {
+    "from": "an",
+    "to": "vy",
+    "text": "hình đồng hồ sinh học có hình người nude và nhãn tiếng Anh thừa; dựng lại hoặc cắt chỉ giữ mốc liên quan giấc ngủ, ghi CC BY-SA 3.0 (V13).",
+    "step": 4,
+    "delivered": true
+   },
+   {
+    "from": "lam",
+    "to": "an",
+    "text": "tr.10 có ý (chờ kiểm [19]); tr.4 91 chữ, xem có cần cắt không.",
+    "step": 5,
+    "delivered": true
+   },
+   {
+    "from": "lam",
+    "to": "vy",
+    "text": "tr.3 dùng hinh-nguon/dong-ho-sinh-hoc-nguoi.png dựng lại bỏ hình người và nhãn thừa, ghi CC BY-SA 3.0; tr.4 biểu tượng ngáy/ngừng thở dùng Canva Elements.",
+    "step": 5,
+    "delivered": true
+   },
+   {
+    "from": "an",
+    "to": "lam",
+    "text": "sửa V16–V23 trong `agents/an/mat-ngu-v1-kiem-slides.md`; xoá \"(chờ kiểm [19])\" khỏi lời giảng.",
+    "step": 6,
+    "delivered": true
+   },
+   {
+    "from": "an",
+    "to": "mai",
+    "text": "V16, trích nguyên văn \"ra khỏi giường khi thức lâu\" và \"phòng tối mát\" từ NHS insomnia hoặc AASM.",
+    "step": 6,
+    "delivered": true
+   },
+   {
+    "from": "lam",
+    "to": "mai",
+    "text": "nếu có câu nguyên văn NHS/AASM về \"rời giường khi thức lâu, phòng tối mát\", gửi để thêm lại tr.10.",
+    "step": 7,
+    "delivered": true
+   },
+   {
+    "from": "lam",
+    "to": "vy",
+    "text": "tr.12 nay còn nguồn [1]–[18].",
+    "step": 7,
+    "delivered": true
+   },
+   {
+    "from": "an",
+    "to": "lam",
+    "text": "tr.10 tách \"- An toàn:\" thành dòng riêng khỏi Lời giảng.",
+    "step": 8,
+    "delivered": true
+   },
+   {
+    "from": "vy",
+    "to": "nhi",
+    "text": "4 ảnh B phải cùng một người mẫu; Cây cầu chỉ một gạch phẳng thấp nhất dưới xương cùng; Gác chân phải thấy trọn bắp chân trên mặt ghế.",
+    "step": 9,
+    "delivered": true
+   },
+   {
+    "from": "vy",
+    "to": "ha",
+    "text": "đối chiếu dòng \"Hình\" slides.md với thiet-ke.md; tr.3 cần xem vùng che hình đồng hồ.",
+    "step": 9,
+    "delivered": true
+   },
+   {
+    "from": "ha",
+    "to": "lam",
+    "text": "V1 (tr.10 dính dòng An toàn, BẮT BUỘC), V2 (tr.2 thiếu \"dù có đủ cơ hội ngủ\"), V3 (tr.6 dòng Hình lệch thiet-ke).",
+    "step": 10,
+    "delivered": true
+   },
+   {
+    "from": "ha",
+    "to": "vy",
+    "text": "V4 (tr.9 số dòng checklist), V5 (prompt Em bé thêm chăn dưới mông), V6, V7 (tên file trong Danh sách hình).",
+    "step": 10,
+    "delivered": true
+   },
+   {
+    "from": "ha",
+    "to": "mai",
+    "text": "tìm câu nguyên văn (ICSD/NHS) nói mất ngủ xảy ra dù có đủ cơ hội ngủ, cho tr.2.",
+    "step": 12,
+    "delivered": true
+   },
+   {
+    "from": "ha",
+    "to": "lam",
+    "text": "gắn nguồn đó vào tr.2 và sửa dòng V14 ở Việc còn mở.",
+    "step": 12,
+    "delivered": true
+   },
+   {
+    "from": "lam",
+    "to": "mai",
+    "text": "không cần tìm thêm nguồn cho tr.2, đã lấy từ NHLBI [3].",
+    "step": 13,
+    "delivered": true
+   },
+   {
+    "from": "lam",
+    "to": "an",
+    "text": "kiểm giúp câu NHLBI \"This happens even if you have the time and the right environment to sleep well\" cho tr.2.",
+    "step": 13,
+    "delivered": false
+   },
+   {
+    "from": "nhi",
+    "to": "vy",
+    "text": "viết lại prompt ảnh tr.8 phải thành bản dự phòng (bolster dưới bắp chân, hai bắp chân đặt trọn lên bolster) để tạo lại.",
+    "step": 14,
+    "delivered": true
+   },
+   {
+    "from": "nhi",
+    "to": "ha",
+    "text": "chú ý ảnh trang-08-goc-co-dinh (bolster ngắn) và thiếu trang-08-gac-chan-ghe khi duyệt hinh/.",
+    "step": 14,
+    "delivered": true
+   },
+   {
+    "from": "ha",
+    "to": "vy",
+    "text": "ghi vào thiet-ke.md cách cắt logo ngôi sao góc dưới phải; sửa tên file tr.3 hoặc nhờ chép vào hinh/.",
+    "step": 15,
+    "delivered": true
+   },
+   {
+    "from": "ha",
+    "to": "nhi",
+    "text": "tạo lại trang-08-gac-chan-ghe ở chat mới, bolster dưới bắp chân.",
+    "step": 15,
+    "delivered": true
+   },
+   {
+    "from": "nhi",
+    "to": "ha",
+    "text": "ảnh trang-08-gac-chan-ghe đã tạo lại (bolster dưới bắp chân); xin duyệt.",
+    "step": 16,
+    "delivered": true
+   },
+   {
+    "from": "nhi",
+    "to": "lam",
+    "text": "trang 8 ảnh này không có ghế, kịch bản cần khớp.",
+    "step": 16,
+    "delivered": true
+   },
+   {
+    "from": "vy",
+    "to": "nhi",
+    "text": "prompt ảnh phải tr.8 trong thiet-ke.md đã là bản bolster dưới bắp chân, tạo lại ở chat mới.",
+    "step": 17,
+    "delivered": true
+   },
+   {
+    "from": "vy",
+    "to": "lam",
+    "text": "nếu ảnh bolster được dùng, đổi tên tư thế tr.8 thành \"Nằm gác chân lên bolster\".",
+    "step": 17,
+    "delivered": true
+   },
+   {
+    "from": "ha",
+    "to": "lam",
+    "text": "slides.md tr.8, tr.15, tr.107: đổi \"ghế\" thành \"bolster\" cho khớp ảnh.",
+    "step": 18,
+    "delivered": true
+   },
+   {
+    "from": "ha",
+    "to": "vy",
+    "text": "thiet-ke.md tr.8: đổi nhãn và mô tả ảnh phải sang bolster.",
+    "step": 18,
+    "delivered": true
+   },
+   {
+    "from": "nhi",
+    "to": "lam",
+    "text": "ảnh tr.8 phải giữ nguyên ảnh cũ (bolster dưới chân); slides.md/nhãn đổi \"ghế\" thành \"bolster\".",
+    "step": 19,
+    "delivered": true
+   },
+   {
+    "from": "nhi",
+    "to": "vy",
+    "text": "prompt bolster đã thử ở chat mới, vẫn sai; chat: https://gemini.google.com/app/a84e51372fa0872f",
+    "step": 19,
+    "delivered": true
+   },
+   {
+    "from": "lam",
+    "to": "vy",
+    "text": "thiet-ke.md tr.8 đổi \"ghế\" thành \"bolster\", khớp slides.md.",
+    "step": 20,
+    "delivered": true
+   },
+   {
+    "from": "vy",
+    "to": "lam",
+    "text": "thiet-ke.md tr.8 và tr.5 đã khớp slides.md.",
+    "step": 21,
+    "delivered": false
+   },
+   {
+    "from": "mai",
+    "to": "lam",
+    "text": "tr.2 dùng câu NHLBI [3] ở trên (đã kiểm nguyên văn); phần tr.10 chưa có câu nguyên văn mới.",
+    "step": 22,
+    "delivered": false
+   },
+   {
+    "from": "mai",
+    "to": "an",
+    "text": "V14 \"dù có đủ cơ hội ngủ\" nguồn là NHLBI [3]; V15/V16 (rời giường, phòng tối mát) chưa được bổ sung lượt này.",
+    "step": 22,
+    "delivered": false
+   }
+  ],
+  "issues": [
+   {
+    "id": "VD-1",
+    "maGoc": "V1",
+    "file": "agents/mai/mat-ngu-v1-nguon.md",
+    "where": "Cả file",
+    "level": "BẮT BUỘC",
+    "kind": "thieu-nguon",
+    "text": "File chỉ là khung, không có câu trích nguyên văn, [n] hay mức bằng chứng cho ý nào",
+    "fix": "Lấy toàn văn báo cáo Gemini theo quyết định chủ dự án hoặc mở từng nguồn bằng WebFetch rồi viết lại đủ cấu trúc",
+    "from": "an",
+    "owner": "mai",
+    "ownerStep": 1,
+    "status": "dong",
+    "note": "Đủ trích, [n], mức bằng chứng cho tr.2–6, 9–10",
+    "round": 1,
+    "lastStep": 2,
+    "fixStep": 3
+   },
+   {
+    "id": "VD-2",
+    "maGoc": "V2",
+    "file": "agents/mai/mat-ngu-v1-nguon.md",
+    "where": "Tr.2 Định nghĩa, mốc",
+    "level": "BẮT BUỘC",
+    "kind": "thieu-nguon",
+    "text": "Chưa có nguồn gốc uy tín cho định nghĩa và mốc 3 đêm/tuần, 3 tháng",
+    "fix": "Cần nguồn (NHS, AASM, Mayo, NICE hoặc NIH) kèm câu trích nguyên văn và URL đầy đủ",
+    "from": "an",
+    "owner": "mai",
+    "ownerStep": 1,
+    "status": "dong",
+    "note": "[3] mốc 3 đêm/tuần, [1] ngắn hạn/dài hạn có trích",
+    "round": 1,
+    "lastStep": 2,
+    "fixStep": 3
+   },
+   {
+    "id": "VD-3",
+    "maGoc": "V3",
+    "file": "agents/mai/mat-ngu-v1-nguon.md",
+    "where": "Tr.3 Vì sao khó ngủ",
+    "level": "BẮT BUỘC",
+    "kind": "thieu-nguon",
+    "text": "Ẩn dụ và yếu tố thường gặp chưa có câu trích",
+    "fix": "Cần nguồn cho từng yếu tố: ánh sáng, cà phê/rượu, giờ giấc, đau/thuốc, trằn trọc",
+    "from": "an",
+    "owner": "mai",
+    "ownerStep": 1,
+    "status": "dong",
+    "note": "\"Áp lực buồn ngủ\" chưa có nguồn: Lam chỉ nói ẩn dụ, không kèm cơ chế",
+    "round": 1,
+    "lastStep": 2,
+    "fixStep": 3
+   },
+   {
+    "id": "VD-4",
+    "maGoc": "V4",
+    "file": "agents/mai/mat-ngu-v1-nguon.md",
+    "where": "Tr.4 Khi nào gặp bác sĩ",
+    "level": "BẮT BUỘC",
+    "kind": "thieu-nguon",
+    "text": "Chưa có nguồn cho các dấu hiệu cần khám, ngáy/ngưng thở, buồn ngủ khi lái xe, chân bồn chồn, ý nghĩ tự hại, CBT-I đầu tay",
+    "fix": "Cần nguồn kèm trích nguyên văn cho từng dấu hiệu trong brief, ghi rõ mức bằng chứng",
+    "from": "an",
+    "owner": "mai",
+    "ownerStep": 1,
+    "status": "dong",
+    "note": "Dấu hiệu có trích NHS; \"lo âu/buồn chán\", \"rượu để ngủ\" chỉ gián tiếp nên viết \"nên nói với bác sĩ\"; CBT-I theo [8]",
+    "round": 1,
+    "lastStep": 2,
+    "fixStep": 3
+   },
+   {
+    "id": "VD-5",
+    "maGoc": "V5",
+    "file": "agents/mai/mat-ngu-v1-nguon.md",
+    "where": "Tr.4–6 Thuốc ngủ",
+    "level": "BẮT BUỘC",
+    "kind": "thieu-nguon",
+    "text": "Chưa có nguồn cho ý \"không tự dùng, đổi hay ngưng thuốc ngủ khi chưa hỏi bác sĩ\"",
+    "fix": "Cần nguồn có câu tương đương để trích nguyên văn",
+    "from": "an",
+    "owner": "mai",
+    "ownerStep": 1,
+    "status": "dong",
+    "note": "Câu thuốc ngủ là khuyến cáo an toàn của Yoga Lab, đã duyệt; căn cứ [12][8][1], không ghi như trích nguyên văn nguồn",
+    "round": 1,
+    "lastStep": 2,
+    "fixStep": 3
+   },
+   {
+    "id": "VD-6",
+    "maGoc": "V6",
+    "file": "agents/mai/mat-ngu-v1-nguon.md",
+    "where": "Tr.5 Bằng chứng yoga",
+    "level": "BẮT BUỘC",
+    "kind": "thieu-nguon",
+    "text": "Chưa mở bài nào, chưa biết phạm vi (Wang 2020 có thể chỉ gồm nhóm nhỏ), RCT Yoga Nidra chưa rõ tên",
+    "fix": "Cần nguồn kèm trích kết luận và giới hạn, gán mức Sơ bộ hoặc Trung bình, ghi nhóm đối tượng",
+    "from": "an",
+    "owner": "mai",
+    "ownerStep": 1,
+    "status": "dong",
+    "note": "Phạm vi, số liệu, giới hạn ghi rõ; mức Sơ bộ–Trung bình đúng",
+    "round": 1,
+    "lastStep": 2,
+    "fixStep": 3
+   },
+   {
+    "id": "VD-7",
+    "maGoc": "V7",
+    "file": "agents/mai/mat-ngu-v1-nguon.md",
+    "where": "Tr.6 Số 115",
+    "level": "BẮT BUỘC",
+    "kind": "thieu-nguon",
+    "text": "Chưa có trang Bộ Y tế/cơ sở y tế Việt Nam đã mở cho số 115 (TC5 không cho để Việc còn mở)",
+    "fix": "Mở và trích một trang chính thức nêu 115 là số cấp cứu",
+    "from": "an",
+    "owner": "mai",
+    "ownerStep": 1,
+    "status": "dong",
+    "note": "[11] Trung tâm Cấp cứu 115 TP.HCM; nguồn chỉ nói 115 là số cấp cứu: slide viết \"gọi 115 hoặc đến cơ sở y tế gần nhất\"",
+    "round": 1,
+    "lastStep": 2,
+    "fixStep": 3
+   },
+   {
+    "id": "VD-8",
+    "maGoc": "V8",
+    "file": "agents/mai/mat-ngu-v1-nguon.md",
+    "where": "Tr.6 CCĐ, dừng tập",
+    "level": "BẮT BUỘC",
+    "kind": "thieu-nguon",
+    "text": "Chưa có nguồn cho hạ huyết áp tư thế, tăng nhãn áp với tư thế chân cao hơn đầu, đứng dậy chậm, dấu hiệu dừng tập",
+    "fix": "Cần nguồn cho từng ý, đối chiếu ma trận CCĐ của An ở trên",
+    "from": "an",
+    "owner": "mai",
+    "ownerStep": 1,
+    "status": "dong",
+    "note": "[13][14][15][16] đủ; AAO xếp Cây cầu vào nhóm đảo ngược nên thêm thận trọng nhãn áp cho Cây cầu (đã cập nhật ma trận); dừng tập chỉ \"đau\" có nguồn, ý còn lại ghi \"hướng dẫn thực hành của Yoga Lab\"",
+    "round": 1,
+    "lastStep": 2,
+    "fixStep": 3
+   },
+   {
+    "id": "VD-9",
+    "maGoc": "V9",
+    "file": "agents/mai/mat-ngu-v1-nguon.md",
+    "where": "Tr.9 Bài thở",
+    "level": "BẮT BUỘC",
+    "kind": "thieu-nguon",
+    "text": "Chưa có nguồn hay lựa chọn bài thở và số đếm (TC6)",
+    "fix": "Chọn một bài thở bụng chậm, nêu số đếm có nguồn hoặc ghi \"kinh nghiệm thực hành\"",
+    "from": "an",
+    "owner": "mai",
+    "ownerStep": 1,
+    "status": "dong",
+    "note": "Một bài, cách thở theo [17]; số đếm 4–6 ghi \"kinh nghiệm thực hành\" đúng TC6, an toàn",
+    "round": 1,
+    "lastStep": 2,
+    "fixStep": 3
+   },
+   {
+    "id": "VD-10",
+    "maGoc": "V10",
+    "file": "agents/mai/mat-ngu-v1-nguon.md",
+    "where": "Tr.10 Thói quen ngủ",
+    "level": "BẮT BUỘC",
+    "kind": "thieu-nguon",
+    "text": "Thói quen trước ngủ, rời giường sau ~20 phút chưa có trích",
+    "fix": "Cần nguồn (sleepeducation.org, NHS, Mayo) kèm trích nguyên văn",
+    "from": "an",
+    "owner": "mai",
+    "ownerStep": 1,
+    "status": "mo",
+    "note": "Đạt giờ ngủ–dậy đều, màn hình, cà phê/rượu. Ý \"rời giường nếu thức ~20 phút\", \"phòng tối mát\" chỉ có tóm lược [19], chưa có trích (V15)",
+    "round": 1,
+    "lastStep": 4,
+    "fixStep": 3
+   },
+   {
+    "id": "VD-11",
+    "maGoc": "V11",
+    "file": "agents/mai/mat-ngu-v1-nguon.md",
+    "where": "Hình & sơ đồ",
+    "level": "NÊN",
+    "kind": "khac",
+    "text": "Bảng hình trống, chưa nói rõ tr.2–5 không có hình loại C hay chưa tìm; thư mục hinh-nguon chưa có",
+    "fix": "Tìm hình giấy phép Commons/OpenStax nếu có, hoặc ghi \"không có hình loại C, dựng khối Canva\"",
+    "from": "an",
+    "owner": "mai",
+    "ownerStep": 1,
+    "status": "dong",
+    "note": "Đã nói rõ tr.2, 4, 5 không có hình C; hình tr.3 có file thật. Góp ý ở V13",
+    "round": 1,
+    "lastStep": 2,
+    "fixStep": 3
+   },
+   {
+    "id": "VD-12",
+    "maGoc": "V12",
+    "file": "agents/mai/mat-ngu-v1-nguon.md",
+    "where": "Cả file",
+    "level": "BẮT BUỘC",
+    "kind": "khac",
+    "text": "Bảng dự án ghi bước 1 \"done\" dù sản phẩm chưa hoàn thành",
+    "fix": "Giao lại Mai làm xong bước 1 trước khi chuyển bước 3 (Lam)",
+    "from": "an",
+    "owner": "mai",
+    "ownerStep": 1,
+    "status": "dong",
+    "note": "Nội dung bước 1 nay đã có thật",
+    "round": 1,
+    "lastStep": 2,
+    "fixStep": 3
+   },
+   {
+    "id": "VD-13",
+    "maGoc": "V1",
+    "file": "agents/mai/mat-ngu-v1-nguon.md",
+    "where": "Cả file",
+    "level": "BẮT BUỘC",
+    "kind": "thieu-nguon",
+    "text": "File chỉ là khung, không có câu trích nguyên văn, [n] hay mức bằng chứng cho ý nào",
+    "fix": "Lấy toàn văn báo cáo Gemini theo quyết định chủ dự án hoặc mở từng nguồn bằng WebFetch rồi viết lại đủ cấu trúc",
+    "from": "an",
+    "owner": "mai",
+    "ownerStep": 3,
+    "status": "mo",
+    "note": "",
+    "round": 0,
+    "lastStep": 4,
+    "fixStep": null
+   },
+   {
+    "id": "VD-14",
+    "maGoc": "V2",
+    "file": "agents/mai/mat-ngu-v1-nguon.md",
+    "where": "Tr.2 Định nghĩa, mốc",
+    "level": "BẮT BUỘC",
+    "kind": "thieu-nguon",
+    "text": "Chưa có nguồn gốc uy tín cho định nghĩa và mốc 3 đêm/tuần, 3 tháng",
+    "fix": "Cần nguồn (NHS, AASM, Mayo, NICE hoặc NIH) kèm câu trích nguyên văn và URL đầy đủ",
+    "from": "an",
+    "owner": "mai",
+    "ownerStep": 3,
+    "status": "mo",
+    "note": "",
+    "round": 0,
+    "lastStep": 4,
+    "fixStep": null
+   },
+   {
+    "id": "VD-15",
+    "maGoc": "V3",
+    "file": "agents/mai/mat-ngu-v1-nguon.md",
+    "where": "Tr.3 Vì sao khó ngủ",
+    "level": "BẮT BUỘC",
+    "kind": "thieu-nguon",
+    "text": "Ẩn dụ và yếu tố thường gặp chưa có câu trích",
+    "fix": "Cần nguồn cho từng yếu tố: ánh sáng, cà phê/rượu, giờ giấc, đau/thuốc, trằn trọc",
+    "from": "an",
+    "owner": "mai",
+    "ownerStep": 3,
+    "status": "mo",
+    "note": "",
+    "round": 0,
+    "lastStep": 4,
+    "fixStep": null
+   },
+   {
+    "id": "VD-16",
+    "maGoc": "V4",
+    "file": "agents/mai/mat-ngu-v1-nguon.md",
+    "where": "Tr.4 Khi nào gặp bác sĩ",
+    "level": "BẮT BUỘC",
+    "kind": "thieu-nguon",
+    "text": "Chưa có nguồn cho các dấu hiệu cần khám, ngáy/ngưng thở, buồn ngủ khi lái xe, chân bồn chồn, ý nghĩ tự hại, CBT-I đầu tay",
+    "fix": "Cần nguồn kèm trích nguyên văn cho từng dấu hiệu trong brief, ghi rõ mức bằng chứng",
+    "from": "an",
+    "owner": "mai",
+    "ownerStep": 3,
+    "status": "mo",
+    "note": "",
+    "round": 0,
+    "lastStep": 4,
+    "fixStep": null
+   },
+   {
+    "id": "VD-17",
+    "maGoc": "V5",
+    "file": "agents/mai/mat-ngu-v1-nguon.md",
+    "where": "Tr.4–6 Thuốc ngủ",
+    "level": "BẮT BUỘC",
+    "kind": "thieu-nguon",
+    "text": "Chưa có nguồn cho ý \"không tự dùng, đổi hay ngưng thuốc ngủ khi chưa hỏi bác sĩ\"",
+    "fix": "Cần nguồn có câu tương đương để trích nguyên văn",
+    "from": "an",
+    "owner": "mai",
+    "ownerStep": 3,
+    "status": "mo",
+    "note": "",
+    "round": 0,
+    "lastStep": 4,
+    "fixStep": null
+   },
+   {
+    "id": "VD-18",
+    "maGoc": "V6",
+    "file": "agents/mai/mat-ngu-v1-nguon.md",
+    "where": "Tr.5 Bằng chứng yoga",
+    "level": "BẮT BUỘC",
+    "kind": "thieu-nguon",
+    "text": "Chưa mở bài nào, chưa biết phạm vi (Wang 2020 có thể chỉ gồm nhóm nhỏ), RCT Yoga Nidra chưa rõ tên",
+    "fix": "Cần nguồn kèm trích kết luận và giới hạn, gán mức Sơ bộ hoặc Trung bình, ghi nhóm đối tượng",
+    "from": "an",
+    "owner": "mai",
+    "ownerStep": 3,
+    "status": "mo",
+    "note": "",
+    "round": 0,
+    "lastStep": 4,
+    "fixStep": null
+   },
+   {
+    "id": "VD-19",
+    "maGoc": "V7",
+    "file": "agents/mai/mat-ngu-v1-nguon.md",
+    "where": "Tr.6 Số 115",
+    "level": "BẮT BUỘC",
+    "kind": "thieu-nguon",
+    "text": "Chưa có trang Bộ Y tế/cơ sở y tế Việt Nam đã mở cho số 115 (TC5 không cho để Việc còn mở)",
+    "fix": "Mở và trích một trang chính thức nêu 115 là số cấp cứu",
+    "from": "an",
+    "owner": "mai",
+    "ownerStep": 3,
+    "status": "mo",
+    "note": "",
+    "round": 0,
+    "lastStep": 4,
+    "fixStep": null
+   },
+   {
+    "id": "VD-20",
+    "maGoc": "V8",
+    "file": "agents/mai/mat-ngu-v1-nguon.md",
+    "where": "Tr.6 CCĐ, dừng tập",
+    "level": "BẮT BUỘC",
+    "kind": "thieu-nguon",
+    "text": "Chưa có nguồn cho hạ huyết áp tư thế, tăng nhãn áp với tư thế chân cao hơn đầu, đứng dậy chậm, dấu hiệu dừng tập",
+    "fix": "Cần nguồn cho từng ý, đối chiếu ma trận CCĐ của An ở trên",
+    "from": "an",
+    "owner": "mai",
+    "ownerStep": 3,
+    "status": "mo",
+    "note": "",
+    "round": 0,
+    "lastStep": 4,
+    "fixStep": null
+   },
+   {
+    "id": "VD-21",
+    "maGoc": "V9",
+    "file": "agents/mai/mat-ngu-v1-nguon.md",
+    "where": "Tr.9 Bài thở",
+    "level": "BẮT BUỘC",
+    "kind": "thieu-nguon",
+    "text": "Chưa có nguồn hay lựa chọn bài thở và số đếm (TC6)",
+    "fix": "Chọn một bài thở bụng chậm, nêu số đếm có nguồn hoặc ghi \"kinh nghiệm thực hành\"",
+    "from": "an",
+    "owner": "mai",
+    "ownerStep": 3,
+    "status": "mo",
+    "note": "",
+    "round": 0,
+    "lastStep": 4,
+    "fixStep": null
+   },
+   {
+    "id": "VD-22",
+    "maGoc": "V10",
+    "file": "agents/mai/mat-ngu-v1-nguon.md",
+    "where": "Tr.10 Thói quen ngủ",
+    "level": "BẮT BUỘC",
+    "kind": "thieu-nguon",
+    "text": "Thói quen trước ngủ, rời giường sau ~20 phút chưa có trích",
+    "fix": "Cần nguồn (sleepeducation.org, NHS, Mayo) kèm trích nguyên văn",
+    "from": "an",
+    "owner": "mai",
+    "ownerStep": 3,
+    "status": "mo",
+    "note": "",
+    "round": 0,
+    "lastStep": 4,
+    "fixStep": null
+   },
+   {
+    "id": "VD-23",
+    "maGoc": "V11",
+    "file": "agents/mai/mat-ngu-v1-nguon.md",
+    "where": "Hình & sơ đồ",
+    "level": "NÊN",
+    "kind": "khac",
+    "text": "Bảng hình trống, chưa nói rõ tr.2–5 không có hình loại C hay chưa tìm; thư mục hinh-nguon chưa có",
+    "fix": "Tìm hình giấy phép Commons/OpenStax nếu có, hoặc ghi \"không có hình loại C, dựng khối Canva\"",
+    "from": "an",
+    "owner": "mai",
+    "ownerStep": 3,
+    "status": "mo",
+    "note": "",
+    "round": 0,
+    "lastStep": 4,
+    "fixStep": null
+   },
+   {
+    "id": "VD-24",
+    "maGoc": "V12",
+    "file": "agents/mai/mat-ngu-v1-nguon.md",
+    "where": "Cả file",
+    "level": "BẮT BUỘC",
+    "kind": "khac",
+    "text": "Bảng dự án ghi bước 1 \"done\" dù sản phẩm chưa hoàn thành",
+    "fix": "Giao lại Mai làm xong bước 1 trước khi chuyển bước 3 (Lam)",
+    "from": "an",
+    "owner": "mai",
+    "ownerStep": 3,
+    "status": "mo",
+    "note": "",
+    "round": 0,
+    "lastStep": 4,
+    "fixStep": null
+   },
+   {
+    "id": "VD-25",
+    "maGoc": "V16",
+    "file": "output/mat-ngu-v1/slides.md",
+    "where": "Tr.10 Lời giảng, Nguồn; tr.12 và mục Nguồn tham khảo [19]",
+    "level": "BẮT BUỘC",
+    "kind": "thieu-nguon",
+    "text": "Ý \"ra khỏi giường nếu thức lâu, phòng tối và mát\" chỉ có tóm lược [19], chưa có câu trích, còn nguyên chữ \"(chờ kiểm [19])\" trong lời giảng và dòng nguồn",
+    "fix": "Cần nguồn: Mai lấy câu nguyên văn từ NHS insomnia hoặc AASM; nếu chưa có thì xoá câu đó, bỏ [19] khỏi tr.10 và danh sách nguồn",
+    "from": "an",
+    "owner": "lam",
+    "ownerStep": 5,
+    "status": "dong",
+    "note": "Ý \"ra khỏi giường\" và [19] đã bỏ khỏi tr.10, tr.12, Nguồn; ghi ở \"Việc còn mở\" chờ nguồn. Không còn khẳng định thiếu nguồn",
+    "round": 1,
+    "lastStep": 6,
+    "fixStep": 7
+   },
+   {
+    "id": "VD-26",
+    "maGoc": "V17",
+    "file": "output/mat-ngu-v1/slides.md",
+    "where": "Tr.10 Lời giảng",
+    "level": "NÊN",
+    "kind": "khac",
+    "text": "Chữ \"(chờ kiểm [19])\" lẫn trong lời giảng, giảng viên có thể đọc to",
+    "fix": "Sau khi xử lý V16, xoá mọi ghi chú nội bộ khỏi lời giảng, chỉ để trong \"Việc còn mở\"",
+    "from": "an",
+    "owner": "lam",
+    "ownerStep": 5,
+    "status": "dong",
+    "note": "Không còn chữ \"chờ kiểm\" trong lời giảng",
+    "round": 1,
+    "lastStep": 6,
+    "fixStep": 7
+   },
+   {
+    "id": "VD-27",
+    "maGoc": "V18",
+    "file": "output/mat-ngu-v1/slides.md",
+    "where": "Tr.7 Em bé và Cây cầu, bản nhẹ",
+    "level": "NÊN",
+    "kind": "an-toan-thieu-ccd",
+    "text": "\"Bản nhẹ: gối cao hơn\" (Em bé) và \"bỏ gạch, kê gối dày hơn\" (Cây cầu) mơ hồ, có thể bị hiểu là kê hông cao hơn",
+    "fix": "Viết rõ: Em bé kê thêm chăn dưới gối và bolster dày hơn; Cây cầu bản nhẹ là nằm ngửa co gối, bàn chân phẳng, không nhấc hông, chăn dưới đầu",
+    "from": "an",
+    "owner": "lam",
+    "ownerStep": 5,
+    "status": "dong",
+    "note": "Em bé: \"không kê hông cao hơn\"; Cây cầu: bản nhẹ không nhấc hông",
+    "round": 1,
+    "lastStep": 6,
+    "fixStep": 7
+   },
+   {
+    "id": "VD-28",
+    "maGoc": "V19",
+    "file": "output/mat-ngu-v1/slides.md",
+    "where": "Tr.5 Ý chính \"Bằng chứng\"",
+    "level": "NÊN",
+    "kind": "phong-dai",
+    "text": "Slide viết \"yoga có thể cải thiện chất lượng giấc ngủ tự báo cáo\" không nêu nhóm đối tượng, trong khi [9] chỉ gồm phụ nữ có vấn đề giấc ngủ",
+    "fix": "Thêm \"(nghiên cứu ở phụ nữ, chất lượng thấp)\" vào thẻ bằng chứng, giữ trong 90 chữ",
+    "from": "an",
+    "owner": "lam",
+    "ownerStep": 5,
+    "status": "dong",
+    "note": "Tr.5 đã ghi \"nghiên cứu ở phụ nữ, chất lượng thấp\"",
+    "round": 1,
+    "lastStep": 6,
+    "fixStep": 7
+   },
+   {
+    "id": "VD-29",
+    "maGoc": "V20",
+    "file": "output/mat-ngu-v1/slides.md",
+    "where": "Tr.4 Ý chính",
+    "level": "NÊN",
+    "kind": "qua-chu",
+    "text": "Tr.4 có 91 chữ, vượt \"~90\" một chút",
+    "fix": "Cắt \"nhất là khi lái xe\" thành \"khi lái xe\" hoặc rút thẻ Tâm trạng & thuốc còn khoảng 85 chữ",
+    "from": "an",
+    "owner": "lam",
+    "ownerStep": 5,
+    "status": "dong",
+    "note": "Máy soát số chữ không báo lỗi",
+    "round": 1,
+    "lastStep": 6,
+    "fixStep": 7
+   },
+   {
+    "id": "VD-30",
+    "maGoc": "V21",
+    "file": "output/mat-ngu-v1/slides.md",
+    "where": "Tr.8 An toàn, Nằm gác chân",
+    "level": "NÊN",
+    "kind": "an-toan-thieu-ccd",
+    "text": "Ma trận CCĐ có mang thai (hỏi bác sĩ, kê đầu cao) và đau lưng–cổ cho Nằm gác chân, tr.8 chưa nhắc",
+    "fix": "Thêm vào mục An toàn tr.8: mang thai hỏi bác sĩ, kê đầu cao; đau lưng–cổ ghế vừa tầm, lưng phẳng",
+    "from": "an",
+    "owner": "lam",
+    "ownerStep": 5,
+    "status": "dong",
+    "note": "Gác chân đã có mang thai (hỏi bác sĩ, kê đầu cao) và đau lưng–cổ",
+    "round": 1,
+    "lastStep": 6,
+    "fixStep": 7
+   },
+   {
+    "id": "VD-31",
+    "maGoc": "V22",
+    "file": "output/mat-ngu-v1/slides.md",
+    "where": "Tr.9 Lời giảng",
+    "level": "NÊN",
+    "kind": "an-toan-thieu-ccd",
+    "text": "Câu \"chóng mặt thì dừng, thở tự nhiên\" chỉ ở mục An toàn, chưa nằm trong lời giảng để nói to",
+    "fix": "Thêm một câu vào cuối lời giảng: \"Thấy chóng mặt thì dừng, thở tự nhiên\"",
+    "from": "an",
+    "owner": "lam",
+    "ownerStep": 5,
+    "status": "dong",
+    "note": "Tr.9 lời giảng có \"Thấy chóng mặt thì dừng, thở tự nhiên\"",
+    "round": 1,
+    "lastStep": 6,
+    "fixStep": 7
+   },
+   {
+    "id": "VD-32",
+    "maGoc": "V23",
+    "file": "output/mat-ngu-v1/slides.md",
+    "where": "Tr.7–8 phút",
+    "level": "NÊN",
+    "kind": "khac",
+    "text": "Lớp 20 người lấy bolster, gạch, ghế trong 1 phút/trang có thể không đủ",
+    "fix": "Ghi \"đạo cụ bày sẵn theo bộ\" trong Lời giảng hoặc Việc còn mở; không đổi tổng 30 phút",
+    "from": "an",
+    "owner": "lam",
+    "ownerStep": 5,
+    "status": "dong",
+    "note": "Tr.7–8 có 1 phút lấy đạo cụ riêng, ghi chú bày sẵn theo bộ",
+    "round": 1,
+    "lastStep": 6,
+    "fixStep": 7
+   },
+   {
+    "id": "VD-33",
+    "maGoc": "V1",
+    "file": "output/mat-ngu-v1/slides.md",
+    "where": "Tr.10, cuối dòng Lời giảng",
+    "level": "NÊN",
+    "kind": "khac",
+    "text": "Dòng \"- An toàn\" bị dính vào cuối dòng Lời giảng (sau chữ \"trước ngủ.\") nên có thể mất mục An toàn khi dựng slide",
+    "fix": "Xuống dòng, tách \"- An toàn:\" thành dòng riêng",
+    "from": "an",
+    "owner": "lam",
+    "ownerStep": 7,
+    "status": "mo",
+    "note": "",
+    "round": 0,
+    "lastStep": 8,
+    "fixStep": null
+   },
+   {
+    "id": "VD-34",
+    "maGoc": "V1",
+    "file": "output/mat-ngu-v1/slides.md",
+    "where": "Trang 10, dòng Lời giảng/An toàn",
+    "level": "BẮT BUỘC",
+    "kind": "khac",
+    "text": "Hai mục Lời giảng và An toàn dính một dòng (\"...trước ngủ.- An toàn:\") nên mất mục An toàn riêng",
+    "fix": "Xuống dòng, tách \"- An toàn:\" thành mục riêng",
+    "from": "ha",
+    "owner": "lam",
+    "ownerStep": 7,
+    "status": "dong",
+    "note": "Tr.10 đã tách dòng Lời giảng và dòng An toàn riêng.",
+    "round": 1,
+    "lastStep": 10,
+    "fixStep": 11
+   },
+   {
+    "id": "VD-35",
+    "maGoc": "V2",
+    "file": "output/mat-ngu-v1/slides.md",
+    "where": "Trang 2, Ý chính và Lời giảng",
+    "level": "NÊN",
+    "kind": "thieu-muc-brief",
+    "text": "Định nghĩa thiếu ý \"dù có đủ cơ hội ngủ\" mà brief yêu cầu",
+    "fix": "Thêm cụm này vào Lời giảng, giữ slide ngắn",
+    "from": "ha",
+    "owner": "lam",
+    "ownerStep": 7,
+    "status": "dong",
+    "note": "Tr.2 Lời giảng đã có \"dù bạn có đủ cơ hội để ngủ\"; xem V1 về nguồn.",
+    "round": 1,
+    "lastStep": 10,
+    "fixStep": 11
+   },
+   {
+    "id": "VD-36",
+    "maGoc": "V3",
+    "file": "output/mat-ngu-v1/slides.md",
+    "where": "Trang 6, dòng Hình",
+    "level": "NÊN",
+    "kind": "lech-hai-file",
+    "text": "Slides ghi \"A biểu tượng lá\" còn thiet-ke ghi Canva Elements (lá nhỏ)",
+    "fix": "Sửa slides thành \"Canva Elements: lá nhỏ ở góc, tuỳ chọn\"",
+    "from": "ha",
+    "owner": "lam",
+    "ownerStep": 7,
+    "status": "dong",
+    "note": "Tr.6 ghi \"Canva Elements: lá nhỏ ở góc, tuỳ chọn\", khớp thiet-ke.md.",
+    "round": 1,
+    "lastStep": 10,
+    "fixStep": 11
+   },
+   {
+    "id": "VD-37",
+    "maGoc": "V4",
+    "file": "output/mat-ngu-v1/thiet-ke.md",
+    "where": "Trang 9, Bố cục",
+    "level": "NÊN",
+    "kind": "lech-hai-file",
+    "text": "Ghi \"3 dòng tích\" nhưng liệt kê 4 mục và lặp \"Thở bụng nhẹ\" ở thẻ trái",
+    "fix": "Ghép thành 3 dòng như slides (Thở bụng nhẹ · Hít 4, thở ra 6 · Không nín thở), bỏ lặp",
+    "from": "ha",
+    "owner": "vy",
+    "ownerStep": 9,
+    "status": "mo",
+    "note": "",
+    "round": 0,
+    "lastStep": 10,
+    "fixStep": null
+   },
+   {
+    "id": "VD-38",
+    "maGoc": "V5",
+    "file": "output/mat-ngu-v1/thiet-ke.md",
+    "where": "Trang 7, prompt Em bé",
+    "level": "NÊN",
+    "kind": "anh-sai-tu-the",
+    "text": "Prompt chỉ có chăn dưới cẳng chân, slides nói chăn dưới gối/mông",
+    "fix": "Thêm \"a folded blanket under her hips and knees\" vào prompt",
+    "from": "ha",
+    "owner": "vy",
+    "ownerStep": 9,
+    "status": "mo",
+    "note": "",
+    "round": 0,
+    "lastStep": 10,
+    "fixStep": null
+   },
+   {
+    "id": "VD-39",
+    "maGoc": "V6",
+    "file": "output/mat-ngu-v1/thiet-ke.md",
+    "where": "Danh sách hình, tr.4, 5, 6, 12",
+    "level": "NÊN",
+    "kind": "file-khong-ton-tai",
+    "text": "Cột tên file ghi \"khong-hinh-trang-xx\" trông như file thật, dễ bị tính là thiếu file",
+    "fix": "Ghi \"(không hình: lý do)\" thay cho tên file",
+    "from": "ha",
+    "owner": "vy",
+    "ownerStep": 9,
+    "status": "mo",
+    "note": "",
+    "round": 0,
+    "lastStep": 10,
+    "fixStep": null
+   },
+   {
+    "id": "VD-40",
+    "maGoc": "V7",
+    "file": "output/mat-ngu-v1/thiet-ke.md",
+    "where": "Danh sách hình, tr.3",
+    "level": "NÊN",
+    "kind": "file-khong-ton-tai",
+    "text": "trang-03-dong-ho-sinh-hoc.png chưa có trong hinh/ (hinh/ chưa tạo)",
+    "fix": "Máy chủ chép từ hinh-nguon, hoặc ghi rõ dùng nguyên hinh-nguon rồi che trong Canva",
+    "from": "ha",
+    "owner": "vy",
+    "ownerStep": 9,
+    "status": "mo",
+    "note": "",
+    "round": 0,
+    "lastStep": 10,
+    "fixStep": null
+   },
+   {
+    "id": "VD-41",
+    "maGoc": "V1",
+    "file": "output/mat-ngu-v1/slides.md",
+    "where": "Tr.2 Lời giảng, nguồn [1][3]",
+    "level": "BẮT BUỘC",
+    "kind": "thieu-nguon",
+    "text": "Cụm \"đủ cơ hội để ngủ\" mới thêm nhưng file nguồn của Mai không có câu nào nói ý này.",
+    "fix": "Cần nguồn: Mai/Lam tìm câu trích (định nghĩa ICSD hoặc NHS) rồi gắn vào [1][3].",
+    "from": "ha",
+    "owner": "lam",
+    "ownerStep": 11,
+    "status": "mo",
+    "note": "",
+    "round": 0,
+    "lastStep": 12,
+    "fixStep": null
+   },
+   {
+    "id": "VD-42",
+    "maGoc": "V2",
+    "file": "output/mat-ngu-v1/slides.md",
+    "where": "Mục \"Việc còn mở\", dòng V14",
+    "level": "NÊN",
+    "kind": "bao-cao-sai-su-that",
+    "text": "Dòng V14 vẫn ghi đã bỏ cụm \"dù có đủ cơ hội ngủ\" ở tr.2, trái với nội dung hiện tại.",
+    "fix": "Sửa dòng thành: cụm đã thêm lại theo brief, chờ nguồn.",
+    "from": "ha",
+    "owner": "lam",
+    "ownerStep": 11,
+    "status": "mo",
+    "note": "",
+    "round": 0,
+    "lastStep": 12,
+    "fixStep": null
+   },
+   {
+    "id": "VD-43",
+    "maGoc": "V1",
+    "file": "output/mat-ngu-v1/hinh/trang-08-gac-chan-ghe.png",
+    "where": "Trang 8, ảnh Gác chân lên ghế",
+    "level": "BẮT BUỘC",
+    "kind": "file-khong-ton-tai",
+    "text": "Thiếu ảnh thứ 4, Gemini 3 lần vẫn vẽ bàn chân tì lên lưng ghế, bắp chân chéo",
+    "fix": "Tạo lại ở chat mới bằng prompt dự phòng: hai bắp chân đặt trọn lên bolster hoặc mặt ghế, lưng phẳng trên thảm, chăn dưới đầu",
+    "from": "ha",
+    "owner": "nhi",
+    "ownerStep": 14,
+    "status": "dong",
+    "note": "Ảnh mới đạt: lưng phẳng, hông không nâng, cổ trung tính, chăn dưới đầu, bolster tròn dưới đầu gối, không ghế, chân tay đủ. Chỉ còn lệch chữ với kịch bản, ghi ở V1",
+    "round": 1,
+    "lastStep": 15,
+    "fixStep": 16
+   },
+   {
+    "id": "VD-44",
+    "maGoc": "V2",
+    "file": "output/mat-ngu-v1/thiet-ke.md",
+    "where": "Danh sách hình, tr.3",
+    "level": "BẮT BUỘC",
+    "kind": "file-khong-ton-tai",
+    "text": "trang-03-dong-ho-sinh-hoc.png chưa có trong hinh/ dù TC9 đòi mọi file trong danh sách có thật",
+    "fix": "Máy chủ chép hinh-nguon/dong-ho-sinh-hoc-nguoi.png thành tên đó, hoặc sửa cột tên file thành đường dẫn hinh-nguon thật",
+    "from": "ha",
+    "owner": "vy",
+    "ownerStep": 9,
+    "status": "dong",
+    "note": "File nằm đúng ở hinh-nguon/dong-ho-sinh-hoc-nguoi.png (hình Commons, không phải ảnh AI); bảng danh sách hình ghi đúng đường dẫn, có link, giấy phép",
+    "round": 1,
+    "lastStep": 15,
+    "fixStep": 17
+   },
+   {
+    "id": "VD-45",
+    "maGoc": "V3",
+    "file": "output/mat-ngu-v1/hinh/trang-08-goc-co-dinh.png",
+    "where": "Trang 8, ảnh Góc cố định",
+    "level": "NÊN",
+    "kind": "anh-sai-tu-the",
+    "text": "Bolster ngắn, hông nằm trên thảm, kịch bản nói bolster dọc dưới lưng",
+    "fix": "Chấp nhận được; nếu tạo lại thì thêm \"full-length bolster from sacrum to head\"",
+    "from": "ha",
+    "owner": "nhi",
+    "ownerStep": 14,
+    "status": "dong",
+    "note": "Mức NÊN, chấp nhận; lời giảng nên mô tả bolster theo ảnh",
+    "round": 1,
+    "lastStep": 15,
+    "fixStep": 16
+   },
+   {
+    "id": "VD-46",
+    "maGoc": "V4",
+    "file": "output/mat-ngu-v1/thiet-ke.md",
+    "where": "Ghi chú hình, mọi ảnh AI",
+    "level": "BẮT BUỘC",
+    "kind": "khac",
+    "text": "Cả 8 ảnh có logo ngôi sao Gemini ở góc dưới phải, TC11 đòi không logo AI, thiet-ke chưa ghi cách xử lý",
+    "fix": "Ghi vào thiet-ke.md: cắt hoặc che góc dưới phải (khoảng 3% chiều rộng) mọi ảnh khi dựng Canva",
+    "from": "ha",
+    "owner": "vy",
+    "ownerStep": 9,
+    "status": "dong",
+    "note": "thiet-ke.md mục tự kiểm ghi rõ cách cắt/che logo ở cả 8 ảnh",
+    "round": 1,
+    "lastStep": 15,
+    "fixStep": 17
+   },
+   {
+    "id": "VD-47",
+    "maGoc": "V1",
+    "file": "output/mat-ngu-v1/slides.md",
+    "where": "Trang 8, tên tư thế, ảnh phải, Lời giảng, An toàn",
+    "level": "BẮT BUỘC",
+    "kind": "lech-hai-file",
+    "text": "Ảnh Gác chân nay là bolster dưới đầu gối và bắp chân trên, chân chạm thảm, không ghế, nhưng slides.md vẫn ghi \"gác chân lên ghế\", \"bắp chân gác trọn trên ghế\"",
+    "fix": "Đổi sang \"Nằm gác chân lên bolster\", mô tả đúng ảnh (bolster dưới gối và bắp chân, bàn chân chạm thảm), sửa dòng bảng tr.15 và An toàn tr.107",
+    "from": "ha",
+    "owner": "lam",
+    "ownerStep": 13,
+    "status": "mo",
+    "note": "",
+    "round": 0,
+    "lastStep": 18,
+    "fixStep": null
+   },
+   {
+    "id": "VD-48",
+    "maGoc": "V2",
+    "file": "output/mat-ngu-v1/thiet-ke.md",
+    "where": "Trang 8 nhãn, Kiểm ảnh, tự kiểm",
+    "level": "BẮT BUỘC",
+    "kind": "lech-hai-file",
+    "text": "Nhãn Canva vẫn là \"NẰM GÁC CHÂN LÊN GHẾ\" và mô tả \"bắp chân trọn trên ghế/bolster\", không khớp ảnh đã có",
+    "fix": "Đổi nhãn thành \"NẰM GÁC CHÂN LÊN BOLSTER\", cập nhật mô tả ảnh và dòng tự kiểm đạo cụ",
+    "from": "ha",
+    "owner": "vy",
+    "ownerStep": 17,
+    "status": "mo",
+    "note": "",
+    "round": 0,
+    "lastStep": 18,
+    "fixStep": null
+   }
+  ],
+  "issueSeq": 48,
+  "checkins": 1
  }
 ]

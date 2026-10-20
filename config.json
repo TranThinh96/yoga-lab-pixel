@@ -1,5 +1,5 @@
 {
-  "workspace": "./workspace",
+  "workspace": "/tmp/claude-0/-home-user-yoga-lab-pixel/351aa764-3f09-568c-89c1-73a99f892882/scratchpad/ws",
   "claudeCommand": "claude",
   "geminiCommand": "gemini",
   "antigravityCommand": "agy",

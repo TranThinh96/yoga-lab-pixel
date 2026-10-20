@@ -647,3 +647,19 @@ Chef đã tự rút bài học "giao tải tay ngay". Đây là luật máy ch�
 ## Phát hiện thêm
 
 (Người triển khai ghi vào đây.)
+
+- 1.1 Bốn file mẫu (`van-de-mau.md`, `da-xu-ly-mau.md`, `duyet-lai-mau.md`, `tin-nhan-mau.md`) đã nằm trong `test/fixtures/` từ 0.1 (khi đó chép cả thư mục), nên không phải chép lại.
+- 1.2 `handleReview` nhận tham số thứ tư `banGhi` từ commit 1.2; phần dùng nó (ghi sổ, giao theo chủ file) nằm trong commit 1.3.
+- 1.7 Viết thành hàm `giaoThayHinh(plan, idx, hong)`. Hình hỏng được gom sau khi **mọi** lượt tải của bước xong, rồi mới chèn bước sửa, để một người không bị chèn hai bước.
+  Chạm `maxTotalSteps` thì chỉ ghi log, vấn đề vẫn nằm trong sổ.
+- 1.8 `mucTrong` được xuất thêm từ `lib/van-de.js` để đọc mục "Vướng mắc". Tin `@<điều phối viên>` chỉ tính tin của chính bước vừa xong, và được đánh dấu đã giao khi đưa vào giao ban.
+  Nếu đã hết lượt giao ban (`maxCheckins`), tin đó nằm chờ trong `plan.messages` như tin thường.
+- 1.9 Kết quả `loi` (lỗi mạng) **không** lưu vào `.yogalab/link.json`, để lần sau kiểm lại; các kết quả khác giữ 7 ngày. Trong URL API Commons, dấu `|` viết là `%7C`.
+- 1.10 Hẹn tải lại khi bị 429 là bộ hẹn giờ riêng của `taiHinhCho` (2, 5, 10 phút), không dùng `henTaiLai`, vì lượt lẻ không có kế hoạch để ghi log.
+  `danh-sach.md` do công cụ tạo mới (chưa có từ trước) có câu mở đầu "Máy chủ ghi các hình đã tải", thay cho câu nhắc file nguồn của `downloadSourceImages`.
+- 1.11 Bộ đếm "⚑ n vấn đề mở" lọc theo `lastStep`/`fixStep` như đặc tả. Vì vậy thẻ của sản phẩm được duyệt (vd thiết kế của Vy) đếm cả vấn đề của người khác được nêu trong cùng bước duyệt (vd VD-2 của Lam).
+  Nếu thấy rối, có thể lọc thêm theo `owner` thuộc thẻ.
+- Thử thật sau khi xong đợt (Claude Code trong môi trường viết code, bản sao workspace, `labTools: true`):
+  - Lam gọi `kiem_link` (3 link: Commons có thật kèm giấy phép, Commons không có, NHS mở được) và `tai_hinh` (tải `giai-phau-tuyen-giap.jpg` 124 KB, ghi `danh-sach.md` kèm tác giả CFCF, CC BY-SA 3.0).
+  - Dự án 2 bước (Lam viết 1 trang có lỗi "tạp thở", Hạ duyệt): Hạ ghi bảng, máy chủ đặt VD-1 giao Lam, Lam báo "Đã sửa" trong bảng "Đã xử lý", Hạ duyệt lại và đóng VD-1. `van-de.md` và mục "Vấn đề" trong `bang.md` đúng.
+  - Chưa thử thật: giao sửa cho nhiều chủ file cùng lúc, hình tải hỏng tự giao, giao ban. Ba phần này đã kiểm bằng cách chạy riêng hàm trên dữ liệu mẫu.

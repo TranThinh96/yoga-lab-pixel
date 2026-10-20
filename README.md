@@ -68,7 +68,10 @@ Khi việc lớn cần nhiều người, bạn không phải tự chuyển tay t
 3. Kế hoạch hiện ra để bạn duyệt. Bạn có thể đổi người làm, sửa nội dung, đổi thứ tự, thêm hoặc xoá bước. Xong thì bấm **Chạy kế hoạch**.
 4. Máy chủ tự chạy từng bước. Mỗi người nhận brief, **bảng dự án** `du-an/<mã>/bang.md` (tiến độ, kết luận duyệt, câu trả lời của bạn) và bàn giao cần đọc.
    Mỗi người tự kiểm sản phẩm theo tiêu chí trong brief trước khi bàn giao, và đọc `agents/<tên>/kinh-nghiem.md` của mình.
-5. **Vòng duyệt:** người duyệt kết thúc bàn giao bằng `KẾT LUẬN: ĐẠT` hoặc `KẾT LUẬN: CẦN SỬA`. Cần sửa thì máy chủ tự chèn bước sửa (người làm) và duyệt lại (người duyệt), tối đa `maxReviewRounds` vòng.
+5. **Vòng duyệt:** người duyệt kết thúc bàn giao bằng `KẾT LUẬN: ĐẠT` hoặc `KẾT LUẬN: CẦN SỬA`. Cần sửa thì máy chủ tự chèn bước sửa và duyệt lại (người duyệt), tối đa `maxReviewRounds` vòng.
+   **Sổ vấn đề** (`issueLedger`): người duyệt ghi lỗi thành bảng "Danh sách vấn đề" (mã, file, vị trí, mức, loại, vấn đề, đề xuất). Máy chủ ghi vào `du-an/<mã>/van-de.md` và giao sửa cho **người phụ trách file có lỗi**, nên một vòng sửa có thể gồm nhiều người.
+   Người sửa báo lại từng mã trong bảng "Đã xử lý". Báo "Đã sửa" mà file không đổi thì vấn đề vẫn mở. Bước duyệt lại chỉ kiểm các vấn đề còn mở.
+   Hình máy chủ không tải được (link hỏng, tên file Commons không có thật) cũng thành vấn đề: máy chủ giao ngay người ghi link đó tìm link khác.
    Trước mỗi bước duyệt, **máy chủ tự soát lỗi máy móc** (không tốn token): dấu câu đôi, dấu cách trước dấu câu, lặp từ, từ cần tránh (`lintBanned`), cách gọi lẫn lộn (`lintVariants`), trang slide quá `lintMaxWords` chữ. Kết quả được đưa vào việc của người duyệt, nên họ không phải tự dò. Bước duyệt chỉ kiểm, không tự đi tìm nguồn mới. Bước duyệt lại và bước sửa chạy ở mức suy nghĩ thấp hơn (`stepEffort`).
 6. **Hỏi chủ dự án:** bàn giao có mục "Câu hỏi cho chủ dự án" thì dự án dừng ở trạng thái **Chờ bạn trả lời**. Bạn trả lời từng câu hoặc bấm **Để nhóm tự quyết**; câu trả lời được ghi vào bảng dự án cho mọi người làm theo. Câu hỏi giống câu đã trả lời trong cùng dự án thì nhóm không hỏi lại. Câu giống câu bạn đã trả lời ở dự án trước thì ô trả lời được điền sẵn câu cũ. Mọi quyết định được ghi vào `workspace/tri-thuc/quyet-dinh.md`.
 7. Nếu một bước lỗi, điều phối viên được gọi lại **một lần** để lập lại phần còn lại. Nếu vẫn lỗi, kế hoạch **tạm dừng** để bạn bấm **Chạy tiếp**.
@@ -79,6 +82,10 @@ Khi việc lớn cần nhiều người, bạn không phải tự chuyển tay t
 9. **Hình ảnh:** sau bước ghi `output/<chủ đề>/thiet-ke.md`, máy chủ tự tải các hình có giấy phép trong bảng "Danh sách hình" (link trang File: của Wikimedia Commons hoặc link thẳng tới file ảnh) vào `output/<chủ đề>/hinh/`. **Nhi** (agy) tạo ảnh AI theo prompt trong thiet-ke.md. agy lưu ảnh trong thư mục riêng của nó, máy chủ tự chép sang `hinh/` khi Nhi xong (tên `trang-NN-....jpg`). Hạ mở từng ảnh để duyệt, ảnh sai thì Nhi tạo lại.
    **Hình y khoa không dùng AI:** hình về cơ thể, cơ quan, giải phẫu, cơ chế bệnh, triệu chứng, thuốc, xét nghiệm phải lấy từ nguồn có giấy phép (loại C). AI chỉ dùng cho ảnh không khí, ảnh tư thế và đạo cụ. Máy chủ dò các trang y khoa đang để AI tạo trong thiet-ke.md: báo lỗi BẮT BUỘC cho người duyệt, dặn Nhi không tạo, và nếu Nhi lỡ tạo thì ảnh đó vào `hinh/cac-ban/...-ai-khong-dung`, không vào bộ hình chính.
 10. **Ngân sách:** mỗi dự án có `planTokenBudget` token quy đổi (mặc định 4 triệu). Token đọc lại từ cache chỉ tính 1/10, vì giá chỉ khoảng 1/10. Chạm ngân sách thì dự án tạm dừng, bấm **Chạy tiếp** để cho thêm 50%. Thẻ dự án hiện tổng token, token quy đổi và chi phí tham khảo.
+
+**Nhắn đồng đội:** bàn giao được thêm mục "Gửi đồng đội" (mỗi dòng `@<mã người>: …`) và "Cho cả nhóm biết". Máy chủ chuyển tin tới bước kế tiếp của người nhận và ghi cả hai vào bảng dự án.
+
+**Giao ban:** khi có tín hiệu (vấn đề không rõ ai sửa, hình tải hỏng, tin gửi điều phối viên), máy chủ gọi điều phối viên một lượt ngắn để chèn tối đa 2 bước. Tối đa `maxCheckins` lần mỗi dự án.
 
 Mẹo: có slide hoặc tài liệu mẫu thì xuất ra PDF, bỏ vào `sources/` và nhắc tên file trong mục tiêu, nhóm sẽ lấy nó làm chuẩn.
 Các agent không tự gọi nhau, mọi bước đều do máy chủ chạy. Mỗi lúc chỉ có một kế hoạch chạy.
@@ -166,7 +173,9 @@ thành đường dẫn đầy đủ, ví dụ `"/Users/ban/Obsidian/YogaLab"` ho
 | `coordinatorId` | Điều phối viên mặc định (tự lưu khi bạn chọn trong mục Dự án) |
 | `maxPlanSteps` | Kế hoạch dài nhất bao nhiêu bước (mặc định 6) |
 | `maxReplans` | Bước lỗi thì điều phối viên được lập lại kế hoạch mấy lần (mặc định 1) |
-| `labTools` | Cho agent Claude gọi công cụ của máy chủ qua MCP nội bộ (soát lỗi, đếm chữ, đối chiếu slides với thiết kế). Mặc định tắt; bật sau khi thử trên máy |
+| `labTools` | Cho agent Claude gọi công cụ của máy chủ qua MCP nội bộ (soát lỗi, kiểm link, tải hình). Mặc định tắt; bật sau khi thử trên máy |
+| `issueLedger` | Sổ vấn đề: người duyệt ghi bảng lỗi, máy chủ giao sửa cho người phụ trách file có lỗi. `false` = vòng duyệt như trước. Mặc định bật |
+| `maxCheckins` | Số lần tối đa điều phối viên được gọi giữa chừng (giao ban) khi có tín hiệu. `0` = tắt. Mặc định 3 |
 | `chromePreflight` | Trước khi giao việc cho agent dùng Chrome, máy chủ thử kết nối bằng một lượt rất ngắn; hỏng thì tạm dừng dự án và báo cách sửa. Mặc định bật |
 
 Model chọn trong ô **Model** khi thêm hoặc sửa agent:

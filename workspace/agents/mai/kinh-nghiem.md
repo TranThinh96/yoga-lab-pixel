@@ -17,3 +17,5 @@ Bài học rút ra sau mỗi dự án (mới nhất ở cuối). Mỗi dòng m�
 - (2026-10-17) Với số cấp cứu 115 và dấu hiệu cần đi cấp cứu, tìm ngay từ vòng đầu một trang công khai của Bộ Y tế/Sở Y tế Việt Nam thay vì để sang 'Việc còn mở'.
 - (2026-10-17) Với mỗi hình Commons đề xuất, ghi sẵn cả link tải thẳng Special:FilePath cạnh link trang File: để máy chủ tải được ngay từ bước thiết kế.
 - (2026-10-17) Tìm nguồn Việt Nam (Bộ Y tế) cho số cấp cứu 115 và dấu hiệu cấp cứu ngay ở vòng nguồn đầu, không để trống tới nghiệm thu.
+- (2026-10-20) Khi lấy định nghĩa bệnh, chép trọn cả đoạn định nghĩa của trang NIH/NHLBI (gồm vế 'dù có đủ thời gian và môi trường để ngủ') để brief không phải bỏ ý vì thiếu trích.
+- (2026-10-20) Mỗi cụm chữ brief yêu cầu đặt trên slide (vd 'dù có đủ cơ hội ngủ') phải có câu trích nguyên văn trong file nguồn ngay vòng đầu, kể cả khi chỉ đưa vào Lời giảng, để khỏi phải thêm một lượt sửa ở cuối dự án.

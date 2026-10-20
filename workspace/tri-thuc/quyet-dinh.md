@@ -2,6 +2,29 @@
 
 > Máy chủ tự sinh từ .yogalab/quyet-dinh.json. Sửa câu trả lời trong giao diện Yoga Lab, không sửa ở đây.
 
+## mat-ngu-v1
+- **QD-20** (plan-20261020-220605, 2026-10-20) bạn trả lời
+  - Hỏi: Báo cáo Gemini chưa ra sau hơn 60 phút. Đề xuất: chạy lại bước 1 sau vài phút để Mai lấy toàn văn từ link chat trên (không chạy lại Deep Research). Nếu vẫn không ra, cho phép Mai mở từng nguồn bằng WebFetch.
+  - Trả lời: Đồng ý theo đề xuất: chạy lại bước 1, Mai lấy toàn văn báo cáo từ link chat Gemini https://gemini.google.com/app/c86f3ec49a93a9e1, không chạy lại Deep Research. Nếu vẫn chưa ra thì mở từng nguồn ứng viên bằng WebFetch.
+- **QD-21** (plan-20261020-220605, 2026-10-20) bạn trả lời
+  - Hỏi: Chấp nhận bỏ "dù có đủ cơ hội ngủ" và "áp lực buồn ngủ" vì chưa có nguồn? Đề xuất: bỏ.
+  - Trả lời: Đồng ý bỏ cả hai: "dù có đủ cơ hội ngủ" (tr.2) và "áp lực buồn ngủ" (tr.3).
+- **QD-22** (plan-20261020-220605, 2026-10-20) bạn trả lời
+  - Hỏi: Nếu Mai không có câu trích cho "ra khỏi giường khi thức lâu / phòng tối mát": bỏ hẳn ý này khỏi tr.10. Đề xuất: bỏ.
+  - Trả lời: Đồng ý: không có câu trích thì bỏ hẳn ý "ra khỏi giường khi thức lâu / phòng tối mát" khỏi tr.10, giữ các ý đã có trích.
+- **QD-23** (plan-20261020-220605, 2026-10-20) bạn trả lời
+  - Hỏi: Ảnh Gác chân lên ghế: dùng phương án dự phòng trong thiet-ke.md (bolster dưới bắp chân, tạo lại 2 lần nữa) hay chấp nhận cách dựng trên Canva? Đề xuất: tạo lại bằng bolster dưới bắp chân.
+  - Trả lời: Đồng ý: tạo lại ảnh Gác chân theo phương án dự phòng trong thiet-ke.md (bolster dưới bắp chân), tối đa 2 lần.
+- **QD-24** (plan-20261020-220605, 2026-10-20) *nhóm tự quyết*
+  - Hỏi: Giữ cụm "dù có đủ cơ hội ngủ" ở tr.2 (nay có nguồn NHLBI, Chef đã kiểm nguyên văn)? Đề xuất: giữ, chỉ trong Lời giảng.
+  - Trả lời: (Đã hỏi đủ số lần cho phép: nhóm tự quyết theo phương án đề xuất)
+- **QD-25** (plan-20261020-220605, 2026-10-20) *nhóm tự quyết*
+  - Hỏi: Đổi tên tư thế 4 thành "Nằm gác chân lên bolster" (ghế là lựa chọn nói trong Lời giảng) cho khớp ảnh? Đề xuất: đổi.
+  - Trả lời: (Đã hỏi đủ số lần cho phép: nhóm tự quyết theo phương án đề xuất)
+- **QD-26** (plan-20261020-220605, 2026-10-20) *nhóm tự quyết*
+  - Hỏi: Tư thế 4: giữ ảnh hiện tại và đổi nhãn thành "Nằm co gối có đỡ" (bỏ Viparita Karani), hay chụp ảnh thật gác bắp chân lên ghế? Đề xuất: chụp ảnh thật với ghế, vì đó mới đúng tư thế trong mục tiêu; nếu không kịp thì đổi nhãn.
+  - Trả lời: (Đã hỏi đủ số lần cho phép: nhóm tự quyết theo phương án đề xuất)
+
 ## suy-giap-v7
 - **QD-17** (plan-20261019-193827, 2026-10-19) *nhóm tự quyết*
   - Hỏi: Tr.4 thiếu hình thực quản/TK quặt ngược: thử tải lại, nếu không có thì bỏ 2 nhãn (đề xuất).

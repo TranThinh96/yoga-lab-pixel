@@ -1,7 +1,7 @@
 # Bảng dự án plan-20261019-193827
 
 Mục tiêu: Làm slide workshop 60 phút “Yoga cân bằng phục hồi cho người suy giáp” cho học viên yoga không chuyên y, khoảng 25 trang. Gồm: khái niệm, tuyến giáp hoạt động thế nào, nguyên nhân (Hashimoto…), triệu chứng, biến chứng, nhóm nguy cơ, giải pháp y khoa trước – yoga hỗ trợ, 5 tư thế có đạo cụ, hơi thở, thư giãn, ăn uống, tinh thần, tóm lược. Thư mục chủ đề: suy-giap-v7.
-Trạng thái: paused
+Trạng thái: stopped
 Brief: du-an/plan-20261019-193827/brief.md
 
 ## Trả lời của chủ dự án (bắt buộc tuân theo)
@@ -35,3 +35,4 @@ Brief: du-an/plan-20261019-193827/brief.md
 - Chủ dự án để nhóm tự quyết
 - Máy chủ tải hình y khoa từ nguồn (agents/mai/suy-giap-v7-nguon.md → output/suy-giap-v7/hinh-nguon): 1 mới, 11 đã có, 5 không tải được (giai-phau-tuyen-giap-sau.jpg: HTTP 429; dong-mach-giap-tren-duoi.png: HTTP 429; nang-gi…)
 - Bước 6: hết hạn mức → tạm dừng, hẹn tự chạy tiếp 00:32
+- Tự chạy tiếp sau khi hạn mức được làm mới

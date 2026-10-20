@@ -226,5 +226,89 @@
   "goal": "Làm slide workshop 60 phút “Yoga cân bằng phục hồi cho người suy giáp” cho học viên yoga không chuyên y, khoảng 25 trang. Gồm: khái niệm, tuyến giáp hoạt động thế nào, nguyên nhân (Hashimoto…), triệu chứng, biến chứng, nhóm nguy cơ, giải pháp y khoa trước – yoga hỗ trợ, 5 tư thế có đạo cụ, hơi thở, thư giãn, ăn uống, tinh thần, tóm lược. Thư mục chủ đề: suy-giap-v7.",
   "at": "2026-10-19T12:38:27.427Z",
   "tuQuyet": true
+ },
+ {
+  "id": "QD-20",
+  "q": "Báo cáo Gemini chưa ra sau hơn 60 phút. Đề xuất: chạy lại bước 1 sau vài phút để Mai lấy toàn văn từ link chat trên (không chạy lại Deep Research). Nếu vẫn không ra, cho phép Mai mở từng nguồn bằng WebFetch.",
+  "a": "Đồng ý theo đề xuất: chạy lại bước 1, Mai lấy toàn văn báo cáo từ link chat Gemini https://gemini.google.com/app/c86f3ec49a93a9e1, không chạy lại Deep Research. Nếu vẫn chưa ra thì mở từng nguồn ứng viên bằng WebFetch.",
+  "from": "mai",
+  "step": 1,
+  "planId": "plan-20261020-220605",
+  "topic": "mat-ngu-v1",
+  "goal": "Làm slide workshop 30 phút: Yoga phục hồi cho người mất ngủ, khoảng 12 trang. Cho học viên yoga không chuyên y. Gồm: mất ngủ là gì, vì sao khó ngủ, khi nào cần gặp bác sĩ, yoga hỗ trợ ra sao, 4 tư thế phục hồi có đạo cụ, một bài thở chậm, thư giãn trước khi ngủ, tóm lược. Thư mục chủ đề: mat-ngu-v1.",
+  "at": "2026-10-20T15:59:32.341Z",
+  "tuQuyet": false
+ },
+ {
+  "id": "QD-21",
+  "q": "Chấp nhận bỏ \"dù có đủ cơ hội ngủ\" và \"áp lực buồn ngủ\" vì chưa có nguồn? Đề xuất: bỏ.",
+  "a": "Đồng ý bỏ cả hai: \"dù có đủ cơ hội ngủ\" (tr.2) và \"áp lực buồn ngủ\" (tr.3).",
+  "from": "an",
+  "step": 6,
+  "planId": "plan-20261020-220605",
+  "topic": "mat-ngu-v1",
+  "goal": "Làm slide workshop 30 phút: Yoga phục hồi cho người mất ngủ, khoảng 12 trang. Cho học viên yoga không chuyên y. Gồm: mất ngủ là gì, vì sao khó ngủ, khi nào cần gặp bác sĩ, yoga hỗ trợ ra sao, 4 tư thế phục hồi có đạo cụ, một bài thở chậm, thư giãn trước khi ngủ, tóm lược. Thư mục chủ đề: mat-ngu-v1.",
+  "at": "2026-10-20T16:11:43.360Z",
+  "tuQuyet": false
+ },
+ {
+  "id": "QD-22",
+  "q": "Nếu Mai không có câu trích cho \"ra khỏi giường khi thức lâu / phòng tối mát\": bỏ hẳn ý này khỏi tr.10. Đề xuất: bỏ.",
+  "a": "Đồng ý: không có câu trích thì bỏ hẳn ý \"ra khỏi giường khi thức lâu / phòng tối mát\" khỏi tr.10, giữ các ý đã có trích.",
+  "from": "an",
+  "step": 6,
+  "planId": "plan-20261020-220605",
+  "topic": "mat-ngu-v1",
+  "goal": "Làm slide workshop 30 phút: Yoga phục hồi cho người mất ngủ, khoảng 12 trang. Cho học viên yoga không chuyên y. Gồm: mất ngủ là gì, vì sao khó ngủ, khi nào cần gặp bác sĩ, yoga hỗ trợ ra sao, 4 tư thế phục hồi có đạo cụ, một bài thở chậm, thư giãn trước khi ngủ, tóm lược. Thư mục chủ đề: mat-ngu-v1.",
+  "at": "2026-10-20T16:11:43.360Z",
+  "tuQuyet": false
+ },
+ {
+  "id": "QD-23",
+  "q": "Ảnh Gác chân lên ghế: dùng phương án dự phòng trong thiet-ke.md (bolster dưới bắp chân, tạo lại 2 lần nữa) hay chấp nhận cách dựng trên Canva? Đề xuất: tạo lại bằng bolster dưới bắp chân.",
+  "a": "Đồng ý: tạo lại ảnh Gác chân theo phương án dự phòng trong thiet-ke.md (bolster dưới bắp chân), tối đa 2 lần.",
+  "from": "nhi",
+  "step": 14,
+  "planId": "plan-20261020-220605",
+  "topic": "mat-ngu-v1",
+  "goal": "Làm slide workshop 30 phút: Yoga phục hồi cho người mất ngủ, khoảng 12 trang. Cho học viên yoga không chuyên y. Gồm: mất ngủ là gì, vì sao khó ngủ, khi nào cần gặp bác sĩ, yoga hỗ trợ ra sao, 4 tư thế phục hồi có đạo cụ, một bài thở chậm, thư giãn trước khi ngủ, tóm lược. Thư mục chủ đề: mat-ngu-v1.",
+  "at": "2026-10-20T16:43:22.240Z",
+  "tuQuyet": false
+ },
+ {
+  "id": "QD-24",
+  "q": "Giữ cụm \"dù có đủ cơ hội ngủ\" ở tr.2 (nay có nguồn NHLBI, Chef đã kiểm nguyên văn)? Đề xuất: giữ, chỉ trong Lời giảng.",
+  "a": "(Đã hỏi đủ số lần cho phép: nhóm tự quyết theo phương án đề xuất)",
+  "from": "chef",
+  "step": 0,
+  "planId": "plan-20261020-220605",
+  "topic": "mat-ngu-v1",
+  "goal": "Làm slide workshop 30 phút: Yoga phục hồi cho người mất ngủ, khoảng 12 trang. Cho học viên yoga không chuyên y. Gồm: mất ngủ là gì, vì sao khó ngủ, khi nào cần gặp bác sĩ, yoga hỗ trợ ra sao, 4 tư thế phục hồi có đạo cụ, một bài thở chậm, thư giãn trước khi ngủ, tóm lược. Thư mục chủ đề: mat-ngu-v1.",
+  "at": "2026-10-20T16:50:12.764Z",
+  "tuQuyet": true
+ },
+ {
+  "id": "QD-25",
+  "q": "Đổi tên tư thế 4 thành \"Nằm gác chân lên bolster\" (ghế là lựa chọn nói trong Lời giảng) cho khớp ảnh? Đề xuất: đổi.",
+  "a": "(Đã hỏi đủ số lần cho phép: nhóm tự quyết theo phương án đề xuất)",
+  "from": "chef",
+  "step": 0,
+  "planId": "plan-20261020-220605",
+  "topic": "mat-ngu-v1",
+  "goal": "Làm slide workshop 30 phút: Yoga phục hồi cho người mất ngủ, khoảng 12 trang. Cho học viên yoga không chuyên y. Gồm: mất ngủ là gì, vì sao khó ngủ, khi nào cần gặp bác sĩ, yoga hỗ trợ ra sao, 4 tư thế phục hồi có đạo cụ, một bài thở chậm, thư giãn trước khi ngủ, tóm lược. Thư mục chủ đề: mat-ngu-v1.",
+  "at": "2026-10-20T16:50:12.764Z",
+  "tuQuyet": true
+ },
+ {
+  "id": "QD-26",
+  "q": "Tư thế 4: giữ ảnh hiện tại và đổi nhãn thành \"Nằm co gối có đỡ\" (bỏ Viparita Karani), hay chụp ảnh thật gác bắp chân lên ghế? Đề xuất: chụp ảnh thật với ghế, vì đó mới đúng tư thế trong mục tiêu; nếu không kịp thì đổi nhãn.",
+  "a": "(Đã hỏi đủ số lần cho phép: nhóm tự quyết theo phương án đề xuất)",
+  "from": "chef",
+  "step": 0,
+  "planId": "plan-20261020-220605",
+  "topic": "mat-ngu-v1",
+  "goal": "Làm slide workshop 30 phút: Yoga phục hồi cho người mất ngủ, khoảng 12 trang. Cho học viên yoga không chuyên y. Gồm: mất ngủ là gì, vì sao khó ngủ, khi nào cần gặp bác sĩ, yoga hỗ trợ ra sao, 4 tư thế phục hồi có đạo cụ, một bài thở chậm, thư giãn trước khi ngủ, tóm lược. Thư mục chủ đề: mat-ngu-v1.",
+  "at": "2026-10-20T16:55:44.780Z",
+  "tuQuyet": true
  }
 ]

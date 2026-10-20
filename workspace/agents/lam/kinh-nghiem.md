@@ -14,3 +14,6 @@ Bài học rút ra sau mỗi dự án (mới nhất ở cuối). Mỗi dòng m�
 - (2026-10-17) Đọc lại từng ý trên slide như một câu trọn nghĩa; cụm cụt như 'Gia đình có người bị' phải có tân ngữ.
 - (2026-10-17) Sau khi sửa dòng Hình phải mở thiet-ke.md đối chiếu từng trang, không chỉ sửa theo danh sách được giao.
 - (2026-10-17) Với tư thế khó vẽ (gác bắp chân lên ghế), ghi sẵn trong dòng Hình một phương án đạo cụ dự phòng (bolster) để khi ảnh không đạt không phải sửa lại hai file.
+- (2026-10-20) Khi đạo cụ trong ảnh tư thế đổi (ghế sang bolster), tìm và sửa mọi chỗ nhắc tên tư thế trong slides.md: bảng mục tiêu, trang An toàn, trang tư thế, tóm lược, Việc còn mở.
+- (2026-10-20) Đừng tự thêm lại ý mà chủ dự án đã quyết bỏ chỉ vì người duyệt yêu cầu; ghi câu hỏi cho chủ dự án kèm nguồn mới.
+- (2026-10-20) Khi đổi đạo cụ cho khớp ảnh, kiểm xem tư thế còn đúng tên gọi và còn khác các tư thế trang khác không; nếu đã thành tư thế khác (vd co gối kê bolster) thì đổi cả tên Phạn và ghi vào Việc còn mở.

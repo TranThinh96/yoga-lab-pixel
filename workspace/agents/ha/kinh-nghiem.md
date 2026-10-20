@@ -10,3 +10,6 @@ Bài học rút ra sau mỗi dự án (mới nhất ở cuối). Mỗi dòng m�
 - (2026-10-17) Khi duyệt lại ảnh tạo mới, kiểm file đã nằm đúng output/<chu-de>/hinh/ (không phải thư mục tạm như hinh-moi/) trước khi kết luận.
 - (2026-10-17) Khi duyệt ảnh tư thế, đối chiếu từng đạo cụ với dòng 'Trên slide' (vd tr.18 chăn phải dưới vai, ảnh lại đặt dưới đầu), không chỉ kiểm tư thế chính.
 - (2026-10-17) Khi có thư mục ảnh tạm (hinh-moi/), so giờ sửa file với hinh/ và ghi rõ file nào chưa được chép vào thư mục cuối.
+- (2026-10-20) Duyệt ảnh tư thế bằng cách đối chiếu từng cụm đạo cụ trong prompt (vd 'hai bắp chân nằm trọn trên bolster'); ảnh có bolster dưới khoeo, bàn chân chạm thảm là tư thế khác, phải trả lại.
+- (2026-10-20) Trước khi yêu cầu thêm một ý vào kịch bản, đọc mục 'Trả lời của chủ dự án' trong bang.md để không đi ngược quyết định đã chốt.
+- (2026-10-20) Khi chấp nhận ảnh 'tạm được', đối chiếu với tên tư thế và trang khác (vd trùng Savasana tr.10) rồi ghi rõ ảnh có còn thể hiện đúng tư thế trong mục tiêu không, không chỉ xét an toàn.

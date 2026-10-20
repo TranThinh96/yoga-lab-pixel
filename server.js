@@ -23,7 +23,7 @@ const { vietBanDo } = require('./lib/ban-do');
 const { ghiQuyetDinh, goiYChoCauHoi, quyetDinhChoKeHoach, vietSoQuyetDinh } = require('./lib/quyet-dinh');
 const { LOAI_LOI, mucTrong, docVanDe, docDaXuLy, docDuyetLai, docTinNhan, chuFile, ganVanDe, nhomTheoChu, capNhatTuSua, capNhatTuDuyetLai, vietSoVanDe } = require('./lib/van-de');
 const { docCauHoi: parseQuestions, laCauHoiMoiTruong, locBaiHocMoi, phanLoaiCauHoi, chonChuDe, chuDeTu } = require('./lib/van-ban');
-const { chuDeTriThuc, docBangTriThuc, hopNhatMenhDe, hopNhatNguon, capNhatTruyCap, hopNhatTuThe, maHinh, hopNhatHinh, cacChuDe, vietMocChuDe, vietBanDoTriThuc } = require('./lib/tri-thuc');
+const { chuDeTriThuc, docBangTriThuc, hopNhatMenhDe, hopNhatNguon, capNhatTruyCap, hopNhatTuThe, maHinh, hopNhatHinh, cacChuDe, vietMocChuDe, vietBanDoTriThuc, docThuatNgu, dienThuatNgu } = require('./lib/tri-thuc');
 const { docGhiChu } = require('./lib/ghi-chu');
 
 const ROOT = __dirname;
@@ -137,6 +137,12 @@ async function ensureWorkspace() {
       else if (!fs.existsSync(d)) await fsp.copyFile(s, d).catch(() => {});
     }
   };
+  // thuat-ngu.md lần đầu: điền sẵn danh sách trong config.json; sau đó là file của bạn, máy chủ không ghi nữa
+  const tn = path.join(ws, 'tri-thuc', 'thuat-ngu.md');
+  if (!fs.existsSync(tn)) {
+    const mau = await fsp.readFile(path.join(TEMPLATES_DIR, 'tri-thuc', 'thuat-ngu.md'), 'utf8').catch(() => null);
+    if (mau) await fsp.writeFile(tn, dienThuatNgu(mau, config.lintBanned || DEFAULT_CONFIG.lintBanned || [], config.lintVariants || DEFAULT_CONFIG.lintVariants || []), 'utf8');
+  }
   await chepThieu(path.join(TEMPLATES_DIR, 'tri-thuc'), path.join(ws, 'tri-thuc'));
   const idx = path.join(ws, 'index.md');
   if (!fs.existsSync(idx)) await fsp.writeFile(idx, INDEX_TEMPLATE, 'utf8');
@@ -2233,8 +2239,22 @@ function henTaiLai(plan, label, fn, lan = 1) {
 // ── Máy soát lỗi (server tự làm, không tốn token) ──
 // Lỗi máy móc người duyệt hay bỏ sót ("đó,." qua 2 vòng duyệt ở v5): dấu câu, từ lặp, từ cấm, cách gọi lẫn lộn, trang quá chữ.
 const isProductFile = f => /\.md$/i.test(f) && !/^(handoff|du-an)\//.test(f) && !/(^|\/)kinh-nghiem\.md$/.test(f) && f !== 'index.md';
-const lintText = (rel, txt) => soatVanBan(rel, txt, { maxChu: cfgNum('lintMaxWords', 40),
-  tuTranh: config.lintBanned || DEFAULT_CONFIG.lintBanned || [], cachGoi: config.lintVariants || DEFAULT_CONFIG.lintVariants || [] });
+// Danh sách soát = config.json ∪ hai bảng trong tri-thuc/thuat-ngu.md (đọc lại khi file đổi)
+let thuatNgu = { mtime: -1, tuTranh: [], cachGoi: [] };
+function thuatNguHienTai() {
+  const abs = insideWorkspace('tri-thuc/thuat-ngu.md');
+  let mtime = 0;
+  try { mtime = fs.statSync(abs).mtimeMs; } catch {}
+  if (mtime !== thuatNgu.mtime) thuatNgu = { mtime, ...(mtime ? docThuatNgu(readWs('tri-thuc/thuat-ngu.md')) : { tuTranh: [], cachGoi: [] }) };
+  return thuatNgu;
+}
+function lintText(rel, txt) {
+  const tn = thuatNguHienTai(), k = c => c.join('\u0000').toLowerCase();
+  const cachGoi = [...(config.lintVariants || DEFAULT_CONFIG.lintVariants || [])];
+  for (const c of tn.cachGoi) if (!cachGoi.some(x => k(x) === k(c) || k([...x].reverse()) === k(c))) cachGoi.push(c);
+  return soatVanBan(rel, txt, { maxChu: cfgNum('lintMaxWords', 40),
+    tuTranh: [...new Set([...(config.lintBanned || DEFAULT_CONFIG.lintBanned || []), ...tn.tuTranh])], cachGoi });
+}
 function lintFiles(files) {
   return [...new Set(files || [])].filter(isProductFile).flatMap(rel => {
     const t = readWs(rel);

@@ -144,3 +144,11 @@ test('vietBanDoTriThuc: cần bạn xem, nguồn bị chặn', () => {
   assert.match(md.split('## Cần bạn xem')[1].split('##')[0], /i-ot.*quá hạn xem lại \(2026-01-01\)/);
   assert.match(md.split('## Nguồn đang bị chặn')[1], /mayo.*captcha/);
 });
+
+test('docThuatNgu, dienThuatNgu', () => {
+  const mau = require('fs').readFileSync(require('path').join(__dirname, '..', 'templates', 'tri-thuc', 'thuat-ngu.md'), 'utf8');
+  const t = tt.dienThuatNgu(mau, ['chữa khỏi', 'thải độc'], [['giáo viên', 'giảng viên'], ['học sinh', 'học viên']]);
+  assert.match(t, /\| giảng viên \| giáo viên \|/);
+  assert.deepEqual(tt.docThuatNgu(t), { tuTranh: ['chữa khỏi', 'thải độc'], cachGoi: [['giáo viên', 'giảng viên'], ['học sinh', 'học viên']] });
+  assert.deepEqual(tt.docThuatNgu(mau), { tuTranh: [], cachGoi: [] });
+});

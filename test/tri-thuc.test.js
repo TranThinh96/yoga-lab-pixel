@@ -165,3 +165,19 @@ test('timTriThuc', () => {
   assert.deepEqual(tt.timTriThuc(ns, { tuKhoa: 'em bé', chuDe: 'mat-ngu-v2' }).map(x => x.path), ['tri-thuc/tu-the/balasana.md']);
   assert.deepEqual(tt.timTriThuc(ns, { tuKhoa: 'và của' }), []);
 });
+
+test('goiNguCanh', () => {
+  assert.equal(tt.goiNguCanh({}), '');
+  const g = tt.goiNguCanh({ quyetDinh: ['Q1 → A1'], coBanDo: true });
+  assert.ok(g.startsWith('BỐI CẢNH TỪ BỘ NÃO CHUNG'));
+  assert.ok(!g.includes('Quy tắc của chủ dự án') && !g.includes('Vấn đề đang mở') && !g.includes('Trong bộ não có thể liên quan'));
+  assert.ok(g.includes('- Q1 → A1') && g.endsWith('Bản đồ bộ não: tri-thuc/00-ban-do.md'));
+  const dai = tt.goiNguCanh({ quyTac: '- Không dạy đảo ngược cho người tăng nhãn áp.', quyetDinh: Array(8).fill('x'.repeat(300)),
+    vanDe: Array(8).fill('y'.repeat(200)), lienQuan: Array(8).fill('- ' + 'z'.repeat(400)), coBanDo: true });
+  assert.ok(dai.length < 6000, String(dai.length));
+  assert.ok(dai.includes('Quy tắc của chủ dự án (ưu tiên cao nhất):\n- Không dạy đảo ngược'));
+  const dem = c => dai.split('\n').filter(l => l.includes(c.repeat(10))).length;
+  assert.deepEqual([dem('x'), dem('y')], [8, 8]); // cắt phần "Trong bộ não…" trước
+  assert.ok(dem('z') < 8);
+  assert.ok(tt.goiNguCanh({ quyTac: 'q'.repeat(9000) }).length <= 6000);
+});

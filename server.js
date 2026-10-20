@@ -18,12 +18,13 @@ const os = require('os');
 const https = require('https');
 const crypto = require('crypto');
 const congCu = require('./lib/cong-cu');
+const { dongTraCuu } = congCu;
 const { soatVanBan } = require('./lib/soat-loi');
 const { vietBanDo } = require('./lib/ban-do');
 const { ghiQuyetDinh, goiYChoCauHoi, quyetDinhChoKeHoach, vietSoQuyetDinh } = require('./lib/quyet-dinh');
 const { LOAI_LOI, mucTrong, docVanDe, docDaXuLy, docDuyetLai, docTinNhan, chuFile, ganVanDe, nhomTheoChu, capNhatTuSua, capNhatTuDuyetLai, vietSoVanDe } = require('./lib/van-de');
 const { docCauHoi: parseQuestions, laCauHoiMoiTruong, locBaiHocMoi, phanLoaiCauHoi, chonChuDe, chuDeTu } = require('./lib/van-ban');
-const { chuDeTriThuc, docBangTriThuc, hopNhatMenhDe, hopNhatNguon, capNhatTruyCap, hopNhatTuThe, maHinh, hopNhatHinh, cacChuDe, vietMocChuDe, vietBanDoTriThuc, docThuatNgu, dienThuatNgu, timTriThuc } = require('./lib/tri-thuc');
+const { chuDeTriThuc, docBangTriThuc, hopNhatMenhDe, hopNhatNguon, capNhatTruyCap, hopNhatTuThe, maHinh, hopNhatHinh, cacChuDe, vietMocChuDe, vietBanDoTriThuc, docThuatNgu, dienThuatNgu, timTriThuc, goiNguCanh } = require('./lib/tri-thuc');
 const { docGhiChu } = require('./lib/ghi-chu');
 
 const ROOT = __dirname;
@@ -394,7 +395,7 @@ function geminiImagePrompt(agent, g) {
 }
 
 // kind: loại bước trong kế hoạch (work / review / rereview / fix); không có khi giao việc lẻ
-function buildPrompt(agent, task, handoffPath, attachments, kind, lab = []) {
+function buildPrompt(agent, task, handoffPath, attachments, kind, lab = [], goi = '') {
   const lines = [
     `Bạn là ${agent.name} — ${agent.role} trong Yoga Lab (nhóm nghiên cứu yoga & y khoa).`,
     `Thư mục hiện tại là folder làm việc chung của cả nhóm.`,
@@ -438,6 +439,7 @@ function buildPrompt(agent, task, handoffPath, attachments, kind, lab = []) {
   if (attachments && attachments.length) {
     lines.push('', 'ĐỌC TRƯỚC (bàn giao/tài liệu được đính kèm, chỉ cần đọc những file này):', ...attachments.map(a => `- ${a}`));
   }
+  if (goi) lines.push('', goi);
   lines.push('', 'NHIỆM VỤ:', task.trim());
   return lines.join('\n');
 }
@@ -554,7 +556,9 @@ async function startRun(agent, task, attachments = [], opts = {}) {
     } catch (e) { running.delete(agent.id); throw e; }
   }
   const handoffRel = `handoff/${stamp(startedAt)}-${agent.id}.md`;
-  const prompt = opts.prompt || buildPrompt(agent, task, handoffRel, attachments, opts.kind, lab);
+  let goi = '';
+  if (!opts.prompt && config.brain !== false) { try { goi = goiChoLuot(agent, task, opts); } catch (e) { console.error('Bộ não: không soạn được gói ngữ cảnh:', e.message); } }
+  const prompt = opts.prompt || buildPrompt(agent, task, handoffRel, attachments, opts.kind, lab, goi);
   const { cmd, args, stdinJson } = cliArgs(agent, opts.maxTurns, opts.effort, opts.kind, lab, mcpFile);
 
   const run = {
@@ -1045,6 +1049,24 @@ function docKhoTriThuc() {
 }
 // Dựng lại 00-ban-do.md và trang từng chủ đề (gộp các lần gọi trong 3 giây; nội dung không đổi thì không ghi)
 let banDoTimer = null;
+// Gói ngữ cảnh cho một lượt: quy tắc của bạn, quyết định đã chốt, vấn đề đang mở của người này, note có thể liên quan
+function goiChoLuot(agent, task, opts = {}) {
+  const plan = opts.planId && plans.find(p => p.id === opts.planId);
+  const quyTac = docGhiChu(readWs('tri-thuc/quy-tac-cua-toi.md')).body.split(/\r?\n/)
+    .filter(l => !/^\s*>/.test(l) && !/\(ví dụ\)/iu.test(l) && !/^#\s/.test(l)).join('\n').trim().slice(0, 1500);
+  const topic = planTopic(plan) || chuDeTu(task);
+  const qd = quyetDinhChoKeHoach(quyetDinh, topic, 8)
+    .map(d => `(${d.planId}${d.tuQuyet ? ', nhóm tự quyết' : ''}) ${String(d.q).replace(/\s+/g, ' ')} → ${String(d.a).replace(/\s+/g, ' ')}`.slice(0, 300));
+  const vanDe = plan ? (plan.issues || []).filter(v => v.status === 'mo' && v.owner === agent.id && v.fixStep !== opts.step).slice(0, 8)
+    .map(v => `${v.id} · ${v.file || '(không ghi file)'}${v.where ? ' · ' + v.where : ''} · ${v.level} · ${snippet(v.text)}`) : [];
+  // Chủ đề mới chưa có note nào: tìm cả kho (tư thế, nguồn dùng chung giữa các chủ đề)
+  const notes = docKhoTriThuc(), q = { tuKhoa: (plan ? plan.goal + ' ' : '') + String(task).slice(0, 300), toiThieu: 2 };
+  let tim = timTriThuc(notes, { ...q, chuDe: chuDeTriThuc(topic) }, 8);
+  if (!tim.length) tim = timTriThuc(notes, q, 8);
+  const lienQuan = tim.map(dongTraCuu);
+  return goiNguCanh({ quyTac, quyetDinh: qd, vanDe, lienQuan, coBanDo: wsExists('tri-thuc/00-ban-do.md') });
+}
+
 function henBanDoTriThuc() {
   if (config.brain === false) return;
   clearTimeout(banDoTimer);

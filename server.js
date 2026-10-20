@@ -923,6 +923,7 @@ function emitPlan(plan) {
     const abs = insideWorkspace(boardPath(plan));
     if (abs) { await fsp.mkdir(path.dirname(abs), { recursive: true }); await fsp.writeFile(abs, board, 'utf8'); }
   }).catch(e => console.error('Không lưu được kế hoạch:', e.message));
+  scheduleIndex(); // dự án đổi trạng thái mà không có lượt chạy (trả lời, dừng, tạm dừng) thì bản đồ cũng phải theo
 }
 
 // Bảng dự án do máy chủ viết lại sau mỗi thay đổi: ai cũng đọc được tiến độ, kết luận duyệt và câu trả lời của chủ dự án

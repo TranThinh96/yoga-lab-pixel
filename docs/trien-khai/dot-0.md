@@ -891,6 +891,6 @@ Gọi `goi('soat_loi', …, ctx, [])` thì `isError` là `true`.
     Trang 20–23 đếm 0 chữ là đúng: trang tư thế ghi "Ý chính: —".
   - Không có Chrome: dự án một bước của Mai tạm dừng ngay ở bước kiểm, ghi chú "Chrome chưa sẵn sàng (LỖI: Browser extension is not connected…)", Mai không chạy lượt nào.
   - Câu hỏi diễn đạt khác câu QD-2: ô trả lời hiện "Lần trước (plan-20261016-204631, 2026-10-16) bạn trả lời: …" và được điền sẵn; trả lời xong ghi thành QD-20.
-- Lỗi thấy khi thử, chưa sửa: `index.md` chỉ được viết lại sau `finishRun` và lúc khởi động (đúng như 0.9 ghi).
+- Lỗi thấy khi thử, **đã sửa** (chủ dự án đồng ý): `index.md` chỉ được viết lại sau `finishRun` và lúc khởi động (đúng như 0.9 ghi).
   Dự án đổi trạng thái mà không có lượt chạy (trả lời câu hỏi rồi xong, bấm Dừng, tạm dừng vì Chrome) thì bản đồ ghi trạng thái cũ tới lượt chạy sau.
-  Cách sửa đề xuất: gọi thêm `scheduleIndex()` trong `emitPlan` (đã gộp sẵn 2 giây, nên không ghi file dồn).
+  Đã sửa: gọi thêm `scheduleIndex()` trong `emitPlan` (đã gộp sẵn 2 giây, và chỉ ghi khi nội dung khác, nên không ghi file dồn).

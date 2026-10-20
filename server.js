@@ -404,8 +404,9 @@ function buildPrompt(agent, task, handoffPath, attachments, kind, lab = []) {
   // agy chạy ngầm không được phép chạy lệnh terminal: gọi run_command sẽ bị từ chối và cả lượt dừng ngay
   if (agent.engine === 'antigravity') lines.push(`8. Chỉ làm việc trong folder hiện tại. Xem folder bằng list_dir, find_by_name, grep_search; đọc bằng view_file; ghi bằng write_to_file. Lệnh terminal duy nhất được phép là Get-ChildItem đứng một mình (không nối ; | &); mọi lệnh khác và việc đọc file ngoài folder sẽ bị chặn.`);
   if (usesChrome(agent)) lines.push('', ...chromePrompt(agent, kind));
-  if (lab.includes('soat_loi')) lines.push('', 'CÔNG CỤ CỦA MÁY CHỦ (gọi như công cụ thường):',
-    '- soat_loi(file): soát lỗi máy móc và đếm chữ từng trang của một file .md; với slides.md, thiet-ke.md còn đối chiếu hai file và kiểm file hình. Trước khi bàn giao, gọi soat_loi cho từng file sản phẩm bạn vừa ghi hoặc sửa, rồi sửa những chỗ đúng là lỗi.',
+  if (lab.length) lines.push('', 'CÔNG CỤ CỦA MÁY CHỦ (gọi như công cụ thường):',
+    ...(lab.includes('soat_loi') ? ['- soat_loi(file): soát lỗi máy móc và đếm chữ từng trang của một file .md; với slides.md, thiet-ke.md còn đối chiếu hai file và kiểm file hình. Trước khi bàn giao, gọi soat_loi cho từng file sản phẩm bạn vừa ghi hoặc sửa, rồi sửa những chỗ đúng là lỗi.'] : []),
+    ...(lab.includes('kiem_link') ? ['- kiem_link(urls): máy chủ mở thử tối đa 10 link: còn mở được, bị chặn (403, CAPTCHA), không có (404); link Commons thì kiểm file có thật và đọc giấy phép. Dùng khi chỉ cần biết link sống hay chết; muốn đối chiếu nội dung vẫn dùng WebFetch.'] : []),
     '- Không có Bash: đừng thử chạy lệnh, script hay python. Việc máy móc thì dùng công cụ trên.');
   if (agent.instructions && agent.instructions.trim()) {
     lines.push('', 'HƯỚNG DẪN RIÊNG CHO VAI CỦA BẠN:', agent.instructions.trim());
@@ -497,11 +498,11 @@ function quoteWinArg(x) {
 const labKeys = new Map(); // khoá của lượt chạy → { entry, agent, tools }
 function labToolsFor(agent, kind) {
   if (!config.labTools || agent.engine !== 'claude' || agent.labTools === false) return [];
-  return ['soat_loi'];
+  return ['soat_loi', 'kiem_link'];
 }
 function labCtx(lab) {
   return {
-    read: rel => readWs(rel), exists: rel => wsExists(rel), lint: rel => lintFiles([rel]), listImages: rel => listedImages(rel),
+    read: rel => readWs(rel), exists: rel => wsExists(rel), lint: rel => lintFiles([rel]), listImages: rel => listedImages(rel), kiemMotLink,
     hasImages: rel => { const a = insideWorkspace(rel); try { return !!a && fs.readdirSync(a).some(n => IMG_EXT.test(n)); } catch { return false; } },
     entry: lab.entry, agent: lab.agent
   };
@@ -1750,21 +1751,87 @@ async function fetchImage(url) {
     try { return await fetchBuf(url); } catch (e) { if (!/429|quá thời gian/.test(e.message) || wait === 30000) throw e; }
   }
 }
-async function imageUrlOf(link) {
+// Thông tin file Commons (có thật không, URL bản 1920px, giấy phép, tác giả). Không phải link Commons: null
+async function commonsInfo(link) {
   // Trang File: hoặc link tải thẳng Special:FilePath/<tên> (en.wikipedia cũng trỏ về file Commons)
   const fp = /(?:commons|en)\.wikimedia\.org\/wiki\/Special:FilePath\/([^\s?#|)]+)/i.exec(link) || /wikipedia\.org\/wiki\/(?:File|Tập_tin):([^\s?#|)]+)/i.exec(link);
   const m = /commons\.wikimedia\.org\/wiki\/(File:[^\s?#|)]+)/i.exec(link) || (fp && [null, 'File:' + fp[1]]);
-  if (m) {
-    const api = 'https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&iiprop=url&iiurlwidth=1920&titles=' + encodeURIComponent(decodeURIComponent(m[1]));
-    const j = JSON.parse((await fetchBuf(api)).buf.toString('utf8'));
-    const page = Object.values((j.query && j.query.pages) || {})[0] || {};
-    const ii = (page.imageinfo || [])[0];
-    if (!ii) throw new Error('Commons không có file này');
-    return ii.thumburl || ii.url; // thumburl: SVG được đổi sẵn sang PNG
-  }
+  if (!m) return null;
+  const api = 'https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&iiprop=url%7Cextmetadata&iiurlwidth=1920&titles=' + encodeURIComponent(decodeURIComponent(m[1]));
+  const j = JSON.parse((await fetchBuf(api)).buf.toString('utf8'));
+  const page = Object.values((j.query && j.query.pages) || {})[0] || {};
+  const ii = (page.imageinfo || [])[0];
+  if (!ii) return { exists: false };
+  const meta = ii.extmetadata || {}, v = k => (meta[k] && meta[k].value) || '';
+  return { exists: true, url: ii.thumburl || ii.url, // thumburl: SVG được đổi sẵn sang PNG
+    license: v('LicenseShortName'), author: String(v('Artist')).replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim().slice(0, 120) };
+}
+async function imageUrlOf(link) {
+  const c = await commonsInfo(link);
+  if (c) { if (!c.exists) throw new Error('Commons không có file này'); return c.url; }
   if (/^https:\/\/\S+\.(png|jpe?g|webp)(\?\S*)?$/i.test(link)) return link;
   throw new Error('không phải link file ảnh');
 }
+// ── Kiểm link cho agent (công cụ kiem_link) ──
+// Mở trang để biết còn sống không: không báo lỗi theo mã trạng thái, chỉ đọc 200 KB đầu
+function fetchTrang(url, hops = 0) {
+  return new Promise((resolve, reject) => {
+    const mod = /^https:/i.test(url) ? https : /^http:/i.test(url) ? http : null;
+    if (!mod) return reject(new Error('chỉ mở link http/https'));
+    const req = mod.get(url, { headers: { 'User-Agent': 'YogaLabPixel/1.0 (local office app)', Accept: 'text/html,application/xhtml+xml,*/*' }, timeout: 15000 }, res => {
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location && hops < 5) {
+        res.resume(); return resolve(fetchTrang(new URL(res.headers.location, url).href, hops + 1));
+      }
+      const chunks = []; let size = 0;
+      res.on('data', c => { size += c.length; chunks.push(c); if (size > 200e3) res.destroy(); });
+      const xong = () => resolve({ status: res.statusCode, body: Buffer.concat(chunks).toString('utf8').slice(0, 200e3) });
+      res.on('end', xong); res.on('close', xong);
+      res.on('error', () => xong());
+    });
+    req.on('timeout', () => req.destroy(new Error('quá thời gian')));
+    req.on('error', reject);
+  });
+}
+// Bộ nhớ đệm kết quả kiểm link (.yogalab/link.json, giữ 7 ngày): agent hay kiểm lại link người trước đã kiểm
+const linkFile = () => path.join(stateDir(), 'link.json');
+let linkCache = new Map(), linkTimer = null;
+function loadLinkCache() {
+  try { linkCache = new Map(Object.entries(JSON.parse(fs.readFileSync(linkFile(), 'utf8'))).filter(([, v]) => Date.now() - v.at < 7 * 86400e3)); } catch { linkCache = new Map(); }
+}
+function saveLinkCache() {
+  clearTimeout(linkTimer);
+  linkTimer = setTimeout(() => fsp.writeFile(linkFile(), JSON.stringify(Object.fromEntries(linkCache)), 'utf8').catch(() => {}), 2000);
+}
+// Mỗi lúc chỉ mở tối đa 3 link
+let linkDangMo = 0;
+const linkCho = [];
+async function voiHangDoi(fn) {
+  if (linkDangMo >= 3) await new Promise(r => linkCho.push(r));
+  linkDangMo++;
+  try { return await fn(); } finally { linkDangMo--; const next = linkCho.shift(); if (next) next(); }
+}
+async function kiemMotLink(url) {
+  const cu = linkCache.get(url);
+  if (cu && Date.now() - cu.at < 7 * 86400e3) return cu.r;
+  const r = await voiHangDoi(async () => {
+    try {
+      const c = await commonsInfo(url);
+      if (c) return c.exists ? { ket: 'ok', license: c.license, author: c.author } : { ket: 'khong-co' };
+      const { status, body } = await fetchTrang(url);
+      if (status >= 200 && status < 300) {
+        const title = ((/<title[^>]*>([\s\S]*?)<\/title>/i.exec(body) || [])[1] || '').replace(/\s+/g, ' ').trim().slice(0, 200);
+        const captcha = /captcha|recaptcha|cf-chl|just a moment|are you a robot|verify you are human/i;
+        return captcha.test(title) || captcha.test(body.slice(0, 20000)) ? { ket: 'captcha', http: status, title } : { ket: 'ok', http: status, title };
+      }
+      if ([401, 403, 429, 503].includes(status)) return { ket: 'chan', http: status };
+      if ([404, 410].includes(status)) return { ket: 'khong-co', http: status };
+      return { ket: 'loi', http: status };
+    } catch (e) { return { ket: 'loi', loi: e.message }; }
+  });
+  if (r.ket !== 'loi') { linkCache.set(url, { at: Date.now(), r }); saveLinkCache(); } // lỗi mạng thường thoáng qua: lần sau kiểm lại
+  return r;
+}
+
 // ── Hình y khoa không được tạo bằng AI ──
 // Hình về cơ thể, cơ quan, cơ chế bệnh, triệu chứng, thuốc, xét nghiệm phải lấy từ nguồn có giấy phép.
 // AI chỉ dùng cho ảnh không khí, ảnh tư thế yoga và đạo cụ. Dò theo tiêu đề trang (tiếng Việt) và prompt (tiếng Anh).
@@ -2585,6 +2652,7 @@ const server = http.createServer(async (req, res) => {
   await loadRuns();
   await loadPlans();
   await loadQuyetDinh();
+  loadLinkCache();
   scheduleIndex();
   loadLimits();
   scanAgyQuota().catch(() => {});

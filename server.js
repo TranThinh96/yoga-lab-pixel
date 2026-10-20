@@ -1190,30 +1190,51 @@ function insertSteps(plan, at, newSteps) {
   plan.steps.splice(at, 0, ...newSteps);
 }
 
-// Người duyệt kết luận CẦN SỬA: chèn bước sửa (người làm) + duyệt lại (người duyệt) ngay sau
+// Người duyệt kết luận CẦN SỬA: chèn một bước sửa cho từng chủ file còn vấn đề BẮT BUỘC, rồi một bước duyệt lại
 function handleReview(plan, idx, text, banGhi = '') {
   const s = plan.steps[idx], n = idx + 1;
   const v = parseVerdict(text);
   const name = id => (config.agents.find(a => a.id === id) || {}).name || id;
   if (!v) plan.log.push(`Bước ${n}: ${name(s.agentId)} không ghi "KẾT LUẬN", coi như đạt`);
   s.verdict = v || 'pass';
+  const soVanDe = config.issueLedger !== false;
+  if (soVanDe) {
+    if (s.round) capNhatTuDuyetLai(plan.issues || [], docDuyetLai(banGhi), (plan.issues || []).filter(x => s.from.includes(x.fixStep)).map(x => x.id), n);
+    const rows = docVanDe(banGhi);
+    if (rows) ganVanDe(plan, rows, { buoc: n, tu: s.agentId, chuDe: planTopic(plan), chuFileFn: f => chuFile(plan.steps, f, idx) });
+    else if (!s.round) plan.log.push(`Bước ${n}: không thấy bảng "Danh sách vấn đề" của ${name(s.agentId)}`);
+    const moBB = (plan.issues || []).filter(x => x.status === 'mo' && x.level === 'BẮT BUỘC' && x.lastStep === n);
+    if (s.verdict === 'pass' && moBB.length) plan.log.push(`Bước ${n}: kết luận ĐẠT nhưng còn ${moBB.length} vấn đề BẮT BUỘC mở`);
+  }
   if (s.verdict !== 'fix') return;
   const target = plan.steps[s.checks - 1];
   const round = (s.round || 0) + 1;
-  if (round > cfgNum('maxReviewRounds', 2) || plan.steps.length + 2 > cfgNum('maxTotalSteps', 20)) {
+  // Vấn đề BẮT BUỘC đang mở của bước này, nhóm theo chủ file; vấn đề NÊN của cùng chủ đi kèm
+  const mo = soVanDe ? (plan.issues || []).filter(x => x.status === 'mo' && x.lastStep === n) : [];
+  const { nhom, khongChu } = nhomTheoChu(mo.filter(x => x.level === 'BẮT BUỘC'));
+  for (const x of mo.filter(x => x.level !== 'BẮT BUỘC' && nhom.has(x.owner))) nhom.get(x.owner).issues.push(x);
+  if (khongChu.length) plan.log.push(`Bước ${n}: ${khongChu.length} vấn đề không rõ ai phụ trách file (${khongChu.map(x => x.id).join(', ')})`);
+  if (!nhom.size) nhom.set(target.agentId, { step: s.checks, issues: [] }); // không đọc được bảng: trả về người làm như cũ
+  const chu = [...nhom].sort((a, b) => (a[0] === target.agentId ? -1 : b[0] === target.agentId ? 1 : a[1].step - b[1].step));
+  if (round > cfgNum('maxReviewRounds', 2) || plan.steps.length + chu.length + 1 > cfgNum('maxTotalSteps', 20)) {
     s.verdict = 'fix-left';
     plan.log.push(`Bước ${n}: vẫn CẦN SỬA nhưng đã hết vòng sửa → chuyển tiếp, để nghiệm thu xử lý`);
     return;
   }
-  const fix = { agentId: target.agentId, from: [s.checks, n], fixOf: s.checks, round, ...blankStep,
-    task: `Sửa sản phẩm của bước ${s.checks} theo nhận xét của ${name(s.agentId)} (bàn giao bước ${n} và file nhận xét được nêu trong đó). ` +
-      `Mỗi nhận xét BẮT BUỘC: sửa, hoặc giải thích rõ vì sao không sửa. Nhận xét NÊN: sửa nếu hợp lý. Sửa thẳng vào file sản phẩm, và trong bàn giao liệt kê từng nhận xét → đã xử lý thế nào.` };
-  const re = { agentId: s.agentId, from: [n, n + 1], checks: n + 1, round, ...blankStep,
-    task: `Duyệt lại sau khi sửa (vòng ${round}): mở sản phẩm, kiểm từng nhận xét trong bàn giao bước ${n} đã được xử lý chưa; chỉ nêu lỗi còn lại hoặc lỗi mới phát sinh.` };
-  insertSteps(plan, n, [fix, re]);
-  target.latest = n + 1;
-  s.latest = n + 2;
-  plan.log.push(`Bước ${n}: ${name(s.agentId)} kết luận CẦN SỬA → ${name(target.agentId)} sửa (bước ${n + 1}), duyệt lại ở bước ${n + 2}`);
+  const fixes = chu.map(([agentId, g]) => ({ agentId, from: [g.step, n], fixOf: g.step, round, kind: 'fix', issueIds: g.issues.map(x => x.id), ...blankStep,
+    task: g.issues.length ? `Sửa các vấn đề ${name(s.agentId)} giao cho bạn: ${g.issues.map(x => x.id).join(', ')} (danh sách chi tiết kèm theo).`
+      : `Sửa sản phẩm của bước ${s.checks} theo nhận xét của ${name(s.agentId)} (bàn giao bước ${n} và file nhận xét được nêu trong đó). ` +
+        `Mỗi nhận xét BẮT BUỘC: sửa, hoặc giải thích rõ vì sao không sửa. Nhận xét NÊN: sửa nếu hợp lý. Sửa thẳng vào file sản phẩm, và trong bàn giao liệt kê từng nhận xét → đã xử lý thế nào.` }));
+  const k = Math.max(0, chu.findIndex(([a]) => a === target.agentId));
+  const re = { agentId: s.agentId, from: [n, ...fixes.map((_, i) => n + 1 + i)], checks: n + 1 + k, round, ...blankStep,
+    task: `Duyệt lại sau khi sửa (vòng ${round}): kiểm các vấn đề trong danh sách kèm theo; chỉ nêu lỗi còn lại hoặc lỗi mới phát sinh.` };
+  insertSteps(plan, n, [...fixes, re]);
+  fixes.forEach((f, i) => {
+    plan.steps[f.fixOf - 1].latest = n + 1 + i;
+    for (const x of plan.issues || []) if (f.issueIds.includes(x.id)) { x.fixStep = n + 1 + i; x.round = round; }
+  });
+  s.latest = n + fixes.length + 1;
+  plan.log.push(`Bước ${n}: ${name(s.agentId)} kết luận CẦN SỬA → ${chu.map(([a]) => name(a)).join(', ')} sửa (bước ${n + 1}${fixes.length > 1 ? '–' + (n + fixes.length) : ''}), duyệt lại ở bước ${n + fixes.length + 1}`);
 }
 
 function pumpPlan(plan) {

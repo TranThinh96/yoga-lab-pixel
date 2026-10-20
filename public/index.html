@@ -631,6 +631,7 @@ main{display:block; max-width:none; margin:0; padding:0}
 .ktl .h b{font-size:13.5px}
 .ktl .s{font-size:12.5px; color:var(--muted); margin:3px 0 0; white-space:pre-wrap}
 .ktl .r{display:flex; flex-wrap:wrap; gap:5px; margin-top:6px}
+.kvd{margin:6px 0 0 18px; font-size:13px}
 .ktl .r .btn{min-height:30px; padding:3px 8px; font-size:12.5px; box-shadow:2px 2px 0 var(--edge)}
 .klive{list-style:none; margin:4px 0 0; padding:6px 8px; font-size:12.5px; background:var(--paper-2); border:2px solid var(--line); max-height:180px; overflow:auto}
 .klive li{display:flex; gap:6px; padding:1px 0} .klive time{color:var(--muted); font-variant-numeric:tabular-nums; flex:none}
@@ -2872,6 +2873,7 @@ $('#book').addEventListener('click', e => {
 // ── sơ đồ kế hoạch ──
 const PLAN_TXT = { planning:'Đang lập kế hoạch', draft:'Chờ bạn duyệt', running:'Đang chạy', replanning:'Đang lập lại kế hoạch', reviewing:'Đang nghiệm thu', paused:'Tạm dừng', asking:'Chờ bạn trả lời', done:'Xong', stopped:'Đã dừng', error:'Lỗi' };
 const STEP_TXT = { pending:'Chờ', working:'Đang làm', done:'Xong', error:'Lỗi' };
+const VD_TXT = { mo: 'Mở', 'da-sua': 'Đã sửa, chờ duyệt lại', 'khong-sua': 'Không sửa', dong: 'Đóng' }; // như TRANG_THAI trong lib/van-de.js
 const VERDICT_TXT = { pass:'Đạt', fix:'Cần sửa → trả về', 'fix-left':'Cần sửa (hết vòng)' };
 // Câu hỏi của nhóm cho chủ dự án: trả lời từng câu, hoặc để nhóm tự quyết theo phương án đề xuất
 function askBox(p){
@@ -3142,7 +3144,8 @@ function planCards(p){
       verdict: lastCheck ? lastCheck.verdict : '', deps, rounds: checks.length,
       agentId: (working || next || last || head).agentId, people: [...new Set(list.map(x => x.agentId))],
       title: (/^Sửa\s/i.test(gist(head.task)) ? 'Sửa · ' : '') + role, file: cardFile(list), desc: gist(head.task),
-      tokens: list.reduce((t, x) => t + (x.tokens || 0), 0) };
+      tokens: list.reduce((t, x) => t + (x.tokens || 0), 0),
+      issues: (p.issues || []).filter(v => v.status === 'mo' && list.some(x => x.n === v.lastStep || x.n === v.fixStep)).length };
   });
 }
 function soloCards(){
@@ -3164,6 +3167,7 @@ function kcardHtml(c, all){
   const run = cardRun(c), tags = [];
   if (c.tag) tags.push(`<span class="ktag ${c.col === 'fix' ? 'err' : c.col === 'review' ? 'blue' : 'gold'}">${esc(c.tag)}</span>`);
   if (c.col === 'done' && c.verdict) tags.push(c.verdict === 'pass' ? `<span class="ktag ok">Đạt${c.rounds > 1 ? ' · ' + c.rounds + ' vòng' : ''}</span>` : '<span class="ktag err">Còn lỗi · hết vòng</span>');
+  if (c.issues) tags.push(`<span class="ktag err">⚑ ${c.issues} vấn đề mở</span>`);
   if (c.file) tags.push(`<span class="ktag">${esc(fname(c.file))}</span>`);
   const deps = c.col === 'wait' && c.deps && c.deps.length ? 'Chờ: ' + c.deps.map(k => { const d = all.find(x => x.root === k); return d ? d.title : 'bước ' + k; }).join(', ') : '';
   const typ = run ? typicalMs(run.agentId) : 0;
@@ -3182,7 +3186,7 @@ function renderBoard(){
   if (S.win !== 'board') return;
   const p = boardPlan(), cards = boardCards();
   const drawerKey = S.boardCard ? (() => { const c = cards.find(x => x.id === S.boardCard); return c ? (S.acts[c.agentId] || []).length : 0; })() : 0;
-  const key = JSON.stringify([S.boardSrc, S.boardPick, S.boardCard, drawerKey, p && [p.id, p.status, p.tokens, p.note], cards.map(c => [c.id, c.col, c.tag, c.verdict, c.tokens, c.agentId, c.people, c.kind === 'run' ? c.run.status : c.steps.map(x => x.status + x.handoff)]), S.agents.map(a => a.id + a.name + statusOf(a.id))]);
+  const key = JSON.stringify([S.boardSrc, S.boardPick, S.boardCard, drawerKey, p && [p.id, p.status, p.tokens, p.note], cards.map(c => [c.id, c.col, c.tag, c.issues, c.verdict, c.tokens, c.agentId, c.people, c.kind === 'run' ? c.run.status : c.steps.map(x => x.status + x.handoff)]), S.agents.map(a => a.id + a.name + statusOf(a.id))]);
   if (key === S._boardKey) return;
   S._boardKey = key;
   const by = Object.fromEntries(KCOLS.map(([k]) => [k, cards.filter(c => c.col === k)]));
@@ -3259,6 +3263,10 @@ function renderDrawer(cards, p){
         <div class="r">${x.handoff ? `<button class="btn sm" type="button" data-view="${esc(x.handoff)}">Bàn giao</button>` : ''}${fileBtns(x.files || [])}
           ${run ? `<button class="btn sm" type="button" data-sel="${esc(x.agentId)}">Theo dõi ${esc(name(x.agentId))}</button>` : ''}</div>
       </li>`; }).join('')}</ol>`;
+    // Vấn đề trong sổ thuộc thẻ này (mọi trạng thái)
+    const vds = ((p && p.issues) || []).filter(v => c.steps.some(x => x.n === v.lastStep || x.n === v.fixStep));
+    if (vds.length) body += `<details data-k="vd" open><summary>Vấn đề (${vds.length})</summary><ul class="kvd">${vds.map(v =>
+      `<li><b>${esc(v.id)}</b> · ${esc(VD_TXT[v.status] || v.status)} · ${esc(v.level)}${v.where ? ' · ' + esc(v.where) : ''} — "${esc(v.text)}" <span class="muted">(${esc(v.owner ? name(v.owner) : 'chưa rõ người sửa')})</span></li>`).join('')}</ul></details>`;
   } else {
     const r = c.run, live = r.status === 'working';
     const txt = plain(r.status === 'done' ? r.summary : r.error || r.summary);

@@ -1364,18 +1364,22 @@ function pumpPlan(plan) {
         const designs = (run.files || []).filter(x => /^output\/[^/]+\/thiet-ke\.md$/.test(x));
         // Bước vừa ghi file nguồn (agents/<id>/<chu-de>-nguon.md): tải luôn hình y khoa có giấy phép vào output/<chu-de>/hinh-nguon/
         const sourcesMd = (run.files || []).filter(x => /^agents\/[^/]+\/[\p{L}\p{N}_-]+-nguon\.md$/u.test(x));
+        const hinhHong = []; // hình máy chủ không tải được (trừ 429): giao lại cho người đề xuất link
         const prep = Promise.all([
           ...designs.map(d => downloadListedImages(d).then(r => {
             if (r.ok.length || r.fail.length || r.none) plan.log.push(r.none ? `Máy chủ không thấy bảng "Danh sách hình" có tên file trong ${d}: chưa tải hình nào` : `Máy chủ tải hình có giấy phép (${d}): ${r.ok.length} tải được${r.fail.length ? ', ' + r.fail.length + ' không tải được (' + snippet(r.fail.map(x => x.name + ': ' + x.why).join('; ')) + ')' : ''}`);
             if (r.fail.some(x => /429/.test(x.why))) henTaiLai(plan, d, () => downloadListedImages(d));
+            hinhHong.push(...r.fail.filter(x => !/429/.test(x.why)).map(x => ({ ...x, file: d })));
           })),
           ...sourcesMd.map(f => downloadSourceImages(f, run.handoff).then(r => {
             if (r) plan.log.push(r.none ? `Máy chủ không thấy bảng "Hình & sơ đồ trong nguồn" trong ${f}: chưa tải hình y khoa nào` : `Máy chủ tải hình y khoa từ nguồn (${f} → ${r.dir}): ${r.ok.length} mới, ${r.skip.length} đã có${r.fail.length ? ', ' + r.fail.length + ' không tải được (' + snippet(r.fail.map(x => x.name + ': ' + x.why).join('; ')) + ')' : ''}`);
             if (r && (r.fail || []).some(x => /429/.test(x.why))) henTaiLai(plan, f, () => downloadSourceImages(f, null));
+            hinhHong.push(...((r && r.fail) || []).filter(x => !/429/.test(x.why)).map(x => ({ ...x, file: f })));
           }))
         ]).catch(e => plan.log.push('Không tải được hình: ' + e.message));
         return prep.then(() => {
           if (plan.status !== 'running') return emitPlan(plan);
+          if (config.issueLedger !== false && hinhHong.length) giaoThayHinh(plan, idx, hinhHong);
           if (qs.length) return askOwner(plan, qs, 'running');
           emitPlan(plan); pumpPlan(plan);
         });
@@ -1394,6 +1398,32 @@ function pumpPlan(plan) {
       if (e.status === 409) { s.status = 'pending'; plan.waiting = agent.id; return emitPlan(plan); } // vừa có người giao việc khác
       s.status = 'error'; s.error = e.message; onStepError(plan, idx);
     });
+}
+
+// Hình máy chủ không tải được: thành vấn đề BẮT BUỘC của người ghi link, và chèn ngay một bước sửa cho người đó
+function giaoThayHinh(plan, idx, hong) {
+  const name = id => (config.agents.find(a => a.id === id) || {}).name || id;
+  plan.issues = plan.issues || []; plan.issueSeq = plan.issueSeq || 0;
+  const moi = hong.map(x => {
+    const chu = chuFile(plan.steps, x.file, idx + 1);
+    return { id: `VD-${++plan.issueSeq}`, file: x.file, where: 'Bảng hình', level: 'BẮT BUỘC', kind: 'file-khong-ton-tai',
+      text: `Máy chủ không tải được ${x.name}: ${x.why}`,
+      fix: 'Thay bằng trang File: Commons có thật (kiểm bằng công cụ kiem_link nếu có) hoặc link thẳng .jpg/.png',
+      from: 'may-chu', owner: chu ? chu.agentId : null, ownerStep: chu ? chu.step : null, status: 'mo', note: '', round: 0, lastStep: idx + 1, fixStep: null };
+  });
+  plan.issues.push(...moi);
+  const { nhom } = nhomTheoChu(moi);
+  for (const [owner, g] of nhom) {
+    const sau = plan.steps[idx + 1];
+    if (sau && sau.agentId === owner && sau.fixOf === g.step && stepKind(sau) === 'fix') continue;
+    if (plan.steps.length + 1 > cfgNum('maxTotalSteps', 20)) { plan.log.push(`Máy chủ: ${g.issues.length} hình không tải được, nhưng đã chạm trần số bước`); continue; }
+    const issueIds = g.issues.map(x => x.id);
+    insertSteps(plan, idx + 1, [{ agentId: owner, from: [g.step], fixOf: g.step, round: 0, kind: 'fix', issueIds, ...blankStep,
+      task: `Thay các hình máy chủ không tải được: ${issueIds.join(', ')} (danh sách chi tiết kèm theo). Chỉ sửa bảng hình, không làm lại phần khác.` }]);
+    plan.steps[g.step - 1].latest = idx + 2;
+    for (const x of g.issues) x.fixStep = idx + 2;
+    plan.log.push(`Máy chủ: ${g.issues.length} hình không tải được → giao ${name(owner)} thay link (bước ${idx + 2})`);
+  }
 }
 
 // Lời dặn bước duyệt lại: danh sách vấn đề cần kiểm và người sửa đã báo gì

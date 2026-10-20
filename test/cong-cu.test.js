@@ -58,3 +58,20 @@ test('tai_hinh', async () => {
   assert.equal((await g()).text, 'Đã tải output/t/hinh-nguon/a.jpg (120 KB) · CC BY 4.0');
   assert.equal((await goi('tai_hinh', { link: 'https://x.vn/a.jpg' }, ctx, ['tai_hinh'])).isError, true);
 });
+
+test('tra_cuu: định dạng dòng và khi không thấy gì', async () => {
+  const ns = [
+    { path: 'tri-thuc/menh-de/x.md', loai: 'menh-de', title: 'Ý x', data: { trang_thai: 'bac-bo', muc_bang_chung: 'vua' } },
+    { path: 'tri-thuc/nguon/nhs.md', loai: 'nguon', title: 'T', data: { truy_cap: 'ok', to_chuc: 'NHS', tieu_de: 'Levo' } },
+    { path: 'tri-thuc/tu-the/b.md', loai: 'tu-the', title: 'B', data: { ten_viet: 'Em bé', ten_phan: 'Balasana' } },
+    { path: 'tri-thuc/hinh/h.md', loai: 'hinh', title: 'H', data: { giay_phep: 'CC BY 4.0', file: 'output/a/hinh-nguon/h.jpg' } }
+  ];
+  const r = await goi('tra_cuu', { tu_khoa: 'gì đó' }, { timTriThuc: () => ns }, ['tra_cuu']);
+  assert.equal(r.text, [
+    '- tri-thuc/menh-de/x.md · ý · BÁC BỎ, không dùng · vua · Ý x',
+    '- tri-thuc/nguon/nhs.md · nguồn · truy cập: ok · NHS · Levo',
+    '- tri-thuc/tu-the/b.md · tư thế · Em bé (Balasana)',
+    '- tri-thuc/hinh/h.md · hình · CC BY 4.0 · output/a/hinh-nguon/h.jpg'].join('\n'));
+  const r2 = await goi('tra_cuu', { tu_khoa: 'abc' }, { timTriThuc: () => [] }, ['tra_cuu']);
+  assert.equal(r2.text, 'Không thấy gì trong bộ não cho "abc". Đây là phần cần tìm mới.');
+});

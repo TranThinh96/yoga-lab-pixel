@@ -23,7 +23,7 @@ const { vietBanDo } = require('./lib/ban-do');
 const { ghiQuyetDinh, goiYChoCauHoi, quyetDinhChoKeHoach, vietSoQuyetDinh } = require('./lib/quyet-dinh');
 const { LOAI_LOI, mucTrong, docVanDe, docDaXuLy, docDuyetLai, docTinNhan, chuFile, ganVanDe, nhomTheoChu, capNhatTuSua, capNhatTuDuyetLai, vietSoVanDe } = require('./lib/van-de');
 const { docCauHoi: parseQuestions, laCauHoiMoiTruong, locBaiHocMoi, phanLoaiCauHoi, chonChuDe, chuDeTu } = require('./lib/van-ban');
-const { chuDeTriThuc, docBangTriThuc, hopNhatMenhDe, hopNhatNguon, capNhatTruyCap, hopNhatTuThe, maHinh, hopNhatHinh, cacChuDe, vietMocChuDe, vietBanDoTriThuc, docThuatNgu, dienThuatNgu } = require('./lib/tri-thuc');
+const { chuDeTriThuc, docBangTriThuc, hopNhatMenhDe, hopNhatNguon, capNhatTruyCap, hopNhatTuThe, maHinh, hopNhatHinh, cacChuDe, vietMocChuDe, vietBanDoTriThuc, docThuatNgu, dienThuatNgu, timTriThuc } = require('./lib/tri-thuc');
 const { docGhiChu } = require('./lib/ghi-chu');
 
 const ROOT = __dirname;
@@ -430,6 +430,7 @@ function buildPrompt(agent, task, handoffPath, attachments, kind, lab = []) {
     ...(lab.includes('soat_loi') ? ['- soat_loi(file): soát lỗi máy móc và đếm chữ từng trang của một file .md; với slides.md, thiet-ke.md còn đối chiếu hai file và kiểm file hình. Trước khi bàn giao, gọi soat_loi cho từng file sản phẩm bạn vừa ghi hoặc sửa, rồi sửa những chỗ đúng là lỗi.'] : []),
     ...(lab.includes('tai_hinh') ? ['- tai_hinh(link, ten): máy chủ tải một hình có giấy phép (trang File: của Commons hoặc link thẳng .jpg/.png/.webp) vào output/<chủ đề>/hinh-nguon/ (hoặc hinh/) và ghi danh-sach.md. Hình có link giấy phép mà file chưa có trong thư mục hình: gọi tai_hinh ngay, đừng chỉ ghi "chưa có file". Đừng thử tự tải bằng lệnh.'] : []),
     ...(lab.includes('kiem_link') ? ['- kiem_link(urls): máy chủ mở thử tối đa 10 link một lần: còn mở được, bị chặn (403, CAPTCHA), không có (404); link Commons thì kiểm file có thật và đọc giấy phép. Có từ 3 link trở lên cần mở (bảng nguồn, Danh sách hình, khi duyệt): gọi kiem_link cho cả loạt TRƯỚC, rồi chỉ WebFetch những link mở được mà bạn cần đọc nội dung; link bị chặn thì không WebFetch lại, ghi "bị chặn" và tìm nguồn khác.'] : []),
+    ...(lab.includes('tra_cuu') ? ['- tra_cuu(tu_khoa): tìm trong bộ não chung (ý đã kiểm chứng, nguồn, tư thế, hình). Tra trước khi tìm web: mục nào đã có ý đã duyệt còn hạn thì dùng lại, không tìm lại.'] : []),
     '- Không có Bash: đừng thử chạy lệnh, script hay python. Việc máy móc thì dùng công cụ trên.');
   if (agent.instructions && agent.instructions.trim()) {
     lines.push('', 'HƯỚNG DẪN RIÊNG CHO VAI CỦA BẠN:', agent.instructions.trim());
@@ -521,11 +522,13 @@ function quoteWinArg(x) {
 const labKeys = new Map(); // khoá của lượt chạy → { entry, agent, tools }
 function labToolsFor(agent, kind) {
   if (!config.labTools || agent.engine !== 'claude' || agent.labTools === false) return [];
-  return ['soat_loi', 'kiem_link', ...(kind !== 'review' && kind !== 'rereview' ? ['tai_hinh'] : [])]; // người duyệt chỉ kiểm, không tải
+  return ['soat_loi', 'kiem_link', ...(kind !== 'review' && kind !== 'rereview' ? ['tai_hinh'] : []), // người duyệt chỉ kiểm, không tải
+    ...(config.brain !== false ? ['tra_cuu'] : [])];
 }
 function labCtx(lab) {
   return {
     read: rel => readWs(rel), exists: rel => wsExists(rel), lint: rel => lintFiles([rel]), listImages: rel => listedImages(rel), kiemMotLink, taiHinh: a => taiHinhCho(lab, a),
+    timTriThuc: q => timTriThuc(docKhoTriThuc(), q),
     hasImages: rel => { const a = insideWorkspace(rel); try { return !!a && fs.readdirSync(a).some(n => IMG_EXT.test(n)); } catch { return false; } },
     entry: lab.entry, agent: lab.agent
   };

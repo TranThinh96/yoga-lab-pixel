@@ -152,3 +152,16 @@ test('docThuatNgu, dienThuatNgu', () => {
   assert.deepEqual(tt.docThuatNgu(t), { tuTranh: ['chữa khỏi', 'thải độc'], cachGoi: [['giáo viên', 'giảng viên'], ['học sinh', 'học viên']] });
   assert.deepEqual(tt.docThuatNgu(mau), { tuTranh: [], cachGoi: [] });
 });
+
+test('timTriThuc', () => {
+  const ns = [...notesGia(),
+    { path: 'tri-thuc/menh-de/uong-luc-doi-cu.md', title: 'Uống levothyroxine lúc đói', para: 'Bản cũ.',
+      data: { loai: 'menh-de', ma: 'uong-luc-doi-cu', chu_de: ['suy-giap'], trang_thai: 'bac-bo' } }];
+  const r = tt.timTriThuc(ns, { tuKhoa: 'levothyroxine lúc đói' });
+  assert.equal(r[0].path, 'tri-thuc/menh-de/uong-luc-doi.md');
+  const i = r.findIndex(x => x.path.endsWith('uong-luc-doi-cu.md'));
+  assert.ok(i > 0 && r[i].diem === r[0].diem); // bác bỏ vẫn có mặt, nhưng đứng sau ý đã duyệt cùng điểm
+  assert.deepEqual(tt.timTriThuc(ns, { tuKhoa: 'hypothyroidism mayo', loai: 'nguon' }).map(x => x.loai), ['nguon']);
+  assert.deepEqual(tt.timTriThuc(ns, { tuKhoa: 'em bé', chuDe: 'mat-ngu-v2' }).map(x => x.path), ['tri-thuc/tu-the/balasana.md']);
+  assert.deepEqual(tt.timTriThuc(ns, { tuKhoa: 'và của' }), []);
+});

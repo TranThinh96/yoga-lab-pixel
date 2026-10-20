@@ -1272,6 +1272,8 @@ function pumpPlan(plan) {
   const noHandoff = srcs.filter(x => !x.handoff && x.summary);
   const checked = s.checks && plan.steps[latestStep(plan, s.checks, idx) - 1];
   const checkedName = checked && ((config.agents.find(a => a.id === checked.agentId) || {}).name || checked.agentId);
+  // Duyệt lại hẹp: chỉ các vấn đề của các bước sửa ngay trước
+  const canDuyetLai = kind === 'rereview' && config.issueLedger !== false ? (plan.issues || []).filter(x => s.from.includes(x.fixStep)) : [];
   let loiSua = [];
   if (kind === 'fix') {
     // File của sản phẩm đang sửa: bước gốc và các bước sửa trước của nó; bước sửa sau nghiệm thu thì lấy mọi file người này đã ghi
@@ -1295,7 +1297,8 @@ function pumpPlan(plan) {
         `  Mã: V1, V2… · File: đường dẫn file có lỗi (vd output/<chu-de>/slides.md; lỗi ở file nào ghi đúng file đó, máy chủ tự giao cho người phụ trách file) · Vị trí: trang, mục · Mức: BẮT BUỘC hoặc NÊN · Loại: một trong ${LOAI_LOI.join(', ')} · Vấn đề, Đề xuất: mỗi ô một câu ngắn. Trong ô không dùng ký tự "|".`
       ] : [`- Không sửa sản phẩm của người khác. Ghi nhận xét vào agents/${agent.id}/: mỗi lỗi một dòng gồm vị trí (trang/mục), vấn đề, mức (BẮT BUỘC / NÊN), cách sửa đề xuất.`]),
       `- BẮT BUỘC = sai, nguy hiểm, hoặc thiếu so với tiêu chí hoàn thành. NÊN = cải thiện. Chỗ khác quan điểm chuyên môn hoặc mâu thuẫn với tài liệu mẫu mà không nguy hiểm → đưa vào "Câu hỏi cho chủ dự án", không bắt xoá.`,
-      kind === 'rereview' ? `- Đây là DUYỆT LẠI: chỉ đọc những chỗ đã sửa (theo danh sách trong bàn giao của bước sửa) và nhận xét cũ; không duyệt lại cả file, không mở lại link đã kiểm.`
+      kind === 'rereview' && canDuyetLai.length ? duyetLaiHep(canDuyetLai)
+        : kind === 'rereview' ? `- Đây là DUYỆT LẠI: chỉ đọc những chỗ đã sửa (theo danh sách trong bàn giao của bước sửa) và nhận xét cũ; không duyệt lại cả file, không mở lại link đã kiểm.`
         : `- Kiểm link theo mẫu: tối đa ~10 link quan trọng nhất (số liệu, cảnh báo an toàn, nghiên cứu được trích); không cần mở hết.`,
       `- Việc của bạn là KIỂM, không làm thay: không WebSearch tìm nguồn mới. Ý thiếu nguồn hoặc nguồn không khớp → ghi BẮT BUỘC "cần nguồn" để người làm tự tìm.`,
       ...(checked && checked.noChange ? [`- CHÚ Ý: bước sửa trước không ghi vào file sản phẩm nào (${checked.fileSua.slice(0, 3).join(', ')}). Kiểm kỹ từng chỗ người sửa báo "đã sửa".`] : []),
@@ -1379,6 +1382,15 @@ function pumpPlan(plan) {
       if (e.status === 409) { s.status = 'pending'; plan.waiting = agent.id; return emitPlan(plan); } // vừa có người giao việc khác
       s.status = 'error'; s.error = e.message; onStepError(plan, idx);
     });
+}
+
+// Lời dặn bước duyệt lại: danh sách vấn đề cần kiểm và người sửa đã báo gì
+function duyetLaiHep(ds) {
+  const duoi = x => x.status === 'da-sua' ? ' · người sửa báo: Đã sửa' : x.status === 'khong-sua' ? ` · người sửa báo: Không sửa (${x.note})`
+    : x.status === 'mo' && x.note ? ` · CHÚ Ý: ${x.note}` : '';
+  return ['- Đây là DUYỆT LẠI. Các vấn đề cần kiểm (mã do máy chủ đặt):',
+    ...ds.map(x => `    - ${x.id} · ${x.file} · ${x.where} · ${x.level} · ${x.text}${duoi(x)}`),
+    '  Ghi bảng "## Kết quả duyệt lại" với cột | Mã | Kết luận | Ghi chú |; Kết luận là "Đóng" hoặc "Còn lỗi". Lỗi mới phát hiện thì thêm bảng "## Danh sách vấn đề" như lần duyệt đầu. Chỉ đọc những chỗ liên quan; không duyệt lại cả file, không mở lại link đã kiểm.'].join('\n');
 }
 
 // Vấn đề giao cho người sửa, kèm cách báo lại từng mã

@@ -21,7 +21,7 @@ const congCu = require('./lib/cong-cu');
 const { soatVanBan } = require('./lib/soat-loi');
 const { vietBanDo } = require('./lib/ban-do');
 const { ghiQuyetDinh, goiYChoCauHoi, quyetDinhChoKeHoach, vietSoQuyetDinh } = require('./lib/quyet-dinh');
-const { LOAI_LOI, docVanDe, docDaXuLy, docDuyetLai, docTinNhan, chuFile, ganVanDe, nhomTheoChu, capNhatTuSua, capNhatTuDuyetLai, vietSoVanDe } = require('./lib/van-de');
+const { LOAI_LOI, mucTrong, docVanDe, docDaXuLy, docDuyetLai, docTinNhan, chuFile, ganVanDe, nhomTheoChu, capNhatTuSua, capNhatTuDuyetLai, vietSoVanDe } = require('./lib/van-de');
 const { docCauHoi: parseQuestions, laCauHoiMoiTruong, locBaiHocMoi, phanLoaiCauHoi, chonChuDe, chuDeTu } = require('./lib/van-ban');
 
 const ROOT = __dirname;
@@ -71,6 +71,7 @@ const DEFAULT_CONFIG = {
   maxLessons: 30,     // mỗi kinh-nghiem.md giữ tối đa bấy nhiêu bài học gần nhất (agent đọc file này mỗi lượt)
   stepTurns: { work: 30, review: 24, rereview: 12, fix: 18 }, // --max-turns theo loại bước (chỉ Claude Code)
   labTools: false, // cho agent Claude gọi công cụ của máy chủ qua MCP nội bộ (bật sau khi thử trên máy)
+  maxCheckins: 3, // số lần tối đa điều phối viên được gọi giữa chừng khi có tín hiệu (0 = tắt)
   issueLedger: true, // sổ vấn đề: người duyệt ghi bảng, máy chủ giao sửa cho người phụ trách file có lỗi (false = vòng duyệt như trước Đợt 1)
   chromePreflight: true, // kiểm Chrome bằng một lượt rất ngắn trước khi giao việc cho agent dùng Chrome
   agents: []
@@ -1240,8 +1241,10 @@ function handleReview(plan, idx, text, banGhi = '') {
   plan.log.push(`Bước ${n}: ${name(s.agentId)} kết luận CẦN SỬA → ${chu.map(([a]) => name(a)).join(', ')} sửa (bước ${n + 1}${fixes.length > 1 ? '–' + (n + fixes.length) : ''}), duyệt lại ở bước ${n + fixes.length + 1}`);
 }
 
+const checkingIn = new Set(); // id kế hoạch đang chờ điều phối viên giao ban
 function pumpPlan(plan) {
   if (plan.status !== 'running') return;
+  if (checkingIn.has(plan.id) || chromeChecking.has(plan.id)) return;
   const idx = plan.steps.findIndex(s => s.status !== 'done');
   if (idx < 0) return finishPlan(plan);
   const s = plan.steps[idx];
@@ -1338,6 +1341,7 @@ function pumpPlan(plan) {
         if (!run.handoff) plan.log.push(`Bước ${idx + 1}: ${agent.name} không ghi file bàn giao, người sau chỉ nhận câu trả lời cuối`);
         const text = [handoffText, full || run.summary || ''].filter(Boolean).join('\n\n');
         const banGhi = chuCuaLuot(run, handoffText, full);
+        const seqTruoc = plan.issueSeq || 0; // để biết vấn đề nào mới có ở bước này
         const tatCa = parseQuestions(handoffText || text), moiTruong = tatCa.filter(laCauHoiMoiTruong);
         if (moiTruong.length) {
           s.status = 'error'; s.error = 'Lỗi môi trường: ' + snippet(moiTruong[0]);
@@ -1381,6 +1385,11 @@ function pumpPlan(plan) {
           if (plan.status !== 'running') return emitPlan(plan);
           if (config.issueLedger !== false && hinhHong.length) giaoThayHinh(plan, idx, hinhHong);
           if (qs.length) return askOwner(plan, qs, 'running');
+          const coord = coordinatorOf(plan);
+          if (coord && agent.id !== coord.id && (plan.checkins || 0) < cfgNum('maxCheckins', 3)) {
+            const tinHieu = tinHieuGiaoBan(plan, idx, coord, seqTruoc, handoffText);
+            if (tinHieu.length) return runCheckin(plan, idx, tinHieu);
+          }
           emitPlan(plan); pumpPlan(plan);
         });
       }
@@ -1398,6 +1407,56 @@ function pumpPlan(plan) {
       if (e.status === 409) { s.status = 'pending'; plan.waiting = agent.id; return emitPlan(plan); } // vừa có người giao việc khác
       s.status = 'error'; s.error = e.message; onStepError(plan, idx);
     });
+}
+
+// ── Giao ban: điều phối viên chỉ được gọi giữa chừng khi có việc cần quyết ──
+// Tín hiệu: vấn đề mới không rõ ai phụ trách file, tin gửi thẳng điều phối viên, vướng mắc về file/hình chưa có
+function tinHieuGiaoBan(plan, idx, coord, seqTruoc, handoffText) {
+  const out = [];
+  const so = v => Number(String(v.id).replace(/^VD-/, '')) || 0;
+  const khongChu = (plan.issues || []).filter(v => so(v) > seqTruoc && !v.owner);
+  if (khongChu.length) out.push(`Bước ${idx + 1}: ${khongChu.length} vấn đề không rõ ai phụ trách file: ${khongChu.map(v => `${v.id} (${v.file || 'không ghi file'}: ${snippet(v.text)})`).join('; ')}`);
+  for (const m of (plan.messages || []).filter(m => m.to === coord.id && !m.delivered && m.step === idx + 1)) {
+    out.push(`Tin gửi bạn từ ${(config.agents.find(a => a.id === m.from) || {}).name || m.from} (bước ${m.step}): ${m.text}`);
+    m.delivered = true; // điều phối viên đọc ngay trong giao ban
+  }
+  for (const l of mucTrong(handoffText, /^#{2,3}\s*Vướng mắc(?![\p{L}\p{N}])/iu))
+    if (/chưa có file|chưa tải|không tải được|chưa (có|thấy) (ảnh|hình)|chờ máy chủ/iu.test(l)) out.push(`Vướng mắc ở bước ${idx + 1}: ${l.replace(/^\s*[-*•]\s*/, '').trim().slice(0, 300)}`);
+  return out;
+}
+
+function checkinPrompt(coord, plan, idx, tinHieu) {
+  return [
+    `Bạn là ${coord.name}, điều phối viên của Yoga Lab. Dự án "${plan.goal}" đang chạy: bước ${idx + 1}/${plan.steps.length} vừa xong.`,
+    'Máy chủ thấy các tín hiệu cần xử lý:',
+    ...tinHieu.map(t => `- ${t}`),
+    `Bảng dự án: ${boardPath(plan)}. Sổ vấn đề: ${issuesPath(plan)}. Chỉ đọc những file cần để quyết. Không tự làm việc chuyên môn, không ghi file nào.`,
+    'Trả lời: chỉ một khối ```json {"chen":[{"agent":"<id>","task":"<việc cụ thể, có file đầu ra>"}],"ghi_chu":"<1–2 câu>"}```.',
+    `Tối đa 2 bước chèn, chỉ giao cho người trong nhóm (${teamOf(plan).join(', ')}). Không cần chèn thì "chen": [].`
+  ].join('\n');
+}
+
+function runCheckin(plan, idx, tinHieu) {
+  const coord = coordinatorOf(plan);
+  if (!coord || running.has(coord.id)) { emitPlan(plan); return pumpPlan(plan); } // không gọi được thì chạy tiếp như thường
+  plan.checkins = (plan.checkins || 0) + 1; checkingIn.add(plan.id);
+  plan.log.push(`Giao ban sau bước ${idx + 1}: ${tinHieu.length} tín hiệu`);
+  emitPlan(plan);
+  const done = () => { checkingIn.delete(plan.id); };
+  startRun(coord, `Giao ban: ${plan.goal}`, [boardPath(plan), issuesPath(plan)].filter(wsExists), {
+    prompt: checkinPrompt(coord, plan, idx, tinHieu), maxTurns: 6, effort: 'low', planId: plan.id, step: 0,
+    onDone: (run, full) => {
+      done(); addUsage(plan, run);
+      if (plan.status !== 'running') return emitPlan(plan);
+      const j = jsonBlocks(full || run.summary).find(x => x && Array.isArray(x.chen)) || { chen: [] };
+      let them = [];
+      try { them = cleanSteps(j.chen.slice(0, 2), idx + 1, teamOf(plan), true); } catch (e) { plan.log.push('Giao ban: bước chèn không hợp lệ: ' + e.message); }
+      if (them.length && plan.steps.length + them.length <= cfgNum('maxTotalSteps', 20)) insertSteps(plan, idx + 1, them);
+      else them = [];
+      plan.log.push(`Giao ban: ${them.length ? 'chèn ' + them.length + ' bước' : 'không chèn bước'}${j.ghi_chu ? ' · ' + String(j.ghi_chu).slice(0, 200) : ''}`);
+      emitPlan(plan); pumpPlan(plan);
+    }
+  }).catch(e => { done(); plan.log.push('Giao ban lỗi: ' + e.message); emitPlan(plan); pumpPlan(plan); });
 }
 
 // Hình máy chủ không tải được: thành vấn đề BẮT BUỘC của người ghi link, và chèn ngay một bước sửa cho người đó

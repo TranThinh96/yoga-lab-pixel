@@ -885,3 +885,12 @@ Gọi `goi('soat_loi', …, ctx, [])` thì `isError` là `true`.
 - 0.13C Đã thử trọn đường ống trên bản sao workspace với `labTools: true` và một lệnh `claude` giả: lượt chạy gọi được `soat_loi` qua `mcp/yogalab-mcp.js`,
   nhận kết quả thật (v6: trang 17 "tường", trang 22 "bolster"), và `.yogalab/mcp/` được dọn sau lượt. Claude Code thật thì chưa thử.
 - 0.14 README: sửa thêm dòng `index.md` trong sơ đồ folder thành "bản đồ ngắn do máy chủ viết".
+- Thử thật sau khi xong đợt (Claude Code 2.1 trong môi trường viết code, trên bản sao workspace):
+  - `labTools: true`, giao Lam đúng câu trong `thu-tren-may.md`: Lam gọi `mcp__yogalab__soat_loi`, diễn biến có "Máy soát output/suy-giap-v7/slides.md", không có Bash.
+    Bàn giao có `Số chữ trên slide (Ý chính + Câu chốt): Trang 1: 31 · Trang 2: 39 · …`. "Không thấy lỗi máy móc" là đúng: 2 lỗi cũ chỉ là "Chang Chang" (bỏ ở 0.6B).
+    Trang 20–23 đếm 0 chữ là đúng: trang tư thế ghi "Ý chính: —".
+  - Không có Chrome: dự án một bước của Mai tạm dừng ngay ở bước kiểm, ghi chú "Chrome chưa sẵn sàng (LỖI: Browser extension is not connected…)", Mai không chạy lượt nào.
+  - Câu hỏi diễn đạt khác câu QD-2: ô trả lời hiện "Lần trước (plan-20261016-204631, 2026-10-16) bạn trả lời: …" và được điền sẵn; trả lời xong ghi thành QD-20.
+- Lỗi thấy khi thử, chưa sửa: `index.md` chỉ được viết lại sau `finishRun` và lúc khởi động (đúng như 0.9 ghi).
+  Dự án đổi trạng thái mà không có lượt chạy (trả lời câu hỏi rồi xong, bấm Dừng, tạm dừng vì Chrome) thì bản đồ ghi trạng thái cũ tới lượt chạy sau.
+  Cách sửa đề xuất: gọi thêm `scheduleIndex()` trong `emitPlan` (đã gộp sẵn 2 giây, nên không ghi file dồn).

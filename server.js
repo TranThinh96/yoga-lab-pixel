@@ -1285,6 +1285,7 @@ function pumpPlan(plan) {
     `(Dự án: ${plan.goal} — bước ${idx + 1}/${plan.steps.length}, do điều phối viên giao)`,
     proj.length ? `Brief và bảng dự án: ${proj.join(', ')} — đọc trước. Mục "Trả lời của chủ dự án" trong bảng là quyết định đã chốt.` : '',
     '', s.task,
+    ...(kind === 'fix' && (s.issueIds || []).length ? ['', vanDeChoNguoiSua(plan, s.issueIds)] : []),
     ...(loiSua.length ? ['', lintBlockFix(loiSua)] : []),
     ...(s.prevFiles && s.prevFiles.length ? ['', `LẦN TRƯỚC bước này bị ngắt giữa chừng (${snippet(s.lastError || 'lỗi')}), nhưng đã ghi: ${s.prevFiles.join(', ')}. ` +
       `Đọc lại các file đó trước: nếu đã đủ thì chỉ kiểm tra, sửa chỗ thiếu và viết bàn giao; đừng làm lại từ đầu.`] : []),
@@ -1338,6 +1339,11 @@ function pumpPlan(plan) {
           return emitPlan(plan);
         }
         if (s.checks) handleReview(plan, idx, text, banGhi);
+        if (config.issueLedger !== false && kind === 'fix' && (s.issueIds || []).length) {
+          capNhatTuSua(plan.issues || [], docDaXuLy(banGhi), run.files || [], s.issueIds);
+          const chua = (plan.issues || []).filter(x => s.issueIds.includes(x.id) && x.status === 'mo');
+          if (chua.length) plan.log.push(`Bước ${idx + 1}: còn ${chua.length} vấn đề chưa xử lý (${chua.map(x => x.id + (x.note ? ': ' + x.note : '')).join('; ')})`);
+        }
         const qs = newQuestions(plan, tatCa.filter(q => !laCauHoiMoiTruong(q)), agent.id, idx + 1);
         // Bước vừa ghi thiet-ke.md: máy chủ tải các hình có giấy phép trong "Danh sách hình" trước khi người sau làm
         const designs = (run.files || []).filter(x => /^output\/[^/]+\/thiet-ke\.md$/.test(x));
@@ -1373,6 +1379,15 @@ function pumpPlan(plan) {
       if (e.status === 409) { s.status = 'pending'; plan.waiting = agent.id; return emitPlan(plan); } // vừa có người giao việc khác
       s.status = 'error'; s.error = e.message; onStepError(plan, idx);
     });
+}
+
+// Vấn đề giao cho người sửa, kèm cách báo lại từng mã
+function vanDeChoNguoiSua(plan, ids) {
+  const ds = (plan.issues || []).filter(x => ids.includes(x.id));
+  return ['VẤN ĐỀ GIAO CHO BẠN (mã do máy chủ đặt; chi tiết trong file nhận xét của người duyệt):',
+    ...ds.map(x => `  - ${x.id} · ${x.file} · ${x.where} · ${x.level} · ${x.kind}: ${x.text}${x.fix ? ' → Đề xuất: ' + x.fix : ''}`),
+    'Mỗi vấn đề BẮT BUỘC: sửa, hoặc giải thích vì sao không sửa. Vấn đề NÊN: sửa nếu hợp lý. Sửa thẳng vào file sản phẩm.',
+    'Trong bàn giao, ghi bảng "## Đã xử lý" với cột | Mã | Kết quả | Ghi chú |; Kết quả là "Đã sửa" hoặc "Không sửa" (Không sửa thì ghi lý do vào Ghi chú). Máy chủ đối chiếu với file bạn thật sự đã ghi.'].join('\n');
 }
 
 // Bảng có thể nằm trong bàn giao, câu trả lời cuối, hoặc file nhận xét agent ghi trong agents/

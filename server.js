@@ -23,7 +23,8 @@ const { vietBanDo } = require('./lib/ban-do');
 const { ghiQuyetDinh, goiYChoCauHoi, quyetDinhChoKeHoach, vietSoQuyetDinh } = require('./lib/quyet-dinh');
 const { LOAI_LOI, mucTrong, docVanDe, docDaXuLy, docDuyetLai, docTinNhan, chuFile, ganVanDe, nhomTheoChu, capNhatTuSua, capNhatTuDuyetLai, vietSoVanDe } = require('./lib/van-de');
 const { docCauHoi: parseQuestions, laCauHoiMoiTruong, locBaiHocMoi, phanLoaiCauHoi, chonChuDe, chuDeTu } = require('./lib/van-ban');
-const { chuDeTriThuc, docBangTriThuc, hopNhatMenhDe, hopNhatNguon, capNhatTruyCap, hopNhatTuThe, maHinh, hopNhatHinh } = require('./lib/tri-thuc');
+const { chuDeTriThuc, docBangTriThuc, hopNhatMenhDe, hopNhatNguon, capNhatTruyCap, hopNhatTuThe, maHinh, hopNhatHinh, cacChuDe, vietMocChuDe, vietBanDoTriThuc } = require('./lib/tri-thuc');
+const { docGhiChu } = require('./lib/ghi-chu');
 
 const ROOT = __dirname;
 const CONFIG_PATH = path.join(ROOT, 'config.json');
@@ -1004,7 +1005,51 @@ async function nhapTriThuc(agent, run, banGhi) {
   else if (ghiChu.length && run.handoff) await fsp.appendFile(insideWorkspace(run.handoff), '\n\n' + ghiChu.map(x => '- ' + x).join('\n') + '\n', 'utf8').catch(() => {});
   if (tong) henBanDoTriThuc();
 }
-function henBanDoTriThuc() {}
+// Mọi note trong kho: [{ path, data, title, para }]. Giữ theo mtime từng file để gọi nhiều lần không đọc lại cả kho
+const khoCache = new Map();
+function docKhoTriThuc() {
+  const out = [], con = new Set();
+  for (const d of ['menh-de', 'nguon', 'tu-the', 'hinh']) {
+    const dir = insideWorkspace(`tri-thuc/${d}`);
+    let names = [];
+    try { names = fs.readdirSync(dir); } catch { continue; }
+    for (const n of names) {
+      if (!/\.md$/i.test(n)) continue;
+      const rel = `tri-thuc/${d}/${n}`;
+      let mtime;
+      try { mtime = fs.statSync(path.join(dir, n)).mtimeMs; } catch { continue; }
+      con.add(rel);
+      const c = khoCache.get(rel);
+      if (c && c.mtime === mtime) { out.push(c.note); continue; }
+      const { data, body } = docGhiChu(readWs(rel));
+      const lines = body.split(/\r?\n/), t = lines.findIndex(l => /^#\s/.test(l));
+      const sau = lines.slice(t + 1), dau = sau.findIndex(l => l.trim() && !/^#{1,6}\s/.test(l));
+      const doan = [];
+      if (dau >= 0) for (const l of sau.slice(dau)) { if (!l.trim() || /^#{1,6}\s/.test(l)) break; doan.push(l.trim()); }
+      const note = { path: rel, data, title: t >= 0 ? lines[t].replace(/^#\s+/, '').trim() : n.replace(/\.md$/, ''), para: doan.join(' ').slice(0, 300) };
+      khoCache.set(rel, { mtime, note });
+      out.push(note);
+    }
+  }
+  for (const k of khoCache.keys()) if (!con.has(k)) khoCache.delete(k);
+  return out;
+}
+// Dựng lại 00-ban-do.md và trang từng chủ đề (gộp các lần gọi trong 3 giây; nội dung không đổi thì không ghi)
+let banDoTimer = null;
+function henBanDoTriThuc() {
+  if (config.brain === false) return;
+  clearTimeout(banDoTimer);
+  banDoTimer = setTimeout(async () => {
+    try {
+      const notes = docKhoTriThuc(), ngay = homNay();
+      if (!notes.length && !wsExists('tri-thuc/00-ban-do.md')) return;
+      for (const c of cacChuDe(notes)) if (/^[a-z0-9][a-z0-9-]*$/.test(c)) await ghiTriThuc(`tri-thuc/chu-de/${c}.md`, vietMocChuDe(c, notes, ngay));
+      const moi = !wsExists('tri-thuc/00-ban-do.md');
+      await ghiTriThuc('tri-thuc/00-ban-do.md', vietBanDoTriThuc(notes, ngay));
+      if (moi) scheduleIndex(); // index.md trỏ tới bản đồ bộ não
+    } catch (e) { console.error('Bộ não: không dựng được bản đồ:', e.message); }
+  }, 3000);
+}
 
 let planSave = Promise.resolve();
 function emitPlan(plan) {
@@ -1021,6 +1066,7 @@ function emitPlan(plan) {
     if (vAbs) await fsp.writeFile(vAbs, soVanDe, 'utf8');
   }).catch(e => console.error('Không lưu được kế hoạch:', e.message));
   scheduleIndex(); // dự án đổi trạng thái mà không có lượt chạy (trả lời, dừng, tạm dừng) thì bản đồ cũng phải theo
+  if (plan.status === 'done') henBanDoTriThuc();
 }
 
 // Bảng dự án do máy chủ viết lại sau mỗi thay đổi: ai cũng đọc được tiến độ, kết luận duyệt và câu trả lời của chủ dự án
@@ -2843,6 +2889,7 @@ const server = http.createServer(async (req, res) => {
   await loadQuyetDinh();
   loadLinkCache();
   scheduleIndex();
+  henBanDoTriThuc();
   loadLimits();
   scanAgyQuota().catch(() => {});
   server.listen(PORT, HOST, () => {

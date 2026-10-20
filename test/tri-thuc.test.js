@@ -115,3 +115,32 @@ test('docBangTriThuc: bỏ ý chờ, đổi số [n] sang mã nguồn', () => {
   assert.deepEqual(r.tuThe.map(x => x.ma), ['balasana']);
   assert.deepEqual(tt.docBangTriThuc('## Danh sách đã duyệt\n- ý gạch đầu dòng kiểu cũ'), { nguon: [], menhDe: [], tuThe: [] });
 });
+
+const notesGia = () => [
+  { path: 'tri-thuc/menh-de/uong-luc-doi.md', title: 'Uống levothyroxine lúc đói', para: 'Uống levothyroxine lúc đói, trước bữa sáng 30–60 phút.',
+    data: { loai: 'menh-de', ma: 'uong-luc-doi', chu_de: ['suy-giap'], muc_bang_chung: 'manh', trang_thai: 'da-duyet', nguon: ['[[nhs-levo]]'], trich: 'before breakfast', xem_lai_truoc: '2027-10-19' } },
+  { path: 'tri-thuc/menh-de/i-ot.md', title: 'Bổ sung i-ốt', para: 'Không tự bổ sung i-ốt.',
+    data: { loai: 'menh-de', ma: 'i-ot', chu_de: ['suy-giap'], muc_bang_chung: 'vua', trang_thai: 'da-duyet', nguon: [], trich: 'q', xem_lai_truoc: '2026-01-01' } },
+  { path: 'tri-thuc/nguon/mayo.md', title: 'Hypothyroidism', para: 'https://mayoclinic.org/x',
+    data: { loai: 'nguon', ma: 'mayo', to_chuc: 'Mayo Clinic', tieu_de: 'Hypothyroidism', truy_cap: 'captcha', chu_de: ['suy-giap'] } },
+  { path: 'tri-thuc/tu-the/balasana.md', title: 'Tư thế em bé (Balasana)', para: '- p',
+    data: { loai: 'tu-the', ma: 'balasana', ten_viet: 'Tư thế em bé', ten_phan: 'Balasana', chong_chi_dinh: ['chấn thương gối'], chu_de: ['suy-giap', 'mat-ngu'], dung_trong: ['[[du-an/plan-1/brief|plan-1]]'] } }
+];
+
+test('vietMocChuDe: đủ các mục, ý quá hạn sang mục cần xem', () => {
+  const md = tt.vietMocChuDe('suy-giap', notesGia(), '2026-10-20');
+  for (const m of ['## Ý đã kiểm chứng', '## Ý nháp hoặc cần xem lại', '## Tư thế', '## Hình', '## Nguồn', '## Dự án đã dùng']) assert.ok(md.includes(m), m);
+  const [kiem, nhap] = md.split('## Ý nháp hoặc cần xem lại');
+  assert.match(kiem, /\[\[menh-de\/uong-luc-doi\\\|Uống levothyroxine lúc đói\]\]/);
+  assert.match(nhap.split('## Tư thế')[0], /i-ot/);
+  assert.match(md, /truy cập: captcha/);
+  assert.match(md, /du-an\/plan-1/);
+});
+
+test('vietBanDoTriThuc: cần bạn xem, nguồn bị chặn', () => {
+  const md = tt.vietBanDoTriThuc(notesGia(), '2026-10-20');
+  assert.match(md, /\[\[chu-de\/suy-giap\|suy-giap\]\] · 2 ý đã duyệt · 1 nguồn · 1 tư thế · 0 hình/);
+  assert.match(md, /\[\[chu-de\/mat-ngu\|mat-ngu\]\]/);
+  assert.match(md.split('## Cần bạn xem')[1].split('##')[0], /i-ot.*quá hạn xem lại \(2026-01-01\)/);
+  assert.match(md.split('## Nguồn đang bị chặn')[1], /mayo.*captcha/);
+});

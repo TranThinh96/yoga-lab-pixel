@@ -462,4 +462,19 @@ Thêm mục **"Bộ não chung (Obsidian)"** sau mục "Folder làm việc", g�
 
 ## Phát hiện thêm
 
-(Người triển khai ghi vào đây.)
+Lựa chọn khi đặc tả chưa nói rõ (chủ dự án xem lại):
+
+1. **Lịch sử trong note không lặp.** `themLichSu` bỏ qua dòng y hệt đã có. Lý do: bước sửa của An ghi lại file kiểm chứng thì cả bảng được nhập lại, cùng ngày, cùng dự án; không chặn thì note dài ra sau mỗi vòng sửa. Dòng khác ngày, khác người, khác dự án vẫn được thêm như đặc tả.
+2. **Cột "Prompt ảnh đã đạt", "Lỗi AI hay vẽ sai" chỉ tách theo `;` (hoặc `<br>`)**, không tách theo dấu phẩy, vì prompt tiếng Anh luôn có dấu phẩy. Cột Đạo cụ, Chống chỉ định vẫn tách theo `;` và `,`.
+3. **Ô Nguồn ghi số `[n]`** thay vì Mã nguồn: đổi theo bảng "Danh sách nguồn" trong cùng văn bản; không đổi được thì bỏ số đó (không tạo link `[[1]]`).
+4. **Dòng nguồn không có Mã nguồn** (chỉ có Link): mã = slug của "Tổ chức + Tiêu đề", không có thì slug của link.
+5. **Kiểm link sau khi nhập chạy nền**, không giữ dự án chờ (30 link, mỗi lúc 3 link, có thể mất vài phút). Kết quả về thì ghi `truy_cap` rồi dựng lại bản đồ.
+6. **Link trong ô bảng viết `[[menh-de/x\|tiêu đề]]`** (Obsidian cần `\|` trong bảng, không thì vỡ cột).
+7. **Trang chủ đề**: ý `da-duyet` đã quá hạn xem lại nằm ở "Ý nháp hoặc cần xem lại" (kèm lý do), không ở "Ý đã kiểm chứng". Ý `bac-bo` không hiện trong trang chủ đề (vẫn tìm được bằng `tra_cuu`, kèm nhãn BÁC BỎ).
+8. **Gói ngữ cảnh, phần "Trong bộ não có thể liên quan"**: câu tìm là mục tiêu dự án + 300 ký tự đầu của việc (thường 20–40 từ khoá), nên ngưỡng tỉ lệ 0,34 của `tra_cuu` gần như không bao giờ đạt. Ở đây dùng "ít nhất 2 từ khoá chung" (`toiThieu: 2` của `timTriThuc`), vẫn xếp theo điểm. Chủ đề mới chưa có note nào thì tìm cả kho, để tư thế, nguồn của chủ đề cũ vẫn hiện.
+9. **Quy tắc của chủ dự án** trong gói ngữ cảnh: bỏ thêm dòng tiêu đề `# Quy tắc của tôi`, không thì phần này không bao giờ rỗng.
+10. **Note hình**: tạo cho cả hình tải bằng công cụ `tai_hinh` vào `hinh/` (không chỉ `hinh-nguon/`). Lịch sử ghi người có file nguồn (vd `mai`) và mã dự án.
+11. **Dòng `Chủ đề: <x>`** được phép có `**`, dấu gạch đầu dòng hoặc backtick quanh `<x>`; `<x>` phải là chữ thường không dấu, nối gạch ngang (dòng `Thư mục chủ đề:` của brief không bị nhầm).
+12. **`thuat-ngu.md`**: cặp cách gọi trùng với `lintVariants` (kể cả đảo thứ tự) chỉ tính một lần.
+13. **Lưu ý cho Obsidian**: cột `nguon` của note ý ghi `[[<mã nguồn>]]` (tên file, không có thư mục). Nếu một ý và một nguồn trùng mã, link này sẽ mơ hồ. Chưa gặp trong dữ liệu thật; nếu gặp thì đổi mã ý.
+14. Công cụ `tra_cuu` chỉ có khi bật `labTools` (giống các công cụ khác của máy chủ). Gói ngữ cảnh thì có ở mọi lượt khi `brain` bật.

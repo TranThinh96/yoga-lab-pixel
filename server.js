@@ -391,6 +391,7 @@ function buildPrompt(agent, task, handoffPath, attachments, kind, lab = []) {
     `4. Khi xong, ghi bản bàn giao (tối đa ~350 chữ) vào đúng file: ${handoffPath}`,
     `   Đúng 7 mục: "## Đã làm", "## File tạo ra", "## Tự kiểm theo brief" (từng tiêu chí: đạt / chưa + lý do), "## Quyết định & giả định",`,
     `   "## Vướng mắc", "## Câu hỏi cho chủ dự án" (ghi "Không" nếu không có), "## Gợi ý bước sau".`,
+    `   Khi cần, thêm sau mục cuối: "## Gửi đồng đội" (mỗi dòng "@<mã người>: <việc hoặc thông tin cho người đó>") và "## Cho cả nhóm biết" (mỗi dòng một sự thật có ích cho cả nhóm, vd trang web nào chặn công cụ tải trang và cách mở khác). Mã người: ${config.agents.map(a => `${a.id} (${a.name})`).join(', ')}.`,
     `5. Không sửa index.md: máy chủ tự cập nhật bản đồ sau mỗi lượt.`,
     `   Mỗi lượt đọc lại toàn bộ những gì bạn đã mở, nên càng ít lượt và càng ít chữ thừa thì càng rẻ:`,
     `   - File lớn (trên ~20 KB): dùng Grep tìm đúng mục rồi Read đoạn đó (offset/limit); không đọc lại cả file nhiều lần.`,
@@ -953,6 +954,8 @@ function boardText(plan) {
     const dem = st => vds.filter(v => v.status === st).length;
     L.push('', '## Vấn đề', `- Còn mở: ${dem('mo')} (BẮT BUỘC: ${vds.filter(v => v.status === 'mo' && v.level === 'BẮT BUỘC').length}) · Không sửa: ${dem('khong-sua')} · Đóng: ${dem('dong')} · chi tiết: ${issuesPath(plan)}`);
   }
+  if ((plan.messages || []).length) L.push('', '## Tin nhắn giữa các bước', ...plan.messages.slice(-15).map(m => `- (bước ${m.step}) ${cell(name(m.from))} → ${cell(name(m.to))}: ${cell(m.text)}`));
+  if ((plan.notes || []).length) L.push('', '## Cho cả nhóm biết', ...plan.notes.slice(-15).map(m => `- (bước ${m.step}, ${cell(name(m.from))}) ${cell(m.text)}`));
   if (plan.lint && plan.lint.length) L.push('', '## Máy soát lỗi sau cùng (còn lại)', ...plan.lint.map(x => `- ${cell(x)}`));
   if (plan.log && plan.log.length) L.push('', '## Ghi chú điều phối', ...plan.log.map(l => `- ${cell(l)}`));
   return L.join('\n') + '\n';
@@ -1272,6 +1275,7 @@ function pumpPlan(plan) {
   const noHandoff = srcs.filter(x => !x.handoff && x.summary);
   const checked = s.checks && plan.steps[latestStep(plan, s.checks, idx) - 1];
   const checkedName = checked && ((config.agents.find(a => a.id === checked.agentId) || {}).name || checked.agentId);
+  const tinMoi = (plan.messages || []).filter(m => m.to === agent.id && !m.delivered);
   // Duyệt lại hẹp: chỉ các vấn đề của các bước sửa ngay trước
   const canDuyetLai = kind === 'rereview' && config.issueLedger !== false ? (plan.issues || []).filter(x => s.from.includes(x.fixStep)) : [];
   let loiSua = [];
@@ -1305,7 +1309,8 @@ function pumpPlan(plan) {
       lintBlock(lintFiles(plan.steps.filter(x => x.agentId === (checked || {}).agentId).flatMap(x => x.files || []))),
       `- Dòng CUỐI của bàn giao phải là đúng một trong hai: "KẾT LUẬN: ĐẠT" (không còn lỗi BẮT BUỘC) hoặc "KẾT LUẬN: CẦN SỬA".`] : []),
     ...noHandoff.map(x => `\nKết quả bước trước (${x.agentId}, không có file bàn giao): ${x.summary.slice(0, 600)}`),
-    ...noMedicalAi(agent, [s.task, ...att].join(' '))
+    ...noMedicalAi(agent, [s.task, ...att].join(' ')),
+    ...(tinMoi.length ? ['', 'TIN TỪ ĐỒNG ĐỘI:', ...tinMoi.map(m => `- (từ ${(config.agents.find(a => a.id === m.from) || {}).name || m.from}, bước ${m.step}) ${m.text}`)] : [])
   ].join('\n');
 
   s.status = 'working'; s.error = '';
@@ -1341,6 +1346,13 @@ function pumpPlan(plan) {
           plan.log.push(`Bước ${idx + 1}: lỗi môi trường → tạm dừng (không hỏi chủ dự án)`);
           return emitPlan(plan);
         }
+        const tin = docTinNhan(handoffText);
+        for (const m of tin.gui) {
+          const den = findAgent(m.to);
+          if (!den) { plan.log.push(`Bước ${idx + 1}: tin gửi "@${m.to}" không có người nhận`); continue; }
+          (plan.messages = plan.messages || []).push({ from: agent.id, to: den.id, text: m.text, step: idx + 1, delivered: false });
+        }
+        for (const t of tin.chung) (plan.notes = plan.notes || []).push({ from: agent.id, text: t, step: idx + 1 });
         if (s.checks) handleReview(plan, idx, text, banGhi);
         if (config.issueLedger !== false && kind === 'fix' && (s.issueIds || []).length) {
           capNhatTuSua(plan.issues || [], docDaXuLy(banGhi), run.files || [], s.issueIds);
@@ -1377,7 +1389,7 @@ function pumpPlan(plan) {
       if (run.status === 'stopped') { plan.status = 'paused'; plan.note = `Bạn đã dừng bước ${idx + 1}`; return emitPlan(plan); }
       onStepError(plan, idx);
     }
-  }).then(run => { s.runId = run.id; emitPlan(plan); })
+  }).then(run => { s.runId = run.id; for (const m of tinMoi) m.delivered = true; emitPlan(plan); })
     .catch(e => {
       if (e.status === 409) { s.status = 'pending'; plan.waiting = agent.id; return emitPlan(plan); } // vừa có người giao việc khác
       s.status = 'error'; s.error = e.message; onStepError(plan, idx);

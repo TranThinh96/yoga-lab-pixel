@@ -2877,7 +2877,7 @@ const VERDICT_TXT = { pass:'Đạt', fix:'Cần sửa → trả về', 'fix-left
 function askBox(p){
   const name = id => (agentById(id) || {}).name || id;
   return `<div class="plan-note err"><b>Nhóm cần bạn quyết định</b>
-    ${(p.questions || []).map((x, i) => `<label class="lbl" for="ans${i}" style="margin-top:8px">${x.step ? 'Bước ' + x.step : 'Điều phối'} · ${esc(name(x.from))}: ${esc(x.q)}</label><textarea id="ans${i}" data-ans="${i}" rows="2" style="width:100%" placeholder="Trả lời (để trống = đồng ý phương án đề xuất)"></textarea>`).join('')}
+    ${(p.questions || []).map((x, i) => `<label class="lbl" for="ans${i}" style="margin-top:8px">${x.step ? 'Bước ' + x.step : 'Điều phối'} · ${esc(name(x.from))}: ${esc(x.q)}</label>${x.goiY ? `<p class="hint" style="margin:4px 0">Lần trước (${esc(x.goiY.planId)}, ${esc(String(x.goiY.at || '').slice(0, 10))}) ${x.goiY.tuQuyet ? 'nhóm tự quyết' : 'bạn trả lời'}: ${esc(x.goiY.a)}</p>` : ''}<textarea id="ans${i}" data-ans="${i}" rows="2" style="width:100%" placeholder="Trả lời (để trống = đồng ý phương án đề xuất)">${x.goiY && !x.goiY.tuQuyet ? esc(x.goiY.a) : ''}</textarea>`).join('')}
     <div class="row" style="margin-top:8px;gap:6px"><button class="btn primary sm" data-plan-answer>Gửi trả lời</button><button class="btn sm" data-plan-skip>Để nhóm tự quyết</button></div></div>`;
 }
 const planDot = s => ({ planning:'working', replanning:'working', reviewing:'working', running:'working', done:'done', error:'error', paused:'error', stopped:'error', asking:'error' })[s] || '';

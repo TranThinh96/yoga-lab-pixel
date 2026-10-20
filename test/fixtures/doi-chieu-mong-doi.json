@@ -1,0 +1,42 @@
+{
+ "ghi_chu": "Kết quả mong đợi của doiChieuThietKe (dot-0.md mục 0.6). mau: doi-chieu-slides.md + doi-chieu-thiet-ke.md. v6: workspace/output/suy-giap-v6/slides.md + thiet-ke.md (chép vào test/fixtures/slides-v6.md, thiet-ke-v6.md).",
+ "mau": [
+  {
+   "trang": 2,
+   "loai": "lech-tieu-de",
+   "chi_tiet": "slides.md: \"Tuyến giáp là gì\" · thiet-ke.md: \"Tuyến giáp\""
+  },
+  {
+   "trang": 3,
+   "loai": "thieu-trang",
+   "chi_tiet": "có trong slides.md, không có trong thiet-ke.md"
+  },
+  {
+   "trang": 4,
+   "loai": "lech-dao-cu",
+   "chi_tiet": "slides.md có \"khăn\", thiet-ke.md không có"
+  },
+  {
+   "trang": 5,
+   "loai": "lech-loai-hinh",
+   "chi_tiet": "slides.md: B · thiet-ke.md: A"
+  },
+  {
+   "trang": 5,
+   "loai": "lech-dao-cu",
+   "chi_tiet": "thiet-ke.md có \"khăn\", slides.md không có"
+  }
+ ],
+ "v6": [
+  {
+   "trang": 17,
+   "loai": "lech-dao-cu",
+   "chi_tiet": "slides.md có \"tường\", thiet-ke.md không có"
+  },
+  {
+   "trang": 22,
+   "loai": "lech-dao-cu",
+   "chi_tiet": "thiet-ke.md có \"bolster\", slides.md không có"
+  }
+ ]
+}

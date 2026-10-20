@@ -1,0 +1,80 @@
+{
+ "bai_hoc": {
+  "nguong": 0.6,
+  "giong": [
+   [
+    "Với số cấp cứu 115 và dấu hiệu cần đi cấp cứu, tìm ngay từ vòng đầu một trang công khai của Bộ Y tế/Sở Y tế Việt Nam thay vì để sang 'Việc còn mở'.",
+    "Tìm nguồn Việt Nam (Bộ Y tế) cho số cấp cứu 115 và dấu hiệu cấp cứu ngay ở vòng nguồn đầu, không để trống tới nghiệm thu."
+   ],
+   [
+    "Khi chấm TC5, ý an toàn nào thiếu nguồn (vd số 115, dấu hiệu cấp cứu) thì ghi BẮT BUỘC tìm nguồn ở vòng đầu, chỉ chấp nhận 'Việc còn mở' khi đã thử và ghi rõ đã tìm ở đâu.",
+    "Khi một ý trên trang an toàn (như 115, dấu hiệu cấp cứu) chưa có nguồn, đánh BẮT BUỘC tìm nguồn ngay vòng duyệt đầu thay vì chấp nhận nhãn 'ý kiến nhóm'."
+   ],
+   [
+    "Sau khi tải ảnh tạo lại, kiểm tên và vị trí file trong output/<chu-de>/hinh/ rồi ghi vào bàn giao.",
+    "Sau khi tải ảnh, kiểm tên và giờ sửa file trong output/<chu-de>/hinh/ để chắc bản đạt đã nằm đúng thư mục."
+   ]
+  ],
+  "khac": [
+   [
+    "Sau bước duyệt thiết kế, tự mở bàn giao của Hạ/Vy tìm dòng 'CẦN GIAO LAM' và đồng bộ dòng Hình trong slides.md với thiet-ke.md, kể cả khi chưa được giao vòng sửa.",
+    "Sau khi sửa dòng Hình phải mở thiet-ke.md đối chiếu từng trang, không chỉ sửa theo danh sách được giao."
+   ],
+   [
+    "Khi duyệt ảnh tư thế, so từng chi tiết đạo cụ với 'Quyết định đã chốt' trong brief (gạch nằm phẳng thấp nhất, bắp chân nằm trên mặt ghế); ảnh v6 tr.18 có gạch dựng đứng và tr.17 chỉ có gót đặt lên ghế mà vẫn bị chấm đạt.",
+    "Khi duyệt ảnh tư thế, đối chiếu từng đạo cụ với dòng 'Trên slide' (vd tr.18 chăn phải dưới vai, ảnh lại đặt dưới đầu), không chỉ kiểm tư thế chính."
+   ],
+   [
+    "Với số cấp cứu 115 và dấu hiệu cần đi cấp cứu, tìm ngay từ vòng đầu một trang công khai của Bộ Y tế/Sở Y tế Việt Nam thay vì để sang 'Việc còn mở'.",
+    "Luôn kiểm tra link thật và tình trạng truy cập (tránh link 404, phân biệt link bị chặn 403/reCAPTCHA); không tự nhận '100% link đã mở' khi chưa xác minh kỹ."
+   ]
+  ]
+ },
+ "cau_hoi": {
+  "nguong": 0.65,
+  "giong": [
+   [
+    "Biểu tượng thư viện Canva trên trang y khoa (tr.6, 7, 9) có được coi là hình có giấy phép không? Đề xuất: chấp nhận biểu tượng hình học, ghi \"Canva Elements\" vào Danh sách hình, bỏ biểu tượng tim ở tr.7.",
+    "Biểu tượng hình học thư viện Canva trên trang y khoa (tr.6, 7, 9) có được coi là hình có giấy phép không? Đề xuất: chấp nhận, ghi \"Canva Elements\" (đã ghi)."
+   ],
+   [
+    "Biểu tượng thư viện Canva trên trang y khoa (tr.6, 7, 9) có được coi là hình có giấy phép không? Đề xuất: chấp nhận biểu tượng hình học, ghi \"Canva Elements\" vào Danh sách hình, bỏ biểu tượng tim ở tr.7.",
+    "Biểu tượng hình học Canva Elements ở trang y khoa (tr.6, 7, 9). Đề xuất: chấp nhận, không dùng biểu tượng cơ quan."
+   ],
+   [
+    "Số cấp cứu 115 chưa có nguồn Việt Nam — đề xuất: An/Lam dẫn Bộ Y tế, hoặc ghi vào \"Việc còn mở\".",
+    "Số 115 — đề xuất: tìm nguồn Bộ Y tế/nguồn công khai VN; chưa có thì ghi \"Việc còn mở\"."
+   ],
+   [
+    "Chống chỉ định 5 tư thế chỉ là ý kiến — đề xuất: giảng viên chính/bác sĩ xem trước khi chốt.",
+    "CCĐ 5 tư thế chỉ là ý kiến — đề xuất: giữ ma trận, đưa vào \"Việc còn mở\" cho giảng viên chính/bác sĩ."
+   ]
+  ],
+  "khac": [
+   [
+    "Viparita Karani: đề xuất dạy bản gác bắp chân lên ghế làm chính, gác tường là tuỳ chọn.",
+    "Ảnh tr.17 (gác bắp chân lên ghế): AI vẽ sai 4 lần. Đề xuất: chụp ảnh thật giảng viên Yoga Lab làm tư thế này; nếu không kịp thì dùng bản gác bolster và sửa slides/thiết kế tr.17 cho khớp."
+   ],
+   [
+    "Số cấp cứu 115 chưa có nguồn Việt Nam — đề xuất: An/Lam dẫn Bộ Y tế, hoặc ghi vào \"Việc còn mở\".",
+    "Số 115 và dấu hiệu cấp cứu (tr.13): đề xuất bác sĩ Yoga Lab ký xác nhận và thêm 1 nguồn Bộ Y tế trước buổi dạy."
+   ],
+   [
+    "Setu Bandhasana có đỡ: giữ với gạch thấp nhất 1–3 phút, hay thay bằng nằm nghiêng co gối?",
+    "Hơi thở: Dirga chính + Bhramari ngắn (đề xuất), hay thêm Nadi Shodhana?"
+   ]
+  ]
+ },
+ "khong_phai_cau_hoi": [
+  "Không (3 câu của An đã có trả lời \"nhóm tự quyết\": giữ ma trận CCĐ, Viparita thay bằng tư thế 1/5, 115 vào \"Việc còn mở\").",
+  "Không. Tr.17 theo phương án (a) của Nhi (chủ dự án đã để nhóm tự quyết) nếu tạo lại bằng ghế vẫn sai; khi đó sửa slides.md và thiet-ke.md tr.17 cho khớp.",
+  "Không",
+  "Không.",
+  "(Không)",
+  "Không có câu hỏi mới cho chủ dự án."
+ ],
+ "la_cau_hoi": [
+  "Không dùng Viparita Karani cho người tăng nhãn áp có được không?",
+  "Số 115 — đề xuất: tìm nguồn Bộ Y tế/nguồn công khai VN; chưa có thì ghi \"Việc còn mở\"."
+ ]
+}

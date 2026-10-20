@@ -70,7 +70,7 @@ Khi việc lớn cần nhiều người, bạn không phải tự chuyển tay t
    Mỗi người tự kiểm sản phẩm theo tiêu chí trong brief trước khi bàn giao, và đọc `agents/<tên>/kinh-nghiem.md` của mình.
 5. **Vòng duyệt:** người duyệt kết thúc bàn giao bằng `KẾT LUẬN: ĐẠT` hoặc `KẾT LUẬN: CẦN SỬA`. Cần sửa thì máy chủ tự chèn bước sửa (người làm) và duyệt lại (người duyệt), tối đa `maxReviewRounds` vòng.
    Trước mỗi bước duyệt, **máy chủ tự soát lỗi máy móc** (không tốn token): dấu câu đôi, dấu cách trước dấu câu, lặp từ, từ cần tránh (`lintBanned`), cách gọi lẫn lộn (`lintVariants`), trang slide quá `lintMaxWords` chữ. Kết quả được đưa vào việc của người duyệt, nên họ không phải tự dò. Bước duyệt chỉ kiểm, không tự đi tìm nguồn mới. Bước duyệt lại và bước sửa chạy ở mức suy nghĩ thấp hơn (`stepEffort`).
-6. **Hỏi chủ dự án:** bàn giao có mục "Câu hỏi cho chủ dự án" thì dự án dừng ở trạng thái **Chờ bạn trả lời**. Bạn trả lời từng câu hoặc bấm **Để nhóm tự quyết**; câu trả lời được ghi vào bảng dự án cho mọi người làm theo.
+6. **Hỏi chủ dự án:** bàn giao có mục "Câu hỏi cho chủ dự án" thì dự án dừng ở trạng thái **Chờ bạn trả lời**. Bạn trả lời từng câu hoặc bấm **Để nhóm tự quyết**; câu trả lời được ghi vào bảng dự án cho mọi người làm theo. Câu hỏi giống câu đã trả lời trong cùng dự án thì nhóm không hỏi lại. Câu giống câu bạn đã trả lời ở dự án trước thì ô trả lời được điền sẵn câu cũ. Mọi quyết định được ghi vào `workspace/tri-thuc/quyet-dinh.md`.
 7. Nếu một bước lỗi, điều phối viên được gọi lại **một lần** để lập lại phần còn lại. Nếu vẫn lỗi, kế hoạch **tạm dừng** để bạn bấm **Chạy tiếp**.
 8. **Nghiệm thu:** điều phối viên mở sản phẩm thật, chấm từng tiêu chí trong brief (điểm 0–100) vào `du-an/<mã>/nghiem-thu.md`, rồi trả bài học cho từng người trong khối JSON; **máy chủ tự ghi** vào `kinh-nghiem.md` (bỏ bài trùng, giữ `maxLessons` bài gần nhất).
    Điểm dưới `passScore` (mặc định 85) thì giao thêm một vòng sửa (`maxFixRounds`) rồi nghiệm thu lại.
@@ -119,7 +119,7 @@ Agent Deep Research không dùng WebSearch của Claude (trừ khi bạn tự đ
 
 Một vài mẹo khác:
 - Giao việc **cụ thể, nhỏ**, ví dụ "Tìm 5 nghiên cứu về X, ghi kèm nguồn" thay vì "Nghiên cứu về X".
-- Giữ `workspace/index.md` ngắn. Mọi agent đều đọc nó đầu tiên.
+- `workspace/index.md` do máy chủ tự cập nhật (dự án gần đây, sản phẩm mới nhất). Đừng sửa tay; bản cũ nằm ở `workspace/luu-tru/index-cu.md`.
 - Giữ phần "Hướng dẫn riêng" của agent ngắn, vì nó bị đọc lại ở mỗi lượt.
 - Xem số token mỗi lượt ở **Lịch sử** để biết ai đang "ăn" nhiều.
 - **Hạn mức tài khoản** hiện trên thanh đầu trang. **CLAUDE**: % đã dùng của khung 5 giờ và khung tuần, lấy từ chính các lượt chạy Claude; rê chuột để xem giờ làm mới, bấm để làm mới (chạy một lượt haiku rất nhỏ). **AGY**: Antigravity không công bố % hạn mức, nên chip hiện token văn phòng đã dùng trong 5 giờ và 7 ngày qua, cùng các model đang hết hạn mức (đọc từ log của agy), ví dụ "⛔ ảnh tới 04:12".
@@ -140,7 +140,7 @@ Kết quả là kịch bản và bản thiết kế để dựng trong Canva; ag
 
 ```
 workspace/
-├── index.md          ← bản đồ ngắn, agent đọc đầu tiên
+├── index.md          ← bản đồ ngắn do máy chủ viết, agent đọc đầu tiên
 ├── sources/          ← tài liệu gốc (agent chỉ đọc)
 ├── templates/        ← mẫu kịch bản slide, quy tắc thiết kế (agent chỉ đọc)
 ├── handoff/          ← bàn giao giữa các agent
@@ -166,6 +166,8 @@ thành đường dẫn đầy đủ, ví dụ `"/Users/ban/Obsidian/YogaLab"` ho
 | `coordinatorId` | Điều phối viên mặc định (tự lưu khi bạn chọn trong mục Dự án) |
 | `maxPlanSteps` | Kế hoạch dài nhất bao nhiêu bước (mặc định 6) |
 | `maxReplans` | Bước lỗi thì điều phối viên được lập lại kế hoạch mấy lần (mặc định 1) |
+| `labTools` | Cho agent Claude gọi công cụ của máy chủ qua MCP nội bộ (soát lỗi, đếm chữ, đối chiếu slides với thiết kế). Mặc định tắt; bật sau khi thử trên máy |
+| `chromePreflight` | Trước khi giao việc cho agent dùng Chrome, máy chủ thử kết nối bằng một lượt rất ngắn; hỏng thì tạm dừng dự án và báo cách sửa. Mặc định bật |
 
 Model chọn trong ô **Model** khi thêm hoặc sửa agent:
 - **Claude**: `haiku` (nhẹ, rẻ), `sonnet` (cân bằng), `opus` (mạnh), `fable` (mạnh nhất, tốn nhất).
@@ -239,6 +241,7 @@ Chi phí chỉ Claude Code báo về. Với gói Pro, đó là số để tham k
   Nếu cần, thêm `"Bash"` vào `claudeTools`.
 - Lịch sử chạy được lưu ở `workspace/.yogalab/runs.jsonl`, các kế hoạch ở `workspace/.yogalab/plans.json`.
   Nếu tắt máy chủ giữa chừng, kế hoạch sẽ tạm dừng; mở lại rồi bấm **Chạy tiếp**.
+- Agent báo lỗi môi trường (Chrome, đăng nhập, hạn mức) thì dự án tạm dừng kèm cách sửa, không hiện thành câu hỏi cho bạn.
 - Mở `public/index.html` trực tiếp (không qua máy chủ) sẽ vào **chế độ xem thử**, agent chỉ diễn tập.
 - Ảnh trang trí nằm trong `public/assets/` (tạo bằng Gemini): `banner.jpg` ở đầu trang và
   `portrait-<id>.png` là chân dung trong bảng giao việc. Thêm agent mới thì bỏ ảnh vuông

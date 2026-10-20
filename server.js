@@ -79,6 +79,7 @@ const DEFAULT_CONFIG = {
   chromePreflight: true, // kiểm Chrome bằng một lượt rất ngắn trước khi giao việc cho agent dùng Chrome
   brain: true, // bộ não chung tri-thuc/: máy chủ chép bảng của agent thành note, soạn gói ngữ cảnh, công cụ tra_cuu
   brainApprovers: ['an'], // ai được đưa ý lên da-duyet (và ghi note tư thế)
+  obsidianVault: '', // tên vault Obsidian của folder làm việc (nút "Mở trong Obsidian"); để trống = tên thư mục workspace
   agents: []
 };
 
@@ -2711,6 +2712,7 @@ function publicState() {
   return {
     demo: false,
     workspace: workspaceDir(),
+    obsidianVault: config.obsidianVault || path.basename(workspaceDir()),
     config: { maxTurns: config.maxTurns, skipMcp: config.skipMcp, maxPlanSteps: config.maxPlanSteps || 6 },
     agents: config.agents,
     coordinatorId: config.coordinatorId || '',

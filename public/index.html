@@ -1278,6 +1278,7 @@ function connectSSE(){
 }
 function applyState(st){
   S.workspace = st.workspace; S.agents = st.agents || [];
+  S.obsidianVault = st.obsidianVault || '';
   if (st.runs) S.runs = st.runs;
   if (st.typical) S.typical = st.typical;
   for (const [id, acts] of Object.entries(st.liveActs || {})){
@@ -3521,7 +3522,8 @@ async function viewFile(path){
     const author = o && agentById(o.agentId);
     const others = S.agents.filter(x => !author || x.id !== author.id);
     const opts = others.map(x => `<option value="${esc(x.id)}">${esc(x.name)} · ${esc(x.role)}</option>`).join('');
-    $('#fileFoot').innerHTML = `<span class="path">${esc(path)}</span>` + (S.agents.length ? `
+    $('#fileFoot').innerHTML = `<span class="path">${esc(path)}</span>` +
+      (S.obsidianVault && !S.demo ? `<a class="btn sm" href="obsidian://open?vault=${encodeURIComponent(S.obsidianVault)}&file=${encodeURIComponent(path.replace(/\.md$/, ''))}">🔗 Mở trong Obsidian</a>` : '') + (S.agents.length ? `
       ${!isH && author ? `<button class="btn sm" data-fedit="${esc(author.id)}" title="Mở bảng giao việc cho ${esc(author.name)}, đính kèm sẵn file này">✎ Nhờ ${esc(author.name)} sửa</button>` : ''}
       <span class="pass-to"><label class="muted" for="dlgPass">Giao tiếp cho</label><select id="dlgPass">${opts}</select>
       <button class="btn sm primary" data-dlgpass>Tiếp tục →</button></span>` : '');

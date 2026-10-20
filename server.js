@@ -406,6 +406,7 @@ function buildPrompt(agent, task, handoffPath, attachments, kind, lab = []) {
   if (usesChrome(agent)) lines.push('', ...chromePrompt(agent, kind));
   if (lab.length) lines.push('', 'CÔNG CỤ CỦA MÁY CHỦ (gọi như công cụ thường):',
     ...(lab.includes('soat_loi') ? ['- soat_loi(file): soát lỗi máy móc và đếm chữ từng trang của một file .md; với slides.md, thiet-ke.md còn đối chiếu hai file và kiểm file hình. Trước khi bàn giao, gọi soat_loi cho từng file sản phẩm bạn vừa ghi hoặc sửa, rồi sửa những chỗ đúng là lỗi.'] : []),
+    ...(lab.includes('tai_hinh') ? ['- tai_hinh(link, ten): máy chủ tải một hình có giấy phép (trang File: của Commons hoặc link thẳng .jpg/.png/.webp) vào output/<chủ đề>/hinh-nguon/ (hoặc hinh/) và ghi danh-sach.md. Dùng khi cần hình thật; đừng thử tự tải bằng lệnh.'] : []),
     ...(lab.includes('kiem_link') ? ['- kiem_link(urls): máy chủ mở thử tối đa 10 link: còn mở được, bị chặn (403, CAPTCHA), không có (404); link Commons thì kiểm file có thật và đọc giấy phép. Dùng khi chỉ cần biết link sống hay chết; muốn đối chiếu nội dung vẫn dùng WebFetch.'] : []),
     '- Không có Bash: đừng thử chạy lệnh, script hay python. Việc máy móc thì dùng công cụ trên.');
   if (agent.instructions && agent.instructions.trim()) {
@@ -498,11 +499,11 @@ function quoteWinArg(x) {
 const labKeys = new Map(); // khoá của lượt chạy → { entry, agent, tools }
 function labToolsFor(agent, kind) {
   if (!config.labTools || agent.engine !== 'claude' || agent.labTools === false) return [];
-  return ['soat_loi', 'kiem_link'];
+  return ['soat_loi', 'kiem_link', ...(kind !== 'review' && kind !== 'rereview' ? ['tai_hinh'] : [])]; // người duyệt chỉ kiểm, không tải
 }
 function labCtx(lab) {
   return {
-    read: rel => readWs(rel), exists: rel => wsExists(rel), lint: rel => lintFiles([rel]), listImages: rel => listedImages(rel), kiemMotLink,
+    read: rel => readWs(rel), exists: rel => wsExists(rel), lint: rel => lintFiles([rel]), listImages: rel => listedImages(rel), kiemMotLink, taiHinh: a => taiHinhCho(lab, a),
     hasImages: rel => { const a = insideWorkspace(rel); try { return !!a && fs.readdirSync(a).some(n => IMG_EXT.test(n)); } catch { return false; } },
     entry: lab.entry, agent: lab.agent
   };
@@ -1830,6 +1831,66 @@ async function kiemMotLink(url) {
   });
   if (r.ket !== 'loi') { linkCache.set(url, { at: Date.now(), r }); saveLinkCache(); } // lỗi mạng thường thoáng qua: lần sau kiểm lại
   return r;
+}
+
+// ── Tải một hình cho agent (công cụ tai_hinh) ──
+const DS_HINH_DAU = '| Tên file | Link gốc | Tác giả | Giấy phép | Thể hiện gì | Trạng thái |\n|---|---|---|---|---|---|\n';
+async function ghiFileHinh(url, rel) {
+  const { buf, type } = await fetchImage(url);
+  if (!/^image\//.test(type)) throw Object.assign(new Error('không phải ảnh'), { khongPhaiAnh: true });
+  const abs = insideWorkspace(rel);
+  await fsp.mkdir(path.dirname(abs), { recursive: true });
+  await fsp.writeFile(abs, buf);
+  broadcast({ type: 'files' });
+  return buf.length;
+}
+async function taiHinhCho(lab, { link, ten, thuMuc, moTa }) {
+  const run = lab.entry.run, plan = run.planId && plans.find(p => p.id === run.planId);
+  const chuDe = planTopic(plan) || chuDeTu(run.task);
+  if (!chuDe) return { loi: 'không xác định được chủ đề: ghi rõ output/<chủ đề>/ trong nhiệm vụ' };
+  const base = slugFile(ten).replace(/\.(png|jpe?g|webp|svg)$/i, '');
+  if (!base) return { loi: 'tên file không hợp lệ' };
+  let url = null, license = '', author = '';
+  const c = await commonsInfo(link).catch(e => ({ loiMang: e.message }));
+  if (c && c.loiMang) return { loi: c.loiMang };
+  if (c) { if (!c.exists) return { loi: 'Commons không có file này (kiểm lại đúng tên trang File:)' }; ({ url, license, author } = c); }
+  else if (/^https:\/\/\S+\.(png|jpe?g|webp)(\?\S*)?$/i.test(link)) url = link;
+  else return { loi: 'không phải link file ảnh' };
+  const ext = ((/\.(png|jpe?g|webp)(?:\?|$)/i.exec(url) || [])[1] || 'jpg').toLowerCase();
+  const rel = `output/${chuDe}/${thuMuc}/${base}.${ext}`;
+  if (!insideWorkspace(rel)) return { loi: 'đường dẫn không hợp lệ' };
+  if (wsExists(rel)) return { daCo: true, rel };
+  const ghiDanhSach = async trangThai => {
+    if (thuMuc !== 'hinh-nguon') return;
+    const ds = insideWorkspace(`output/${chuDe}/hinh-nguon/danh-sach.md`);
+    const cell = x => String(x || '—').replace(/\|/g, '/').replace(/\r?\n/g, ' ');
+    if (!fs.existsSync(ds)) await fsp.writeFile(ds, `# Thư viện hình y khoa · ${chuDe}\n\nMáy chủ ghi các hình đã tải. ` +
+      `Lam, Vy chọn hình ở đây; trong "Danh sách hình" của thiet-ke.md ghi đường dẫn \`hinh-nguon/<tên file>\` (kèm link gốc) để máy chủ chép sang hinh/. ` +
+      `Mở hình bằng Read để xem trước khi chọn. Nhãn tiếng Anh che và thêm nhãn Việt trong Canva, ghi "adapted".\n\n` + DS_HINH_DAU, 'utf8');
+    await fsp.appendFile(ds, '| ' + [path.posix.basename(rel), link, author, license, moTa, trangThai].map(cell).join(' | ') + ' |\n', 'utf8');
+  };
+  try {
+    const n = await ghiFileHinh(url, rel);
+    if (!run.files.includes(rel)) run.files.push(rel);
+    await ghiDanhSach('đã tải (công cụ)');
+    return { rel, kb: Math.round(n / 1024), license, author };
+  } catch (e) {
+    if (e.khongPhaiAnh) return { loi: 'không phải ảnh' };
+    if (!/429/.test(e.message)) return { loi: e.message };
+    // Commons giới hạn lượt tải: thử lại riêng file này sau 2, 5, 10 phút
+    const thu = lan => setTimeout(async () => {
+      if (wsExists(rel)) return;
+      try {
+        await ghiFileHinh(url, rel); await ghiDanhSach('đã tải (công cụ, tải lại)');
+        if (plan) { plan.log.push(`Tải lại hình ${rel} (lần ${lan}): tải được`); emitPlan(plan); }
+      } catch (e2) {
+        if (/429/.test(e2.message) && lan < 3) return thu(lan + 1);
+        if (plan) { plan.log.push(`Tải lại hình ${rel} (lần ${lan}): ${e2.message}`); emitPlan(plan); }
+      }
+    }, [2, 5, 10][lan - 1] * 60e3);
+    thu(1);
+    return { xepHang: true, rel };
+  }
 }
 
 // ── Hình y khoa không được tạo bằng AI ──

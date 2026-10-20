@@ -45,3 +45,16 @@ test('kiem_link', async () => {
   await goi('kiem_link', { urls: muoiHai }, { kiemMotLink: async () => { dem++; return { ket: 'ok' }; } }, ['kiem_link']);
   assert.equal(dem, 10);
 });
+
+test('tai_hinh', async () => {
+  const kq = [{ loi: 'HTTP 404' }, { xepHang: true, rel: 'output/t/hinh-nguon/a.jpg' }, { daCo: true, rel: 'output/t/hinh-nguon/a.jpg' }, { rel: 'output/t/hinh-nguon/a.jpg', kb: 120, license: 'CC BY 4.0' }];
+  const ctx = { taiHinh: async () => kq.shift() };
+  const g = () => goi('tai_hinh', { link: 'https://commons.wikimedia.org/wiki/File:A.jpg', ten: 'a' }, ctx, ['tai_hinh']);
+  const r1 = await g();
+  assert.equal(r1.isError, true);
+  assert.equal(r1.text, 'Không tải được: HTTP 404');
+  assert.match((await g()).text, /^Commons đang giới hạn lượt tải \(HTTP 429\)\. Máy chủ sẽ tự tải output\/t\/hinh-nguon\/a\.jpg sau vài phút/);
+  assert.equal((await g()).text, 'Đã có sẵn output/t/hinh-nguon/a.jpg, không tải lại. Muốn bản khác thì đặt tên khác.');
+  assert.equal((await g()).text, 'Đã tải output/t/hinh-nguon/a.jpg (120 KB) · CC BY 4.0');
+  assert.equal((await goi('tai_hinh', { link: 'https://x.vn/a.jpg' }, ctx, ['tai_hinh'])).isError, true);
+});

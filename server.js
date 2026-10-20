@@ -23,6 +23,7 @@ const { vietBanDo } = require('./lib/ban-do');
 const { ghiQuyetDinh, goiYChoCauHoi, quyetDinhChoKeHoach, vietSoQuyetDinh } = require('./lib/quyet-dinh');
 const { LOAI_LOI, mucTrong, docVanDe, docDaXuLy, docDuyetLai, docTinNhan, chuFile, ganVanDe, nhomTheoChu, capNhatTuSua, capNhatTuDuyetLai, vietSoVanDe } = require('./lib/van-de');
 const { docCauHoi: parseQuestions, laCauHoiMoiTruong, locBaiHocMoi, phanLoaiCauHoi, chonChuDe, chuDeTu } = require('./lib/van-ban');
+const { chuDeTriThuc, docBangTriThuc, hopNhatMenhDe, hopNhatNguon, capNhatTruyCap, hopNhatTuThe, maHinh, hopNhatHinh } = require('./lib/tri-thuc');
 
 const ROOT = __dirname;
 const CONFIG_PATH = path.join(ROOT, 'config.json');
@@ -74,6 +75,8 @@ const DEFAULT_CONFIG = {
   maxCheckins: 3, // số lần tối đa điều phối viên được gọi giữa chừng khi có tín hiệu (0 = tắt)
   issueLedger: true, // sổ vấn đề: người duyệt ghi bảng, máy chủ giao sửa cho người phụ trách file có lỗi (false = vòng duyệt như trước Đợt 1)
   chromePreflight: true, // kiểm Chrome bằng một lượt rất ngắn trước khi giao việc cho agent dùng Chrome
+  brain: true, // bộ não chung tri-thuc/: máy chủ chép bảng của agent thành note, soạn gói ngữ cảnh, công cụ tra_cuu
+  brainApprovers: ['an'], // ai được đưa ý lên da-duyet (và ghi note tư thế)
   agents: []
 };
 
@@ -837,6 +840,9 @@ async function finishRun(agent, entry, code) {
   broadcast({ type: 'status', agentId: agent.id, status: run.status === 'done' ? 'done' : run.status === 'stopped' ? 'idle' : 'error' });
   broadcast({ type: 'files' });
   console.log(`${run.status === 'done' ? '✓' : '✗'} ${agent.name}: ${run.status} · ${run.tokens} token${run.error ? ' · ' + run.error : ''}`);
+  if (run.status === 'done' && config.brain !== false) {
+    try { await nhapTriThuc(agent, run, chuCuaLuot(run, readWs(run.handoff), fullSummary)); } catch (e) { console.error('Bộ não: không nhập được bảng:', e.message); }
+  }
   if (entry.onDone) { try { entry.onDone(run, fullSummary); } catch (e) { console.error('Lỗi kế hoạch:', e.message); } }
   // Có kế hoạch đang chờ agent này rảnh thì chạy tiếp
   for (const p of plans) if (p.waiting) pumpPlan(p);
@@ -930,6 +936,75 @@ function ghiSoQuyetDinh(plan, list) {
   quyetDinh = ghiQuyetDinh(quyetDinh, list.map(x => ({ q: x.q, a: x.a, from: x.from, step: x.step, planId: plan.id, topic, goal: plan.goal, at })));
   saveQuyetDinh();
 }
+
+// ── Bộ não chung tri-thuc/: agent chỉ viết bảng, máy chủ chép bảng thành note ──
+const homNay = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+// Ghi note bộ não: ghi file tạm rồi đổi tên (Obsidian không thấy file dở dang); nội dung không đổi thì không ghi
+async function ghiTriThuc(rel, text) {
+  const abs = insideWorkspace(rel);
+  if (!abs || !rel.startsWith('tri-thuc/')) return false;
+  if (/^tri-thuc\/(quy-tac-cua-toi\.md|ghi-chu-chuyen-mon\/)/.test(rel)) return false; // phần của bạn: máy chủ không bao giờ ghi
+  if (readWs(rel) === text) return false;
+  await fsp.mkdir(path.dirname(abs), { recursive: true });
+  const tmp = abs + '.tmp-' + process.pid;
+  await fsp.writeFile(tmp, text, 'utf8');
+  await fsp.rename(tmp, abs);
+  return true;
+}
+// Đọc note → gộp → ghi, lần lượt từng việc một (nhập bảng và kết quả kiểm link có thể cùng sửa một note)
+let triThucQueue = Promise.resolve();
+function capNhatNote(rel, fn) {
+  const viec = triThucQueue.then(async () => {
+    const kq = fn(readWs(rel) || null);
+    return typeof kq === 'string' ? { ghi: await ghiTriThuc(rel, kq) } : kq || {};
+  });
+  triThucQueue = viec.catch(() => {});
+  return viec;
+}
+// Hình đã tải (từ bảng nguồn hoặc công cụ tai_hinh) thành note trong tri-thuc/hinh/
+function ghiHinhTriThuc(info, topic, meta = {}) {
+  if (config.brain === false) return Promise.resolve();
+  const chuDe = chuDeTriThuc(topic), ma = maHinh(info.file, chuDe, m => readWs(`tri-thuc/hinh/${m}.md`));
+  return capNhatNote(`tri-thuc/hinh/${ma}.md`, cu => hopNhatHinh(cu, { ...info, ma }, { chuDe, ngay: homNay(), ...meta }))
+    .catch(e => console.error('Bộ não: không ghi được hình:', e.message));
+}
+
+// Sau mỗi lượt xong: chép ba bảng (nguồn, ý đã duyệt, tư thế) của agent vào note
+async function nhapTriThuc(agent, run, banGhi) {
+  const plan = run.planId && plans.find(p => p.id === run.planId);
+  const dong = /^[\s>*_-]*Chủ đề\s*[:：]\s*\**\s*`?([a-z0-9][a-z0-9-]*)`?\s*$/mu.exec(banGhi);
+  const chuDe = dong ? dong[1] : chuDeTriThuc(planTopic(plan) || chuDeTu(run.task));
+  if (!chuDe) return;
+  const { nguon, menhDe, tuThe } = docBangTriThuc(banGhi);
+  if (!nguon.length && !menhDe.length && !tuThe.length) return;
+  const duyet = (config.brainApprovers || ['an']).includes(agent.id);
+  const meta = { chuDe, duyet, tacGia: agent.id, ngay: homNay(), planId: plan ? plan.id : null };
+  const ghiChu = [], dem = { y: 0, nguon: 0, tuThe: 0 };
+  const lam = async (rel, ma, fn, k) => {
+    const r = await capNhatNote(rel, fn);
+    if (r.boQua) ghiChu.push(`Bộ não: bỏ qua ${ma} (${r.boQua})`);
+    else if (r.ghi) dem[k]++;
+  };
+  const links = [];
+  for (const r of nguon) {
+    await lam(`tri-thuc/nguon/${r.ma}.md`, r.ma, cu => hopNhatNguon(cu, r, meta), 'nguon');
+    const url = (/https?:\/\/[^\s|)<>\]`]+/.exec(r.link) || [])[0];
+    if (url && links.length < 30 && !links.some(x => x.url === url)) links.push({ url, rel: `tri-thuc/nguon/${r.ma}.md` });
+  }
+  for (const r of menhDe) await lam(`tri-thuc/menh-de/${r.ma}.md`, r.ma, cu => hopNhatMenhDe(cu, r, meta), 'y');
+  if (duyet) for (const r of tuThe) await lam(`tri-thuc/tu-the/${r.ma}.md`, r.ma, cu => hopNhatTuThe(cu, r, meta), 'tuThe');
+  // Kiểm link chạy nền (tối đa 3 link một lúc), không giữ dự án chờ
+  for (const { url, rel } of links) kiemMotLink(url)
+    .then(k => capNhatNote(rel, cu => cu ? capNhatTruyCap(cu, k.ket, homNay()) : null))
+    .then(r => { if (r && r.ghi) henBanDoTriThuc(); })
+    .catch(() => {});
+  const tong = dem.y + dem.nguon + dem.tuThe;
+  if (tong) ghiChu.push(`Bộ não: ${dem.y} ý, ${dem.nguon} nguồn, ${dem.tuThe} tư thế`);
+  if (plan) plan.log.push(...ghiChu);
+  else if (ghiChu.length && run.handoff) await fsp.appendFile(insideWorkspace(run.handoff), '\n\n' + ghiChu.map(x => '- ' + x).join('\n') + '\n', 'utf8').catch(() => {});
+  if (tong) henBanDoTriThuc();
+}
+function henBanDoTriThuc() {}
 
 let planSave = Promise.resolve();
 function emitPlan(plan) {
@@ -1394,9 +1469,9 @@ function pumpPlan(plan) {
             if (r.fail.some(x => /429/.test(x.why))) henTaiLai(plan, d, () => downloadListedImages(d));
             hinhHong.push(...r.fail.filter(x => !/429/.test(x.why)).map(x => ({ ...x, file: d })));
           })),
-          ...sourcesMd.map(f => downloadSourceImages(f, run.handoff).then(r => {
+          ...sourcesMd.map(f => downloadSourceImages(f, run.handoff, plan.id).then(r => {
             if (r) plan.log.push(r.none ? `Máy chủ không thấy bảng "Hình & sơ đồ trong nguồn" trong ${f}: chưa tải hình y khoa nào` : `Máy chủ tải hình y khoa từ nguồn (${f} → ${r.dir}): ${r.ok.length} mới, ${r.skip.length} đã có${r.fail.length ? ', ' + r.fail.length + ' không tải được (' + snippet(r.fail.map(x => x.name + ': ' + x.why).join('; ')) + ')' : ''}`);
-            if (r && (r.fail || []).some(x => /429/.test(x.why))) henTaiLai(plan, f, () => downloadSourceImages(f, null));
+            if (r && (r.fail || []).some(x => /429/.test(x.why))) henTaiLai(plan, f, () => downloadSourceImages(f, null, plan.id));
             hinhHong.push(...((r && r.fail) || []).filter(x => !/429/.test(x.why)).map(x => ({ ...x, file: f })));
           }))
         ]).catch(e => plan.log.push('Không tải được hình: ' + e.message));
@@ -1921,6 +1996,7 @@ async function taiHinhCho(lab, { link, ten, thuMuc, moTa }) {
     const n = await ghiFileHinh(url, rel);
     if (!run.files.includes(rel)) run.files.push(rel);
     await ghiDanhSach('đã tải (công cụ)');
+    await ghiHinhTriThuc({ file: rel, link, tacGia: author, giayPhep: license, theHien: moTa }, chuDe, { tacGia: lab.agent.id, planId: plan ? plan.id : null });
     return { rel, kb: Math.round(n / 1024), license, author };
   } catch (e) {
     if (e.khongPhaiAnh) return { loi: 'không phải ảnh' };
@@ -1930,6 +2006,7 @@ async function taiHinhCho(lab, { link, ten, thuMuc, moTa }) {
       if (wsExists(rel)) return;
       try {
         await ghiFileHinh(url, rel); await ghiDanhSach('đã tải (công cụ, tải lại)');
+        await ghiHinhTriThuc({ file: rel, link, tacGia: author, giayPhep: license, theHien: moTa }, chuDe, { tacGia: lab.agent.id, planId: plan ? plan.id : null });
         if (plan) { plan.log.push(`Tải lại hình ${rel} (lần ${lan}): tải được`); emitPlan(plan); }
       } catch (e2) {
         if (/429/.test(e2.message) && lan < 3) return thu(lan + 1);
@@ -2036,7 +2113,7 @@ async function downloadListedImages(designRel) {
 // ghi danh-sach.md (tên file · link · tác giả · giấy phép · trạng thái) và báo kết quả vào bàn giao của bước đó.
 const slugFile = s => decodeURIComponent(String(s)).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd')
   .toLowerCase().replace(/[^a-z0-9.]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80);
-async function downloadSourceImages(nguonRel, handoffRel) {
+async function downloadSourceImages(nguonRel, handoffRel, planId = null) {
   const topic = (/([\p{L}\p{N}_-]+)-nguon\.md$/u.exec(nguonRel) || [])[1];
   if (!topic) return null;
   const rows = tableRows(readWs(nguonRel), /^#{2,3}\s*Hình\s*(&|và)\s*sơ đồ/i);
@@ -2080,6 +2157,9 @@ async function downloadSourceImages(nguonRel, handoffRel) {
     const mAbs = insideWorkspace(`${dirRel}/danh-sach.md`);
     await fsp.mkdir(path.dirname(mAbs), { recursive: true });
     await fsp.writeFile(mAbs, md, 'utf8');
+    const tacGia = (/^agents\/([^/]+)\//.exec(nguonRel) || [])[1];
+    for (const [name, link, author, license, what, tt] of manifest)
+      if (/^đã (tải|có)$/.test(tt)) await ghiHinhTriThuc({ file: `${dirRel}/${name}`, link, tacGia: author, giayPhep: license, theHien: what }, topic, { tacGia, planId });
   }
   const hp = handoffRel && insideWorkspace(handoffRel);
   if (hp && fs.existsSync(hp) && (res.ok.length || res.fail.length || res.skip.length)) {

@@ -152,11 +152,42 @@ workspace/
 ├── templates/        ← mẫu kịch bản slide, quy tắc thiết kế (agent chỉ đọc)
 ├── handoff/          ← bàn giao giữa các agent
 ├── agents/<tên>/     ← nháp riêng của từng người
-└── output/           ← sản phẩm cuối
+├── output/           ← sản phẩm cuối
+└── tri-thuc/         ← bộ não chung (xem mục dưới)
 ```
 
 Muốn dùng folder khác (ví dụ vault Obsidian), sửa `"workspace"` trong `config.json`
 thành đường dẫn đầy đủ, ví dụ `"/Users/ban/Obsidian/YogaLab"` hoặc `"D:\\YogaLab"`.
+
+## Bộ não chung (Obsidian)
+
+Những gì cả nhóm đã kiểm chứng (ý, nguồn, tư thế, hình) được giữ lại trong `workspace/tri-thuc/`, để dự án sau dùng lại thay vì tìm lại từ đầu.
+
+**Cách mở**: trong Obsidian chọn **Open folder as vault** → chọn thư mục `workspace/`. Tên vault mặc định là tên thư mục
+(ở đây là "workspace"); đổi tên vault thì đặt `obsidianVault` trong `config.json` cho khớp. Khi xem file trong văn phòng,
+nút **🔗 Mở trong Obsidian** mở đúng note đó.
+
+**Bên trong có gì**:
+- `tri-thuc/00-ban-do.md`: bản đồ, gồm các chủ đề, ý cần bạn xem (quá hạn, thiếu câu trích), nguồn đang bị chặn;
+- `chu-de/`: mỗi chủ đề một trang tổng hợp (ý đã kiểm chứng, ý nháp, tư thế, hình, nguồn, dự án đã dùng);
+- `menh-de/`: ý đã kiểm chứng, mỗi ý một note (mức bằng chứng, nguồn, câu trích, hạn xem lại);
+- `nguon/`: nguồn và tình trạng truy cập (máy chủ tự mở thử link);
+- `tu-the/`: tư thế (đạo cụ, chống chỉ định, prompt ảnh đã đạt, lỗi AI hay vẽ sai), `hinh/`: hình có giấy phép đã tải;
+- `quyet-dinh.md`: sổ quyết định; `thuat-ngu.md`: từ cần tránh và cách gọi thống nhất, máy soát lỗi đọc hai bảng này;
+- `quy-tac-cua-toi.md` và `ghi-chu-chuyen-mon/`: **bạn viết**, máy chủ không bao giờ sửa.
+
+Agent chỉ viết bảng trong file của mình (An: "Danh sách đã duyệt", "Tư thế"; Mai: "Danh sách nguồn"). Sau mỗi lượt,
+máy chủ chép bảng thành note. Chỉ người trong `brainApprovers` (mặc định An) mới đưa được ý lên "đã duyệt".
+
+**Bạn làm được gì**:
+- ý sai: đánh `trang_thai: bac-bo` trong note, máy chủ không đổi ý đó nữa và agent thấy nhãn "BÁC BỎ, không dùng";
+- thêm `khoa: true` vào note nào thì máy chủ không sửa note đó;
+- thêm quy tắc vào `quy-tac-cua-toi.md` (mỗi dòng một quy tắc), ghi nhận xét của bác sĩ, giảng viên vào `ghi-chu-chuyen-mon/`;
+- lọc bằng Bases (plugin lõi) hoặc Dataview theo `trang_thai`, `muc_bang_chung`, `truy_cap`.
+
+**Agent dùng thế nào**: mỗi lượt, máy chủ soạn sẵn phần "BỐI CẢNH TỪ BỘ NÃO CHUNG" (quy tắc của bạn, quyết định đã chốt,
+vấn đề đang mở của người đó, các note có thể liên quan). Agent gọi công cụ `tra_cuu` trước khi tìm web và chỉ tìm phần còn thiếu
+(công cụ chỉ có khi bật `labTools`).
 
 ## config.json
 
@@ -173,10 +204,13 @@ thành đường dẫn đầy đủ, ví dụ `"/Users/ban/Obsidian/YogaLab"` ho
 | `coordinatorId` | Điều phối viên mặc định (tự lưu khi bạn chọn trong mục Dự án) |
 | `maxPlanSteps` | Kế hoạch dài nhất bao nhiêu bước (mặc định 6) |
 | `maxReplans` | Bước lỗi thì điều phối viên được lập lại kế hoạch mấy lần (mặc định 1) |
-| `labTools` | Cho agent Claude gọi công cụ của máy chủ qua MCP nội bộ (soát lỗi, kiểm link, tải hình). Mặc định tắt; bật sau khi thử trên máy |
+| `labTools` | Cho agent Claude gọi công cụ của máy chủ qua MCP nội bộ (soát lỗi, kiểm link, tải hình, tra bộ não). Mặc định tắt; bật sau khi thử trên máy |
 | `issueLedger` | Sổ vấn đề: người duyệt ghi bảng lỗi, máy chủ giao sửa cho người phụ trách file có lỗi. `false` = vòng duyệt như trước. Mặc định bật |
 | `maxCheckins` | Số lần tối đa điều phối viên được gọi giữa chừng (giao ban) khi có tín hiệu. `0` = tắt. Mặc định 3 |
 | `chromePreflight` | Trước khi giao việc cho agent dùng Chrome, máy chủ thử kết nối bằng một lượt rất ngắn; hỏng thì tạm dừng dự án và báo cách sửa. Mặc định bật |
+| `brain` | Bộ não chung `tri-thuc/`: máy chủ chép bảng của agent thành note, soạn bối cảnh cho mỗi lượt, công cụ `tra_cuu`. `false` = tắt. Mặc định bật |
+| `brainApprovers` | Ai được đưa ý lên "đã duyệt" và ghi note tư thế (mặc định `["an"]`) |
+| `obsidianVault` | Tên vault Obsidian của folder làm việc, cho nút "Mở trong Obsidian". Để trống = tên thư mục workspace |
 
 Model chọn trong ô **Model** khi thêm hoặc sửa agent:
 - **Claude**: `haiku` (nhẹ, rẻ), `sonnet` (cân bằng), `opus` (mạnh), `fable` (mạnh nhất, tốn nhất).

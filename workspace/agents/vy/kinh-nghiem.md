@@ -10,3 +10,5 @@
 - [BH-56] Ghi link tải thẳng và vùng nhãn cần che cho hình C ngay từ bản thiết kế đầu, và mở từng ảnh AI để ghi vị trí logo thay vì giả định giống nhau.
 - [BH-57] Prompt ảnh tư thế có cách đặt đạo cụ đặc biệt (bắp chân gác trọn lên ghế) thì ngay từ thiết kế phải ghi sẵn phương án ảnh chụp thật hoặc hình có giấy phép, đừng để AI thử nhiều lần.
 - [BH-58] Mô tả trong prompt phải đúng với ảnh: đừng gọi 'legs-up rest' cho ảnh mà chân không hề nâng.
+- [BH-85] Khi rút chữ hoặc đổi [n] thành chỉ số trên, giữ chỉ số ngay sau đúng cụm mà slides.md gắn nguồn, không dồn về cuối dòng.
+- [BH-86] Sửa toạ độ cắt, tên file hay số chữ ở thân trang thì sửa luôn cùng giá trị trong 'Danh sách hình' và 'Kiểm tra cả bộ' trước khi bàn giao.

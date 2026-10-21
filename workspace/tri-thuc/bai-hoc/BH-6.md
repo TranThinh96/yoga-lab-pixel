@@ -8,7 +8,7 @@ ap_dung_khi:
 loai_loi: nguon-khong-khop
 bac: 1
 lan_tai_pham: 0
-lan_hieu_qua: 0
+lan_hieu_qua: 1
 trang_thai: moi
 ngay: 2026-10-16
 tu_van_de: []

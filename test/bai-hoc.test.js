@@ -51,3 +51,39 @@ test('banXemKinhNghiem', () => {
   assert.match(t, /^# Kinh nghiệm của Lam\n\n> Máy chủ tự sinh từ tri-thuc\/bai-hoc\//);
   assert.deepEqual(t.split('\n').filter(l => l.startsWith('- ')), ['- [BH-17] (checklist) Bài BH-17.', '- [BH-3] Bài BH-3.', '- [BH-8] Bài BH-8.']);
 });
+
+const fs = require('fs');
+const path = require('path');
+// Mỗi dòng "- …" của fixture, kèm agent (tiêu đề "## <id>" ngay trên)
+const baiCu = () => {
+  let id = null;
+  return fs.readFileSync(path.join(__dirname, 'fixtures', 'kinh-nghiem-cu.md'), 'utf8').normalize('NFC').split(/\r?\n/).flatMap(l => {
+    if (/^## /.test(l)) { id = l.slice(3).trim(); return []; }
+    return /^- /.test(l) ? [{ id, full: l.slice(2), text: l.slice(2).replace(/^\([^)]*\)\s*/, '') }] : [];
+  });
+};
+const cau = (id, dau) => { const x = baiCu().find(b => b.id === id && b.text.startsWith(dau)); assert.ok(x, `không thấy câu của ${id}: ${dau}`); return x; };
+
+test('phanLoaiBaiHoc với câu thật', () => {
+  const r = s => bh.phanLoaiBaiHoc(s);
+  assert.deepEqual([r(cau('ha', 'Khi có thư mục ảnh tạm (hinh-moi/)').full).goc, r(cau('ha', 'Khi có thư mục ảnh tạm (hinh-moi/)').full).trang_thai], ['cong-cu', 'da-thang-cap']);
+  // Câu của đặc tả; bài thật đã viết lại sau Đợt 1, cụm "CẦN GIAO LAM" giờ nằm trong tiền tố
+  const chef = r("Bàn giao nào có dòng 'CẦN GIAO LAM' thì chèn bước sửa cho Lam.");
+  assert.deepEqual([chef.goc, chef.trang_thai], ['quy-trinh', 'da-thang-cap']);
+  assert.equal(r(baiCu().find(b => b.id === 'chef' && /CẦN GIAO LAM/.test(b.full)).full).goc, 'quy-trinh');
+  const mai = r(cau('mai', 'Tìm nguồn Việt Nam (Bộ Y tế) cho số cấp cứu 115').full);
+  assert.deepEqual([mai.goc, mai.trang_thai], ['tri-thuc', 'da-thang-cap']);
+  const lam = r(cau('lam', 'Đếm chữ từng trang bằng tay khi viết').full);
+  assert.deepEqual([lam.goc, lam.trang_thai], ['cong-cu', 'da-thang-cap']);
+  const an = r(cau('an', 'Khi duyệt kịch bản, rà cả những câu an toàn do chính mình viết').full);
+  assert.deepEqual([an.loai_loi, an.goc, an.trang_thai], ['an-toan-thieu-ccd', 'agent', 'moi']);
+  const lam2 = r(cau('lam', 'Đọc lại từng ý trên slide như một câu trọn nghĩa').full);
+  assert.deepEqual([lam2.loai_loi, lam2.goc], ['chinh-ta-dau-cau', 'agent']);
+  assert.equal(baiCu().filter(b => r(b.full).trang_thai === 'da-thang-cap').length, 17);
+});
+
+test('doanApDungKhi', () => {
+  assert.deepEqual(bh.doanApDungKhi(cau('lam', 'Dòng "Hình" trong slides.md phải khớp').text), ['slides', 'thiet-ke']);
+  assert.deepEqual(bh.doanApDungKhi('Khi duyệt, kiểm prompt ảnh'), ['review', 'anh']);
+  assert.deepEqual(bh.doanApDungKhi('Viết ngắn gọn.'), []);
+});

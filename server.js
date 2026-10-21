@@ -26,7 +26,7 @@ const { LOAI_LOI, mucTrong, docVanDe, docDaXuLy, docDuyetLai, docTinNhan, chuFil
 const { docCauHoi: parseQuestions, laCauHoiMoiTruong, locBaiHocMoi, phanLoaiCauHoi, chonChuDe, chuDeTu } = require('./lib/van-ban');
 const { chuDeTriThuc, docBangTriThuc, hopNhatMenhDe, hopNhatNguon, capNhatTruyCap, hopNhatTuThe, maHinh, hopNhatHinh, cacChuDe, vietMocChuDe, vietBanDoTriThuc, docThuatNgu, dienThuatNgu, timTriThuc, goiNguCanh, slug } = require('./lib/tri-thuc');
 const { docGhiChu } = require('./lib/ghi-chu');
-const { soMa, docBaiHoc, noiDungBaiHoc, suaBaiHoc, banXemKinhNghiem, nhanBuoc, chonBaiHoc, maTrong, danhGiaBaiHoc, themLoHong, thongKeHoc, hocTuJson, apDungHoc } = require('./lib/bai-hoc');
+const { soMa, docBaiHoc, noiDungBaiHoc, suaBaiHoc, banXemKinhNghiem, nhanBuoc, chonBaiHoc, maTrong, danhGiaBaiHoc, themLoHong, thongKeHoc, hocTuJson, apDungHoc, apDungSuaHuongDan, hoanTacSuaHuongDan, themTuTranh } = require('./lib/bai-hoc');
 
 const ROOT = __dirname;
 const CONFIG_PATH = path.join(ROOT, 'config.json');
@@ -2858,6 +2858,7 @@ function publicState() {
     liveActs: Object.fromEntries(live.map(r => [r.agentId, r.acts])), // diễn biến của lượt đang chạy (khi tải lại trang)
     typical: typicalDurations(),
     plans: plans.slice(-10).reverse(),
+    deXuat, // đề xuất cải tiến: khối ở đầu cửa sổ Dự án
     limits: limitsView()
   };
 }
@@ -2935,6 +2936,43 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, { ok: true, plan });
     }
 
+    if (req.method === 'GET' && p === '/api/de-xuat') return send(res, 200, { list: deXuat });
+    if (req.method === 'POST' && p === '/api/de-xuat') {
+      const b = await readBody(req);
+      const dx = deXuat.find(x => x.id === b.id);
+      if (!dx) return send(res, 404, { error: 'Không thấy đề xuất' });
+      const hd = b.hanhDong;
+      if (!['duyet', 'bo', 'sua', 'hoan-tac'].includes(hd)) return send(res, 400, { error: 'Hành động không hợp lệ' });
+      if (hd === 'hoan-tac' ? dx.trang_thai !== 'duyet' : dx.trang_thai !== 'cho') return send(res, 409, { error: 'Đề xuất này đã được xử lý' });
+      if (hd === 'bo') dx.trang_thai = 'bo';
+      else if (dx.loai === 'sua-huong-dan') {
+        const agent = config.agents.find(a => a.id === dx.agent);
+        if (!agent) return send(res, 400, { error: 'Agent của đề xuất không còn trong văn phòng' });
+        const moi = hd === 'sua' ? String(b.moi || '').trim() : dx.moi;
+        if (!moi) return send(res, 400, { error: 'Chưa có đoạn mới' });
+        const kq = hd === 'hoan-tac' ? hoanTacSuaHuongDan(agent.instructions, dx.cu, dx.moi) : apDungSuaHuongDan(agent.instructions, dx.cu, moi);
+        if (typeof kq !== 'string') return send(res, 409, { error: kq.loi });
+        // Giữ bản config.json trước mỗi lần đổi hướng dẫn: sửa tay lại được nếu cần
+        const cuDir = path.join(stateDir(), 'config-cu');
+        await fsp.mkdir(cuDir, { recursive: true });
+        await fsp.copyFile(CONFIG_PATH, path.join(cuDir, `${stamp()}.json`)).catch(() => {});
+        agent.instructions = kq;
+        await saveConfig();
+        broadcast({ type: 'agents', agents: config.agents });
+        if (hd === 'hoan-tac') { dx.trang_thai = 'hoan-tac'; dx.hoanTacLuc = new Date().toISOString(); }
+        else { dx.moi = moi; dx.trang_thai = 'duyet'; dx.duyetLuc = new Date().toISOString(); }
+      } else if (hd === 'hoan-tac') return send(res, 400, { error: 'Chỉ hoàn tác được đề xuất sửa hướng dẫn' });
+      else {
+        // tu-tranh: bạn đã duyệt nên máy chủ được ghi thuat-ngu.md; len-bac, quy-trinh: chỉ đánh dấu đã xem (việc nằm ở lỗ hổng)
+        if (dx.loai === 'tu-tranh') {
+          const r = await capNhatNote('tri-thuc/thuat-ngu.md', cu => { const t = themTuTranh(cu, dx.tu, dx.ly_do); return typeof t === 'string' ? t : { boQua: t.loi }; });
+          if (r.boQua) return send(res, 409, { error: r.boQua });
+        }
+        dx.trang_thai = 'duyet'; dx.duyetLuc = new Date().toISOString();
+      }
+      saveDeXuat();
+      return send(res, 200, { ok: true, list: deXuat });
+    }
     if (req.method === 'POST' && p.startsWith('/api/plan/')) {
       const b = await readBody(req);
       const plan = plans.find(x => x.id === b.id);

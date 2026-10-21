@@ -214,3 +214,24 @@ test('thongKeHoc', () => {
   assert.match(t, /Bỏ hẳn trang 5/);
   assert.ok(!/gạch thấp nhất →/.test(t));
 });
+
+test('apDungSuaHuongDan: đủ ba trường hợp, thêm vào cuối, hoàn tác', () => {
+  const h = 'Viết ngắn.\nMỗi trang một ý.\nGhi nguồn.';
+  assert.equal(bh.apDungSuaHuongDan(h, 'Mỗi trang một ý.', 'Mỗi trang một ý, tối đa 40 chữ.'), 'Viết ngắn.\nMỗi trang một ý, tối đa 40 chữ.\nGhi nguồn.');
+  assert.deepEqual(bh.apDungSuaHuongDan(h, 'Không có đoạn này', 'x'), { loi: 'Không tìm thấy đoạn cũ trong hướng dẫn (có thể đã đổi).' });
+  assert.deepEqual(bh.apDungSuaHuongDan('a. b. a.', 'a.', 'c.'), { loi: 'Đoạn cũ xuất hiện nhiều lần; sửa tay.' });
+  assert.equal(bh.apDungSuaHuongDan('$& giữ nguyên', '$&', '$1'), '$1 giữ nguyên'); // không hiểu $ như mẫu thay thế
+  const moi = bh.apDungSuaHuongDan(h, 'Mỗi trang một ý.', 'Mỗi trang một ý, tối đa 40 chữ.');
+  assert.equal(bh.hoanTacSuaHuongDan(moi, 'Mỗi trang một ý.', 'Mỗi trang một ý, tối đa 40 chữ.'), h);
+  const them = bh.apDungSuaHuongDan(h, '', 'Bắt buộc: kiểm dòng Hình.');
+  assert.equal(them, h + '\nBắt buộc: kiểm dòng Hình.');
+  assert.equal(bh.hoanTacSuaHuongDan(them, '', 'Bắt buộc: kiểm dòng Hình.'), h);
+  assert.ok(bh.hoanTacSuaHuongDan(h, 'Mỗi trang một ý.', 'đoạn đã bị sửa tay').loi);
+});
+
+test('themTuTranh', () => {
+  const t = '# Thuật ngữ\n\n## Từ cần tránh\n| Từ | Lý do |\n|---|---|\n| chữa khỏi | x |\n\n## Cách gọi thống nhất\n| Dùng | Không dùng |\n|---|---|\n';
+  assert.equal(bh.themTuTranh(t, 'thần dược', 'phóng đại'), t.replace('| chữa khỏi | x |\n', '| chữa khỏi | x |\n| thần dược | phóng đại |\n'));
+  assert.equal(bh.themTuTranh(t, 'Chữa khỏi'), t);
+  assert.ok(bh.themTuTranh('# Không có bảng', 'x').loi);
+});

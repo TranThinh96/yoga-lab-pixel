@@ -310,5 +310,17 @@
   "goal": "Làm slide workshop 30 phút: Yoga phục hồi cho người mất ngủ, khoảng 12 trang. Cho học viên yoga không chuyên y. Gồm: mất ngủ là gì, vì sao khó ngủ, khi nào cần gặp bác sĩ, yoga hỗ trợ ra sao, 4 tư thế phục hồi có đạo cụ, một bài thở chậm, thư giãn trước khi ngủ, tóm lược. Thư mục chủ đề: mat-ngu-v1.",
   "at": "2026-10-20T16:55:44.780Z",
   "tuQuyet": true
+ },
+ {
+  "id": "QD-27",
+  "q": "Có trợ giảng cho phần xuống/lên thảm không? Đề xuất: có 1–2 người; nếu không, cả nhóm làm bản ngồi ghế tr.7–8. (làm tiếp sau khi trả lời không cần)",
+  "a": "(Chủ dự án để nhóm tự quyết theo phương án đề xuất)",
+  "from": "lam",
+  "step": 4,
+  "planId": "plan-20261021-195355",
+  "topic": "thoai-hoa-khop-goi",
+  "goal": "Workshop 30 phút: yoga nhẹ cho người thoái hoá khớp gối (người 50–70 tuổi). Cần: nguồn kiểm chứng, lưu ý an toàn và chống chỉ định, kịch bản khoảng 8 trang slide và bản thiết kế. Giữ dự án nhỏ: ít bước nhất có thể, không quá 5 bước.",
+  "at": "2026-10-21T14:02:43.011Z",
+  "tuQuyet": true
  }
 ]

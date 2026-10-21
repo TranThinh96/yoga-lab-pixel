@@ -478,3 +478,8 @@ Lựa chọn khi đặc tả chưa nói rõ (chủ dự án xem lại):
 12. **`thuat-ngu.md`**: cặp cách gọi trùng với `lintVariants` (kể cả đảo thứ tự) chỉ tính một lần.
 13. **Lưu ý cho Obsidian**: cột `nguon` của note ý ghi `[[<mã nguồn>]]` (tên file, không có thư mục). Nếu một ý và một nguồn trùng mã, link này sẽ mơ hồ. Chưa gặp trong dữ liệu thật; nếu gặp thì đổi mã ý.
 14. Công cụ `tra_cuu` chỉ có khi bật `labTools` (giống các công cụ khác của máy chủ). Gói ngữ cảnh thì có ở mọi lượt khi `brain` bật.
+
+Thử trên máy (2026-10-21):
+
+15. **Đạt:** nhập suy giáp v7 ra 55 ý, 26 nguồn, 5 tư thế, bản đồ và trang chủ đề; máy chủ tự kiểm link (18 ok, 8 bị chặn hoặc CAPTCHA). `tra_cuu` trả nhãn "BÁC BỎ, không dùng". Trong dự án thử, Mai gọi `tra_cuu` trước khi tìm web; note tư thế cũ có thêm dự án mới trong `dung_trong`. Phần tóm tắt của An ghi 49 ý, nhưng bảng có 55 dòng và máy chủ nhập đủ 55.
+16. **Lỗi: mã nguồn giữ chỗ bị dùng làm mã thật.** Mai ghi `(chưa kiểm)` vào cột Mã nguồn của nhiều dòng, `docBangTriThuc` đổi thành mã `chua-kiem`, nên các nguồn khác nhau (Mayo, Hunter & Felson…) gộp vào một note `nguon/chua-kiem.md`. Cách sửa đề xuất: ô Mã nguồn trong ngoặc, `—`, hay có chữ "chưa" thì coi là trống, lấy mã theo "Tổ chức + Tiêu đề" như lựa chọn số 4. **Đã sửa** (áp dụng cả cho cột Mã của bảng ý, bảng tư thế và cột Nguồn của ý); note gộp đã tách thành 4 note nguồn.

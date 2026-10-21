@@ -24,8 +24,9 @@ const { vietBanDo } = require('./lib/ban-do');
 const { ghiQuyetDinh, goiYChoCauHoi, quyetDinhChoKeHoach, vietSoQuyetDinh } = require('./lib/quyet-dinh');
 const { LOAI_LOI, mucTrong, docVanDe, docDaXuLy, docDuyetLai, docTinNhan, chuFile, ganVanDe, nhomTheoChu, capNhatTuSua, capNhatTuDuyetLai, vietSoVanDe } = require('./lib/van-de');
 const { docCauHoi: parseQuestions, laCauHoiMoiTruong, locBaiHocMoi, phanLoaiCauHoi, chonChuDe, chuDeTu } = require('./lib/van-ban');
-const { chuDeTriThuc, docBangTriThuc, hopNhatMenhDe, hopNhatNguon, capNhatTruyCap, hopNhatTuThe, maHinh, hopNhatHinh, cacChuDe, vietMocChuDe, vietBanDoTriThuc, docThuatNgu, dienThuatNgu, timTriThuc, goiNguCanh } = require('./lib/tri-thuc');
+const { chuDeTriThuc, docBangTriThuc, hopNhatMenhDe, hopNhatNguon, capNhatTruyCap, hopNhatTuThe, maHinh, hopNhatHinh, cacChuDe, vietMocChuDe, vietBanDoTriThuc, docThuatNgu, dienThuatNgu, timTriThuc, goiNguCanh, slug, KIEU_MAU, trichMauTot, taoMauTot, chonMauTot } = require('./lib/tri-thuc');
 const { docGhiChu } = require('./lib/ghi-chu');
+const { soMa, docBaiHoc, noiDungBaiHoc, suaBaiHoc, banXemKinhNghiem, nhanBuoc, chonBaiHoc, maTrong, danhGiaBaiHoc, themLoHong, demLoHongMo, thongKeHoc, hocTuJson, apDungHoc, apDungSuaHuongDan, hoanTacSuaHuongDan, themTuTranh } = require('./lib/bai-hoc');
 
 const ROOT = __dirname;
 const CONFIG_PATH = path.join(ROOT, 'config.json');
@@ -131,7 +132,7 @@ async function ensureWorkspace() {
     if (!fs.existsSync(dst)) await fsp.copyFile(path.join(TEMPLATES_DIR, f), dst).catch(() => {});
   }
   // Bộ não chung: khung thư mục + mẫu note (cũng chỉ chép file còn thiếu)
-  for (const d of ['menh-de', 'nguon', 'tu-the', 'hinh', 'chu-de', 'ghi-chu-chuyen-mon']) await fsp.mkdir(path.join(ws, 'tri-thuc', d), { recursive: true });
+  for (const d of ['menh-de', 'nguon', 'tu-the', 'hinh', 'chu-de', 'ghi-chu-chuyen-mon', 'bai-hoc', 'mau-tot', 'he-thong']) await fsp.mkdir(path.join(ws, 'tri-thuc', d), { recursive: true });
   const chepThieu = async (src, dst) => {
     for (const e of await fsp.readdir(src, { withFileTypes: true }).catch(() => [])) {
       const s = path.join(src, e.name), d = path.join(dst, e.name);
@@ -403,7 +404,9 @@ function buildPrompt(agent, task, handoffPath, attachments, kind, lab = [], goi 
     ``,
     `CÁCH LÀM VIỆC (bạn là một nhân viên thực thụ, chịu trách nhiệm về kết quả chứ không chỉ làm cho xong lượt):`,
     `A. Hiểu đúng việc: nếu có brief dự án (du-an/<mã>/brief.md) thì đọc trước tiên, nhất là "Tiêu chí hoàn thành" và "Tài liệu mẫu". Hỏi tự mình: người nhận sản phẩm cần gì, thế nào là đạt?`,
-    `B. Đọc agents/${agent.id}/kinh-nghiem.md (bài học của chính bạn từ dự án trước) và áp dụng.`,
+    config.brain !== false
+      ? `B. Áp dụng bài học và checklist trong phần BỐI CẢNH (máy chủ đã chọn đúng những bài hợp với bước này). Checklist bắt buộc: ghi mã [BH-…] kèm "đã kiểm" vào mục "Tự kiểm theo brief" của bàn giao.`
+      : `B. Đọc agents/${agent.id}/kinh-nghiem.md (bài học của chính bạn từ dự án trước) và áp dụng.`,
     `C. Tự lập kế hoạch ngắn trong đầu, rồi làm. Gặp chỗ chưa rõ mà tự quyết được thì quyết, ghi rõ giả định.`,
     `D. Trước khi bàn giao, TỰ KIỂM: đối chiếu sản phẩm với từng tiêu chí trong brief và với nhiệm vụ được giao; thiếu thì làm tiếp, đừng bàn giao sản phẩm biết là chưa đạt.`,
     `E. Quyết định thuộc về chủ dự án (đổi phạm vi, mâu thuẫn giữa tài liệu mẫu và nguyên tắc an toàn, chọn giữa hai hướng ngang nhau) thì KHÔNG tự âm thầm bỏ hay đổi: làm phần không bị chặn, rồi ghi câu hỏi vào mục "Câu hỏi cho chủ dự án" (tối đa 3 câu, mỗi câu kèm phương án bạn đề xuất).`,
@@ -557,8 +560,11 @@ async function startRun(agent, task, attachments = [], opts = {}) {
     } catch (e) { running.delete(agent.id); throw e; }
   }
   const handoffRel = `handoff/${stamp(startedAt)}-${agent.id}.md`;
-  let goi = '';
-  if (!opts.prompt && config.brain !== false) { try { goi = goiChoLuot(agent, task, opts); } catch (e) { console.error('Bộ não: không soạn được gói ngữ cảnh:', e.message); } }
+  let goi = '', checklist = [];
+  if (!opts.prompt && config.brain !== false) {
+    try { ({ text: goi, checklist } = goiChoLuot(agent, task, { ...opts, files: [...attachments, ...(opts.files || [])] })); }
+    catch (e) { console.error('Bộ não: không soạn được gói ngữ cảnh:', e.message); }
+  }
   const prompt = opts.prompt || buildPrompt(agent, task, handoffRel, attachments, opts.kind, lab, goi);
   const { cmd, args, stdinJson } = cliArgs(agent, opts.maxTurns, opts.effort, opts.kind, lab, mcpFile);
 
@@ -570,7 +576,8 @@ async function startRun(agent, task, attachments = [], opts = {}) {
     // Số liệu cho trang báo cáo: tokens = tổng mọi loại; tokensIn = đầu vào mới (không tính cache)
     tokens: 0, tokensIn: 0, cacheWrite: 0, cacheRead: 0, tokensOut: 0, costUsd: null, turns: 0,
     effort: agent.engine !== 'gemini' ? agent.effort || '' : '', models: [], toolCalls: 0, tools: {}, acts: [], files: [],
-    ...(opts.planId ? { planId: opts.planId, step: opts.step || 0 } : {})
+    ...(opts.planId ? { planId: opts.planId, step: opts.step || 0 } : {}),
+    ...(checklist.length ? { checklist } : {}) // mã bài học bậc 2 đã giao: máy chủ kiểm mục Tự kiểm của bàn giao
   };
 
   // Gemini CLI chạy không tương tác sẽ từ chối folder chưa được "tin cậy" và hạ approval mode về default.
@@ -1023,7 +1030,7 @@ async function nhapTriThuc(agent, run, banGhi) {
 const khoCache = new Map();
 function docKhoTriThuc() {
   const out = [], con = new Set();
-  for (const d of ['menh-de', 'nguon', 'tu-the', 'hinh']) {
+  for (const d of ['menh-de', 'nguon', 'tu-the', 'hinh', 'bai-hoc', 'mau-tot']) {
     const dir = insideWorkspace(`tri-thuc/${d}`);
     let names = [];
     try { names = fs.readdirSync(dir); } catch { continue; }
@@ -1040,7 +1047,8 @@ function docKhoTriThuc() {
       const sau = lines.slice(t + 1), dau = sau.findIndex(l => l.trim() && !/^#{1,6}\s/.test(l));
       const doan = [];
       if (dau >= 0) for (const l of sau.slice(dau)) { if (!l.trim() || /^#{1,6}\s/.test(l)) break; doan.push(l.trim()); }
-      const note = { path: rel, data, title: t >= 0 ? lines[t].replace(/^#\s+/, '').trim() : n.replace(/\.md$/, ''), para: doan.join(' ').slice(0, 300) };
+      const note = { path: rel, data, title: t >= 0 ? lines[t].replace(/^#\s+/, '').trim() : n.replace(/\.md$/, ''), para: doan.join(' ').slice(0, 300),
+        ...(d === 'bai-hoc' ? { noiDung: noiDungBaiHoc(body) } : d === 'mau-tot' ? { noiDung: body.trim().slice(0, 1500) } : {}) };
       khoCache.set(rel, { mtime, note });
       out.push(note);
     }
@@ -1065,7 +1073,127 @@ function goiChoLuot(agent, task, opts = {}) {
   let tim = timTriThuc(notes, { ...q, chuDe: chuDeTriThuc(topic) }, 8);
   if (!tim.length) tim = timTriThuc(notes, q, 8);
   const lienQuan = tim.map(dongTraCuu);
-  return goiNguCanh({ quyTac, quyetDinh: qd, vanDe, lienQuan, coBanDo: wsExists('tri-thuc/00-ban-do.md') });
+  // Bài học hợp với bước này; bậc 2 thành checklist bắt buộc
+  const nhan = nhanBuoc({ kind: opts.kind, task, files: opts.files || [], agent });
+  const chon = chonBaiHoc(docBaiHoc(notes), { agentId: agent.id, nhan, chuDe: chuDeTriThuc(topic) });
+  const dongBH = b => `[${b.ma}] ${b.noi_dung}`.slice(0, 450);
+  const ck = chon.filter(b => Number(b.data.bac) === 2);
+  const mau = chonMauTot(notes, nhan);
+  return { text: goiNguCanh({ quyTac, quyetDinh: qd, vanDe, lienQuan, checklist: ck.map(dongBH), baiHoc: chon.filter(b => !ck.includes(b)).map(dongBH),
+    viDu: mau ? { plan: mau.data.plan, text: mau.noiDung } : null, coBanDo: wsExists('tri-thuc/00-ban-do.md') }), checklist: ck.map(b => b.ma) };
+}
+
+// ── Tự học: đề xuất cải tiến chờ bạn duyệt, lỗ hổng hệ thống cho người phát triển ──
+const dxFile = () => path.join(stateDir(), 'de-xuat.json');
+let deXuat = [], dxSave = Promise.resolve();
+async function loadDeXuat() {
+  try { const l = JSON.parse(await fsp.readFile(dxFile(), 'utf8')); if (Array.isArray(l)) deXuat = l; } catch {}
+}
+function saveDeXuat() {
+  const data = JSON.stringify(deXuat, null, 1);
+  dxSave = dxSave.then(() => fsp.writeFile(dxFile(), data, 'utf8')).catch(e => console.error('Không lưu được đề xuất:', e.message));
+  broadcast({ type: 'de-xuat', list: deXuat });
+}
+function themDeXuat(plan, list) {
+  for (const x of list) {
+    // Cùng một việc đang chờ duyệt thì không thêm lại (bài học tái phạm ở nhiều dự án liền nhau)
+    if (deXuat.some(d => d.trang_thai === 'cho' && d.loai === x.loai && (x.ma ? d.ma === x.ma : d.agent === x.agent && d.cu === x.cu && d.moi === x.moi))) continue;
+    const n = deXuat.reduce((m, d) => Math.max(m, soMa(d.id)), 0) + 1;
+    deXuat.push({ id: `DX-${n}`, ...x, planId: plan ? plan.id : null, at: new Date().toISOString(), trang_thai: 'cho' });
+  }
+  if (list.length) saveDeXuat();
+}
+function ghiLoHong(plan, list) {
+  if (!list.length || config.brain === false) return Promise.resolve();
+  return capNhatNote('tri-thuc/he-thong/lo-hong.md', cu => themLoHong(cu, list, { ngay: homNay(), planId: plan ? plan.id : null }))
+    .then(() => henBanDoTriThuc()).catch(e => console.error('Không ghi được lỗ hổng:', e.message));
+}
+
+// Mục "hoc" của JSON nghiệm thu: bài học mới, gộp bài, đề xuất sửa hướng dẫn (chờ bạn duyệt), lỗ hổng, ý nháp cho bộ não
+async function apDungHocSauNghiemThu(plan, j, coord) {
+  const ds = docBaiHoc(docKhoTriThuc()), ngay = homNay(), ids = config.agents.map(a => a.id);
+  const kq = apDungHoc(hocTuJson(j, ids), { baiHoc: ds, agentIds: ids, ngay, planId: plan.id, loaiLoi: LOAI_LOI });
+  let moi = 0, sua = 0;
+  for (const b of kq.moi) {
+    const r = await capNhatNote(`tri-thuc/bai-hoc/${b.ma}.md`, cu => cu ? { boQua: 'trùng mã' } : b.text);
+    if (r.ghi) moi++;
+  }
+  const theoMa = new Map(ds.map(b => [b.ma, b]));
+  for (const s of kq.sua) {
+    const r = await capNhatNote(theoMa.get(s.ma).path, cu => suaBaiHoc(cu, s.sua, s.opts));
+    if (r.ghi) sua++; else if (r.boQua) plan.log.push(`Bài học ${s.ma}: bỏ qua (${r.boQua})`);
+  }
+  // Ý nháp cho bộ não (gốc tri-thuc): chưa có nguồn, để An kiểm ở dự án sau
+  const chuDe = chuDeTriThuc(planTopic(plan));
+  if (chuDe) for (const y of kq.yNhap) {
+    const ma = slug(y.y.split(/\s+/).slice(0, 8).join(' ')); // cùng cách đặt mã với bảng "Danh sách đã duyệt"
+    await capNhatNote(`tri-thuc/menh-de/${ma}.md`, cu => hopNhatMenhDe(cu, { ma, y: y.y, muc: '', nguon: '', trich: '', ghiChu: 'Điều phối viên rút ra lúc nghiệm thu: cần nguồn.' },
+      { chuDe, duyet: false, tacGia: coord.id, ngay, planId: plan.id }));
+  } else kq.loHong.push(...kq.yNhap.map(y => ({ mo_ta: `(tri-thuc) ${y.y}`, bang_chung: 'không rõ chủ đề để ghi ý nháp' })));
+  await ghiLoHong(plan, kq.loHong);
+  themDeXuat(plan, kq.deXuat);
+  const mau = await ghiMauTot(plan, kq.mauTot);
+  const ghi = [moi && `${moi} bài học mới`, sua && `${sua} bài học sửa/gộp`, kq.loHong.length && `${kq.loHong.length} lỗ hổng`,
+    kq.deXuat.length && `${kq.deXuat.length} đề xuất chờ bạn duyệt`, mau && `${mau} mẫu tốt`, kq.yNhap.length && chuDe && `${kq.yNhap.length} ý nháp cho bộ não`].filter(Boolean);
+  if (ghi.length) plan.log.push(`Hồi cứu: ${ghi.join(', ')}`);
+  if (kq.boQua.length) plan.log.push(`Hồi cứu bỏ qua: ${snippet(kq.boQua.join('; '))}`);
+  if (moi || sua) await vietKinhNghiem();
+  henBanDoTriThuc();
+}
+
+// Mẫu tốt (tối đa 2 mỗi dự án, chỉ khi nghiệm thu đạt): trích đoạn sản phẩm vào tri-thuc/mau-tot/<kieu>-<n>.md
+async function ghiMauTot(plan, list) {
+  if (!(plan.score != null && plan.score >= cfgNum('passScore', 85))) return 0;
+  const daCo = (plan.mauTotDaGhi = plan.mauTotDaGhi || 0); // nghiệm thu lại vẫn tính chung trần 2
+  let n = 0;
+  for (const m of list.slice(0, Math.max(0, 2 - daCo))) {
+    const file = String(m.file || '').replace(/\\/g, '/').replace(/^\.\//, '');
+    if (!KIEU_MAU.includes(m.kieu) || !/^(output|agents)\//.test(file) || !insideWorkspace(file) || !wsExists(file)) { plan.log.push(`Mẫu tốt: bỏ qua ${file || '(không ghi file)'} (${m.kieu || 'không rõ kiểu'})`); continue; }
+    const trich = trichMauTot(readWs(file), m.vi_tri);
+    if (!trich) continue;
+    const so = docKhoTriThuc().filter(x => x.data.loai === 'mau-tot' && x.data.kieu === m.kieu).reduce((k, x) => Math.max(k, Number((/-(\d+)\.md$/.exec(x.path) || [0, 0])[1])), 0) + 1;
+    const r = await capNhatNote(`tri-thuc/mau-tot/${m.kieu}-${so}.md`, cu => cu ? { boQua: 'trùng tên' } : taoMauTot({ kieu: m.kieu, nguon_file: file + (m.vi_tri ? ' · ' + m.vi_tri : ''), plan: plan.id, ly_do: m.ly_do, trich }));
+    if (r.ghi) n++;
+  }
+  plan.mauTotDaGhi = daCo + n;
+  return n;
+}
+
+// Sau nghiệm thu: bài học cũ có tái phạm không, có hiệu quả không; lên bậc; ghi lại note và bản xem kinh-nghiem.md
+async function danhGiaSauDuAn(plan) {
+  if (config.brain === false) return;
+  const ds = docBaiHoc(docKhoTriThuc());
+  if (!ds.length) return;
+  const nhanTheoNguoi = {};
+  for (const s of plan.steps.filter(s => s.status === 'done')) {
+    const agent = config.agents.find(a => a.id === s.agentId) || { id: s.agentId };
+    nhanTheoNguoi[s.agentId] = [...new Set([...(nhanTheoNguoi[s.agentId] || []), ...nhanBuoc({ kind: stepKind(s), task: s.task, files: s.files || [], agent })])];
+  }
+  const kq = danhGiaBaiHoc(ds, (plan.issues || []).filter(v => v.level === 'BẮT BUỘC'),
+    { batDau: String(plan.createdAt || '').slice(0, 10), nguoiThamGia: Object.keys(nhanTheoNguoi), nhanTheoNguoi });
+  const theoMa = new Map(ds.map(b => [b.ma, b]));
+  for (const r of kq) {
+    const w = await capNhatNote(theoMa.get(r.ma).path, cu => suaBaiHoc(cu, r.sua));
+    if (w.boQua) continue;
+    if (r.ghi) plan.log.push(r.ghi);
+  }
+  const taiPham = kq.filter(r => r.sua.trang_thai === 'khong-hieu-qua').map(r => r.ma);
+  await ghiLoHong(plan, kq.filter(r => r.loHong).map(r => r.loHong));
+  themDeXuat(plan, kq.filter(r => r.deXuat).map(r => r.deXuat));
+  if (kq.length) { plan.log.push(`Bài học: ${taiPham.length} tái phạm, ${kq.length - taiPham.length} có hiệu quả ở dự án này`); await vietKinhNghiem(); }
+}
+
+// agents/<id>/kinh-nghiem.md thành bản xem của tri-thuc/bai-hoc/. Chưa có note bài học nào (chưa chuyển bài cũ) thì giữ file cũ
+async function vietKinhNghiem(agentId) {
+  if (config.brain === false) return;
+  const ds = docBaiHoc(docKhoTriThuc());
+  if (!ds.length) return;
+  for (const a of config.agents.filter(a => !agentId || a.id === agentId)) {
+    const rel = `agents/${a.id}/kinh-nghiem.md`, abs = insideWorkspace(rel), text = banXemKinhNghiem(a.name, a.id, ds);
+    if (!abs || readWs(rel) === text) continue;
+    await fsp.mkdir(path.dirname(abs), { recursive: true });
+    await fsp.writeFile(abs, text, 'utf8');
+  }
 }
 
 function henBanDoTriThuc() {
@@ -1077,8 +1205,10 @@ function henBanDoTriThuc() {
       if (!notes.length && !wsExists('tri-thuc/00-ban-do.md')) return;
       for (const c of cacChuDe(notes)) if (/^[a-z0-9][a-z0-9-]*$/.test(c)) await ghiTriThuc(`tri-thuc/chu-de/${c}.md`, vietMocChuDe(c, notes, ngay));
       const moi = !wsExists('tri-thuc/00-ban-do.md');
-      await ghiTriThuc('tri-thuc/00-ban-do.md', vietBanDoTriThuc(notes, ngay));
+      const loHong = wsExists('tri-thuc/he-thong/lo-hong.md') ? demLoHongMo(readWs('tri-thuc/he-thong/lo-hong.md')) : null;
+      await ghiTriThuc('tri-thuc/00-ban-do.md', vietBanDoTriThuc(notes, ngay, { loHongMo: loHong }));
       if (moi) scheduleIndex(); // index.md trỏ tới bản đồ bộ não
+      await vietKinhNghiem(); // bạn sửa bài học trong Obsidian: bản xem theo
     } catch (e) { console.error('Bộ não: không dựng được bản đồ:', e.message); }
   }, 3000);
 }
@@ -1491,7 +1621,7 @@ function pumpPlan(plan) {
   s.status = 'working'; s.error = '';
   for (const x of srcs) if (x.handoff && x.agentId !== agent.id) broadcast({ type: 'handoff', from: x.agentId, to: agent.id, file: x.handoff, planId: plan.id });
   startRun(agent, task, att, {
-    planId: plan.id, step: idx + 1, kind, maxTurns: stepTurns(agent, kind), effort: stepEffort(agent, kind),
+    planId: plan.id, step: idx + 1, kind, maxTurns: stepTurns(agent, kind), effort: stepEffort(agent, kind), files: s.fileSua || [],
     onDone: (run, full) => {
       s.runId = run.id; s.handoff = run.handoff; s.summary = (run.summary || '').slice(0, 1200);
       s.tokens = (s.tokens || 0) + (run.tokens || 0); // cộng dồn cả các lần thử lại
@@ -1513,6 +1643,13 @@ function pumpPlan(plan) {
         if (!run.handoff) plan.log.push(`Bước ${idx + 1}: ${agent.name} không ghi file bàn giao, người sau chỉ nhận câu trả lời cuối`);
         const text = [handoffText, full || run.summary || ''].filter(Boolean).join('\n\n');
         const banGhi = chuCuaLuot(run, handoffText, full);
+        if ((run.checklist || []).length) { // không chặn bước; số lần thiếu đưa vào số liệu hồi cứu
+          const daGhi = maTrong(mucTrong(handoffText || text, /^#{2,3}\s*Tự kiểm(?![\p{L}\p{N}])/iu).join('\n'));
+          if (!run.checklist.some(m => daGhi.includes(m))) {
+            plan.checklistThieu = (plan.checklistThieu || 0) + 1;
+            plan.log.push(`Bước ${idx + 1}: chưa ghi checklist ${run.checklist.join(', ')}`);
+          }
+        }
         const seqTruoc = plan.issueSeq || 0; // để biết vấn đề nào mới có ở bước này
         const tatCa = parseQuestions(handoffText || text), moiTruong = tatCa.filter(laCauHoiMoiTruong);
         if (moiTruong.length) {
@@ -1638,7 +1775,7 @@ function giaoThayHinh(plan, idx, hong) {
   const moi = hong.map(x => {
     const chu = chuFile(plan.steps, x.file, idx + 1);
     return { id: `VD-${++plan.issueSeq}`, file: x.file, where: 'Bảng hình', level: 'BẮT BUỘC', kind: 'file-khong-ton-tai',
-      text: `Máy chủ không tải được ${x.name}: ${x.why}`,
+      text: `Máy chủ không tải được ${x.name}: ${x.why}`, goc: /Commons không có file này/.test(x.why) ? 'agent' : 'moi-truong', // tên file sai là lỗi người ghi link
       fix: 'Thay bằng trang File: Commons có thật (kiểm bằng công cụ kiem_link nếu có) hoặc link thẳng .jpg/.png',
       from: 'may-chu', owner: chu ? chu.agentId : null, ownerStep: chu ? chu.step : null, status: 'mo', note: '', round: 0, lastStep: idx + 1, fixStep: null };
   });
@@ -2304,7 +2441,9 @@ function lintBlockFix(issues) {
 }
 
 // Bài học sau nghiệm thu: server tự ghi vào cuối kinh-nghiem.md, điều phối viên không phải mở và sửa từng file
+// Chỉ dùng khi tắt bộ não (brain: false); bật thì bài học là note trong tri-thuc/bai-hoc/
 async function appendLessons(lessons, date) {
+  if (config.brain !== false) return 0;
   if (!lessons || typeof lessons !== 'object' || Array.isArray(lessons)) return 0;
   let n = 0;
   for (const [id, list] of Object.entries(lessons)) {
@@ -2325,6 +2464,7 @@ async function appendLessons(lessons, date) {
 
 // Giữ kinh-nghiem.md gọn: mọi agent đọc file này mỗi lượt. Giữ phần đầu + maxLessons dòng bài học gần nhất.
 async function trimLessons(ids) {
+  if (config.brain !== false) return; // kinh-nghiem.md là bản xem do máy chủ sinh
   const max = Math.max(5, cfgNum('maxLessons', 30));
   for (const id of ids) {
     const abs = insideWorkspace(`agents/${id}/kinh-nghiem.md`);
@@ -2370,18 +2510,28 @@ function finishPlan(plan) {
   const canFix = round < cfgNum('maxFixRounds', 1) && plan.steps.length < cfgNum('maxTotalSteps', 20);
   const people = [...new Set(plan.steps.map(s => s.agentId))];
   const polish = config.polishAfterPass !== false;
+  const tenAgent = id => (config.agents.find(a => a.id === id) || {}).name || id;
+  const tuHoc = config.brain !== false;
+  let thongKe = '';
+  if (tuHoc) try { thongKe = thongKeHoc(plan, runs.filter(r => r.planId === plan.id), docBaiHoc(docKhoTriThuc()), tenAgent); }
+  catch (e) { console.error('Không tổng hợp được số liệu hồi cứu:', e.message); }
   const task = [
     `Nghiệm thu dự án "${plan.goal}"${round ? ` (lần ${round + 1}, sau vòng sửa)` : ''}.`,
     `1. Đọc brief (tiêu chí hoàn thành, tài liệu mẫu) và bảng dự án đính kèm.`,
     `2. Mở và đọc chính sản phẩm cuối trong output/ (không chỉ đọc bàn giao). Nếu brief có tài liệu mẫu, đối chiếu độ phủ với mẫu theo từng mục. Chỉ mở lại tối đa 3 nguồn ở chỗ nghi ngờ nhất (thuốc, an toàn, số liệu).`,
     lintBlock(lintFiles(plan.steps.flatMap(s => s.files || []))).replace(/^- /, ''),
     `3. Ghi ${acceptPath(plan)}: bảng chấm từng tiêu chí (đạt / một phần / chưa, kèm bằng chứng: trang, mục), điểm tổng 0–100, việc cần người thật kiểm tra (đặc biệt an toàn học viên).`,
-    `4. Rút 1–3 bài học cụ thể, dùng lại được, cho từng người đã tham gia (${people.join(', ')}): đưa vào mục "lessons" của khối JSON, mỗi bài một câu. KHÔNG tự mở hay sửa kinh-nghiem.md: server sẽ ghi và bỏ bài trùng.`,
+    ...(tuHoc ? [...(thongKe ? [thongKe] : []),
+      `4. Đọc SỐ LIỆU ĐỂ RÚT KINH NGHIỆM ở trên. Với mỗi lỗi lặp lại, tự hỏi gốc ở đâu: agent làm sai (bài học), thiếu bước hay giao sai người (quy trình), máy chủ hay công cụ lỗi (lỗ hổng), trang web hay tài khoản (môi trường), hay thiếu một sự thật (tri thức). Ghi vào mục "hoc" của khối JSON; KHÔNG tự sửa kinh-nghiem.md hay tri-thuc/.`,
+      `   "bai_hoc_moi" chỉ cho gốc agent (pham_vi "agent:<id>" hoặc "nhom"; người đã tham gia: ${people.join(', ')}), mỗi người tối đa 3 bài, mỗi bài một câu dùng lại được. Gốc khác thì đưa vào "lo_hong" hoặc "sua_huong_dan". "sua_huong_dan": "cu" phải là đoạn nguyên văn đang có trong hướng dẫn vai của người đó. "gop": gộp các bài BH-… trùng ý. "mau_tot": tối đa 2 đoạn sản phẩm đạt chuẩn đáng làm ví dụ (kieu: trang-slide, prompt-anh hoặc kiem-chung). Mục nào không có thì để mảng rỗng.`]
+      : [`4. Rút 1–3 bài học cụ thể, dùng lại được, cho từng người đã tham gia (${people.join(', ')}): đưa vào mục "lessons" của khối JSON, mỗi bài một câu. KHÔNG tự mở hay sửa kinh-nghiem.md: server sẽ ghi và bỏ bài trùng.`]),
     canFix ? `5. Nếu điểm < ${pass} và nhóm tự sửa được, liệt kê tối đa 4 việc sửa: mỗi việc một người trong nhóm (${teamOf(plan).join(', ')}), nêu rõ file cần sửa và tiêu chí nào cần đạt.` +
       (polish ? ` Nếu điểm ≥ ${pass} mà vẫn còn lỗi nhỏ sửa nhanh được (chính tả, gán nguồn, hai file lệch nhau), cũng liệt kê (tối đa 4, gộp theo người): server giao một vòng sửa nhanh, không nghiệm thu lại.` : '')
       : `5. Đây là lần nghiệm thu cuối: không giao thêm việc sửa ("fixes" để trống); ghi rõ phần còn thiếu trong ${acceptPath(plan)}.`,
     `Câu hỏi cho chủ dự án (nếu có, kèm đề xuất) ghi vào mục "## Câu hỏi cho chủ dự án" của bàn giao.`,
-    `CÂU TRẢ LỜI CUỐI: 2–3 câu tóm tắt, rồi một khối \`\`\`json {"score": <0-100>, "fixes": [{"agent": "<id>", "task": "<việc>"}], "lessons": {"<id>": ["<bài học>"]}}\`\`\``
+    tuHoc
+      ? `CÂU TRẢ LỜI CUỐI: 2–3 câu tóm tắt, rồi một khối \`\`\`json {"score": <0-100>, "fixes": [{"agent": "<id>", "task": "<việc>"}], "hoc": {"bai_hoc_moi": [{"pham_vi": "agent:<id>", "ap_dung_khi": ["fix", "slides"], "loai_loi": "<loại>", "goc": "agent", "noi_dung": "<bài học>"}], "gop": [{"giu": "BH-<n>", "bo": ["BH-<n>"], "noi_dung": "<nội dung gộp>"}], "sua_huong_dan": [{"agent": "<id>", "cu": "<đoạn nguyên văn đang có trong hướng dẫn>", "moi": "<đoạn thay thế>", "ly_do": "<lý do>"}], "lo_hong": [{"mo_ta": "<mô tả>", "bang_chung": "<bằng chứng>"}], "mau_tot": [{"file": "output/<chu-de>/slides.md", "vi_tri": "Trang <n>", "kieu": "trang-slide", "ly_do": "<lý do>"}]}}\`\`\``
+      : `CÂU TRẢ LỜI CUỐI: 2–3 câu tóm tắt, rồi một khối \`\`\`json {"score": <0-100>, "fixes": [{"agent": "<id>", "task": "<việc>"}], "lessons": {"<id>": ["<bài học>"]}}\`\`\``
   ].join('\n');
   let lessonsDone = Promise.resolve();
   const end = (note) => {
@@ -2399,6 +2549,13 @@ function finishPlan(plan) {
       plan.summary = stripJson(text).slice(0, 2000); plan.reviewHandoff = run.handoff;
       plan.acceptFile = wsExists(acceptPath(plan)) ? acceptPath(plan) : null;
       lessonsDone = appendLessons(j.lessons, new Date().toISOString().slice(0, 10)).then(n => { if (n) { plan.log.push(`Server ghi ${n} bài học vào kinh-nghiem.md`); emitPlan(plan); } }).catch(() => {});
+      if (tuHoc) {
+        const danhGia = !plan.daDanhGiaBaiHoc; // bài học cũ: đánh giá một lần mỗi dự án (nghiệm thu lại thì không đếm lại)
+        plan.daDanhGiaBaiHoc = true;
+        lessonsDone = lessonsDone.then(() => apDungHocSauNghiemThu(plan, j, coord))
+          .then(() => danhGia && danhGiaSauDuAn(plan)).then(() => emitPlan(plan))
+          .catch(e => console.error('Không áp dụng được kết quả hồi cứu:', e.message));
+      }
       if (plan.status !== 'reviewing') return emitPlan(plan);
       if (run.status !== 'done' && LIMIT_RE.test(run.error || '')) return pauseForLimit(plan, 'Nghiệm thu', run.error);
       if (run.status !== 'done') return end('Nghiệm thu không xong: ' + (run.error || 'lỗi'));
@@ -2721,6 +2878,7 @@ function publicState() {
     liveActs: Object.fromEntries(live.map(r => [r.agentId, r.acts])), // diễn biến của lượt đang chạy (khi tải lại trang)
     typical: typicalDurations(),
     plans: plans.slice(-10).reverse(),
+    deXuat, // đề xuất cải tiến: khối ở đầu cửa sổ Dự án
     limits: limitsView()
   };
 }
@@ -2798,6 +2956,43 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, { ok: true, plan });
     }
 
+    if (req.method === 'GET' && p === '/api/de-xuat') return send(res, 200, { list: deXuat });
+    if (req.method === 'POST' && p === '/api/de-xuat') {
+      const b = await readBody(req);
+      const dx = deXuat.find(x => x.id === b.id);
+      if (!dx) return send(res, 404, { error: 'Không thấy đề xuất' });
+      const hd = b.hanhDong;
+      if (!['duyet', 'bo', 'sua', 'hoan-tac'].includes(hd)) return send(res, 400, { error: 'Hành động không hợp lệ' });
+      if (hd === 'hoan-tac' ? dx.trang_thai !== 'duyet' : dx.trang_thai !== 'cho') return send(res, 409, { error: 'Đề xuất này đã được xử lý' });
+      if (hd === 'bo') dx.trang_thai = 'bo';
+      else if (dx.loai === 'sua-huong-dan') {
+        const agent = config.agents.find(a => a.id === dx.agent);
+        if (!agent) return send(res, 400, { error: 'Agent của đề xuất không còn trong văn phòng' });
+        const moi = hd === 'sua' ? String(b.moi || '').trim() : dx.moi;
+        if (!moi) return send(res, 400, { error: 'Chưa có đoạn mới' });
+        const kq = hd === 'hoan-tac' ? hoanTacSuaHuongDan(agent.instructions, dx.cu, dx.moi) : apDungSuaHuongDan(agent.instructions, dx.cu, moi);
+        if (typeof kq !== 'string') return send(res, 409, { error: kq.loi });
+        // Giữ bản config.json trước mỗi lần đổi hướng dẫn: sửa tay lại được nếu cần
+        const cuDir = path.join(stateDir(), 'config-cu');
+        await fsp.mkdir(cuDir, { recursive: true });
+        await fsp.copyFile(CONFIG_PATH, path.join(cuDir, `${stamp()}.json`)).catch(() => {});
+        agent.instructions = kq;
+        await saveConfig();
+        broadcast({ type: 'agents', agents: config.agents });
+        if (hd === 'hoan-tac') { dx.trang_thai = 'hoan-tac'; dx.hoanTacLuc = new Date().toISOString(); }
+        else { dx.moi = moi; dx.trang_thai = 'duyet'; dx.duyetLuc = new Date().toISOString(); }
+      } else if (hd === 'hoan-tac') return send(res, 400, { error: 'Chỉ hoàn tác được đề xuất sửa hướng dẫn' });
+      else {
+        // tu-tranh: bạn đã duyệt nên máy chủ được ghi thuat-ngu.md; len-bac, quy-trinh: chỉ đánh dấu đã xem (việc nằm ở lỗ hổng)
+        if (dx.loai === 'tu-tranh') {
+          const r = await capNhatNote('tri-thuc/thuat-ngu.md', cu => { const t = themTuTranh(cu, dx.tu, dx.ly_do); return typeof t === 'string' ? t : { boQua: t.loi }; });
+          if (r.boQua) return send(res, 409, { error: r.boQua });
+        }
+        dx.trang_thai = 'duyet'; dx.duyetLuc = new Date().toISOString();
+      }
+      saveDeXuat();
+      return send(res, 200, { ok: true, list: deXuat });
+    }
     if (req.method === 'POST' && p.startsWith('/api/plan/')) {
       const b = await readBody(req);
       const plan = plans.find(x => x.id === b.id);
@@ -2934,6 +3129,7 @@ const server = http.createServer(async (req, res) => {
   await loadRuns();
   await loadPlans();
   await loadQuyetDinh();
+  await loadDeXuat();
   loadLinkCache();
   scheduleIndex();
   henBanDoTriThuc();

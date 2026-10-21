@@ -362,4 +362,34 @@ Thêm mục **"Nhóm tự học thế nào"**:
 
 ## Phát hiện thêm
 
-(Người triển khai ghi vào đây.)
+Lựa chọn khi đặc tả chưa nói rõ (chủ dự án xem lại):
+
+1. **Dữ liệu thật có 81 bài, không phải 67** (bài viết thêm sau lần đo). `phanLoaiBaiHoc` chạy trên **cả dòng, gồm tiền tố** `(…)`: ba bài "thay bài … về 'CẦN GIAO LAM'" (viết lại ở commit 7de8017) giờ chỉ còn cụm đó trong tiền tố. Như vậy ra đúng **17** bài `da-thang-cap`. Nội dung note vẫn bỏ tiền tố như đặc tả.
+2. **Bỏ trùng chỉ giữa các bài còn hiệu lực.** Bài đã thăng cấp được giữ hết làm hồ sơ (không vào lời dặn agent). Lý do: bỏ trùng thường thì bài "Sau khi sửa dòng Hình phải mở thiet-ke.md đối chiếu" của Lam (chính là ví dụ BH-17 của đặc tả, nay là BH-46) bị bài "thay bài … CẦN GIAO LAM" (đã thăng cấp) thay mất. Ba cặp trùng còn lại đều là bài đã thăng cấp. Kết quả: 81 note, không bỏ bài nào.
+3. `scripts/chuyen-bai-hoc.js` từ chối chạy khi `tri-thuc/bai-hoc/` đã có note `BH-…` (chỉ chạy một lần).
+4. `vietKinhNghiem` **không ghi** khi chưa có note bài học nào (chưa chạy script), để không xoá bài cũ. Nó cũng chạy mỗi lần máy chủ dựng lại bản đồ bộ não, để bản xem theo kịp chỗ bạn sửa trong Obsidian.
+5. `tra_cuu` và phần "Trong bộ não có thể liên quan" không trả note bài học và mẫu tốt (gói ngữ cảnh đã có phần riêng cho hai loại này).
+6. **Lên bậc xét ở mỗi lần tái phạm**, không chỉ lần đầu chuyển sang `khong-hieu-qua`; nếu không thì bài bậc 2 đã `khong-hieu-qua` không bao giờ lên tiếp. Bậc 2 → 3 không tự đổi `bac`: khi đã thêm luật máy soát, bạn tự đặt `bac: 3`.
+7. Bài phạm vi `chu-de:<x>` tính lỗi của mọi người, như `nhom`.
+8. **Bậc 3 → 4**: bài của một người thành đề xuất `sua-huong-dan` với `cu` rỗng, nghĩa là **thêm đoạn mới vào cuối hướng dẫn** (`apDungSuaHuongDan` với `cu` rỗng thì nối thêm; hoàn tác thì gỡ đúng đoạn đó). Bài của cả nhóm thành đề xuất loại `quy-trinh` (bấm "Đã xem").
+9. Bài học cũ được **đánh giá một lần mỗi dự án** (ở lần nghiệm thu đầu). Mục `hoc` được áp dụng sau **mỗi** lần nghiệm thu (bỏ trùng lo phần lặp). Trần 2 mẫu tốt tính chung cho các lần nghiệm thu.
+10. `bai_hoc_moi` có gốc `moi-truong` cũng vào lỗ hổng (đặc tả chỉ nói `cong-cu`, `quy-trinh`). Gốc `tri-thuc` thành ý nháp `menh-de/<slug 8 từ đầu>.md` của chủ đề dự án; không rõ chủ đề thì vào lỗ hổng.
+11. "Câu trả lời khác phương án đề xuất": câu bạn tự trả lời (không phải "nhóm tự quyết", không phải "Giống câu đã trả lời"), mà dưới một nửa số từ khoá của câu trả lời có trong phần sau "Đề xuất:" của câu hỏi (câu hỏi không ghi "Đề xuất:" thì so với cả câu hỏi).
+12. Dòng "Checklist chưa ghi" không ghi "(3.4)" (đó là số mục của đặc tả). Số lần đếm trong `plan.checklistThieu`.
+13. Lỗ hổng: mô tả đã có ở dòng chưa đánh dấu thì không thêm lại; dòng đã `[x]` mà lỗi lặp lại thì thêm dòng mới. Đề xuất: việc giống hệt đang chờ duyệt thì không thêm lại.
+14. **Hoàn tác** chỉ có cho `sua-huong-dan`. Máy chủ cho hoàn tác lúc nào cũng được (khi đoạn mới còn nguyên); giao diện chỉ hiện nút trong 7 ngày. Loại `tu-tranh` đã có API và giao diện nhưng chưa có nơi nào tạo (mục `hoc` không có trường cho nó).
+
+Thấy thêm, không sửa (ngoài đặc tả):
+
+15. `saveConfig` ghi cả các khoá mặc định vào `config.json` và đổi thứ tự khoá (hành vi có sẵn, giống khi sửa agent trong giao diện). Mỗi lần duyệt đề xuất sửa hướng dẫn, `config.json` sẽ đổi kiểu này.
+16. Quy tắc tiết kiệm số 3 trong `buildPrompt` vẫn lấy ví dụ "ghi bài học vào kinh-nghiem.md khi nghiệm thu", giờ đã lỗi thời.
+17. Dòng B mới áp dụng ngay khi bật bộ não, kể cả workspace chưa chạy script chuyển bài học: lúc đó agent không còn được dặn đọc `kinh-nghiem.md` cũ. README đã nhắc chạy script khi nâng cấp.
+
+Thử trên máy (2026-10-21, dự án thử `plan-20261021-195355`, thoái hoá khớp gối, 88/100):
+
+18. **Đạt:** khối số liệu hồi cứu có đủ 6 dòng, đúng dữ liệu. Hồi cứu ra 6 bài học mới, 1 lần gộp (BH-46 thành `huy`), 2 lỗ hổng, 2 mẫu tốt. BH-37, BH-48, BH-49 của Lam tái phạm và lên checklist; 29 bài được tính có hiệu quả. Chọn bài học theo bước đúng: Lam bước sửa slides thấy 8/15 bài, An bước duyệt nguồn thấy 8/13. An tự ghi `[BH-26] đã kiểm` vào mục Tự kiểm.
+19. **Checklist mới không tới vòng sửa nhanh ngay sau nghiệm thu.** Hồi cứu chạy nền, còn hai bước sửa nhanh (11, 12) bắt đầu cùng lúc, nên chưa nhận checklist vừa lên bậc. Dự án sau mới có.
+20. **Ngăn "Việc được giao" chỉ hiện phần nhiệm vụ** (`run.task`), không hiện prompt đầy đủ, nên không xem được phần BỐI CẢNH như `thu-tren-may.md` hướng dẫn. Muốn xem được thì cần lưu gói ngữ cảnh vào lượt chạy.
+21. **Phân loại theo từ khoá có chỗ sai:** BH-48 ("Khi đạo cụ trong ảnh tư thế đổi…") bị xếp `an-toan-thieu-ccd` vì dính chữ "an toàn", nên bị tính tái phạm theo lỗi an toàn của Lam. Cần chủ dự án xem lại bảng `chuyen-bai-hoc.md`.
+22. Dự án này không sinh đề xuất sửa hướng dẫn nào, nên khối Đề xuất cải tiến chỉ thử được bằng một đề xuất giả.
+23. Lỗ hổng điều phối viên ghi (đã nằm trong `tri-thuc/he-thong/lo-hong.md`): vấn đề NÊN của người không có vấn đề BẮT BUỘC nào không được giao sửa (`handleReview` chỉ cho vấn đề NÊN đi kèm người đã có vấn đề BẮT BUỘC); `soat_loi` đếm 0 chữ cho `thiet-ke.md`.

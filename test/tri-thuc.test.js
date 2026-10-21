@@ -164,6 +164,8 @@ test('timTriThuc', () => {
   assert.deepEqual(tt.timTriThuc(ns, { tuKhoa: 'hypothyroidism mayo', loai: 'nguon' }).map(x => x.loai), ['nguon']);
   assert.deepEqual(tt.timTriThuc(ns, { tuKhoa: 'em bé', chuDe: 'mat-ngu-v2' }).map(x => x.path), ['tri-thuc/tu-the/balasana.md']);
   assert.deepEqual(tt.timTriThuc(ns, { tuKhoa: 'và của' }), []);
+  const bh = { path: 'tri-thuc/bai-hoc/BH-1.md', title: 'BH-1', para: 'Kiểm levothyroxine lúc đói.', data: { loai: 'bai-hoc', ma: 'BH-1' } };
+  assert.ok(!tt.timTriThuc([...ns, bh], { tuKhoa: 'levothyroxine lúc đói' }).some(x => x.loai === 'bai-hoc')); // bài học có phần riêng trong gói
 });
 
 test('goiNguCanh', () => {
@@ -180,4 +182,54 @@ test('goiNguCanh', () => {
   assert.deepEqual([dem('x'), dem('y')], [8, 8]); // cắt phần "Trong bộ não…" trước
   assert.ok(dem('z') < 8);
   assert.ok(tt.goiNguCanh({ quyTac: 'q'.repeat(9000) }).length <= 6000);
+});
+
+test('goiNguCanh: checklist và bài học đứng trước phần bộ não', () => {
+  const g = tt.goiNguCanh({ checklist: ['[BH-17] Kiểm dòng Hình'], baiHoc: ['[BH-3] Đếm chữ'], lienQuan: ['menh-de/x · ý'] });
+  const L = g.split('\n');
+  const i = k => L.findIndex(l => l.startsWith(k));
+  assert.equal(L[i('Checklist bắt buộc') + 1], '- [BH-17] Kiểm dòng Hình');
+  assert.equal(L[i('Bài học của bạn:') + 1], '- [BH-3] Đếm chữ');
+  assert.ok(i('Checklist bắt buộc') < i('Bài học của bạn:') && i('Bài học của bạn:') < i('Trong bộ não'));
+  const dai = tt.goiNguCanh({ checklist: ['[BH-1] c'], baiHoc: Array(40).fill('b'.repeat(300)), lienQuan: Array(8).fill('l'.repeat(300)) });
+  assert.ok(dai.length <= 6000 && dai.includes('[BH-1] c') && !dai.includes('Trong bộ não'));
+});
+
+test('trichMauTot, taoMauTot, chonMauTot', () => {
+  const s = '# Slides\n\n## Trang 1 · Mở đầu\n- Ý chính: a\n\n---\n\n## Trang 12 · Thở\n- Ý chính: thở bụng\n- Lời giảng: chậm\n\n---\n\n## Trang 13 · Kết\n- x\n';
+  assert.equal(tt.trichMauTot(s, 'Trang 12'), '## Trang 12 · Thở\n- Ý chính: thở bụng\n- Lời giảng: chậm');
+  assert.equal(tt.trichMauTot(s, 'Trang 1'), '## Trang 1 · Mở đầu\n- Ý chính: a');
+  assert.equal(tt.trichMauTot('x'.repeat(2000), 'mục 3').length, 1200);
+  const n = tt.taoMauTot({ kieu: 'trang-slide', nguon_file: 'output/x/slides.md · Trang 12', plan: 'plan-2', ly_do: 'gọn', trich: 'y'.repeat(2000) });
+  const g = docGhiChu(n);
+  assert.deepEqual([g.data.loai, g.data.kieu, g.data.plan], ['mau-tot', 'trang-slide', 'plan-2']);
+  assert.equal(g.body.trim().length, 1500);
+  const ns = [{ path: 'tri-thuc/mau-tot/trang-slide-1.md', data: { loai: 'mau-tot', kieu: 'trang-slide', plan: 'plan-1' }, noiDung: 'cũ' },
+    { path: 'tri-thuc/mau-tot/trang-slide-2.md', data: { loai: 'mau-tot', kieu: 'trang-slide', plan: 'plan-2' }, noiDung: 'mới' },
+    { path: 'tri-thuc/mau-tot/kiem-chung-1.md', data: { loai: 'mau-tot', kieu: 'kiem-chung', plan: 'plan-1' }, noiDung: 'kc' }];
+  assert.equal(tt.chonMauTot(ns, ['work', 'slides']).noiDung, 'mới');
+  assert.equal(tt.chonMauTot(ns, ['review']).noiDung, 'kc');
+  assert.equal(tt.chonMauTot(ns, ['work', 'anh']), null);
+  const goi = tt.goiNguCanh({ viDu: { plan: 'plan-2', text: '## Trang 12 · Thở' } });
+  assert.match(goi, /Ví dụ đạt chuẩn \(từ plan-2\):\n## Trang 12 · Thở/);
+});
+
+test('vietBanDoTriThuc: link lỗ hổng hệ thống khi đã có file', () => {
+  assert.ok(!/he-thong\/lo-hong/.test(tt.vietBanDoTriThuc([], '2026-11-02')));
+  assert.match(tt.vietBanDoTriThuc([], '2026-11-02', { loHongMo: 3 }), /\n## Hệ thống\n- \[\[he-thong\/lo-hong\|Lỗ hổng hệ thống\]\] · 3 việc chưa sửa/);
+});
+
+test('docBangTriThuc: mã giữ chỗ "(chưa kiểm)" không gộp các nguồn vào một note', () => {
+  // Chép từ agents/mai/thoai-hoa-khop-goi-nguon.md (dự án thử 2026-10-21)
+  const t = ['## Danh sách nguồn', '| Mã nguồn | [n] | Tổ chức | Tiêu đề | Link | Loại nguồn |', '|---|---|---|---|---|---|',
+    '| nice-ng226 | [1] | NICE | Osteoarthritis in over 16s: diagnosis and management (NG226) | https://www.nice.org.uk/guidance/ng226 | hướng dẫn quốc gia |',
+    '| (chưa kiểm) | — | Hunter & Felson (BMJ) | Osteoarthritis | https://pmc.ncbi.nlm.nih.gov/articles/PMC1403209/ | tổng quan lâm sàng |',
+    '| (chưa kiểm) | — | Mayo Clinic | Knee pain; Leg swelling | bị chặn 403 | cơ quan y tế |',
+    '| — | | WHO | Arthritis | https://www.who.int/x | cơ quan y tế |',
+    '', '## Danh sách đã duyệt', '| Mã | Ý | Mức bằng chứng | Nguồn | Câu trích | Ghi chú |', '|---|---|---|---|---|---|',
+    '| (chưa có) | Tập luyện là điều trị cốt lõi. | Mạnh | 1, (chưa kiểm) | | |'].join('\n');
+  const { nguon, menhDe } = tt.docBangTriThuc(t);
+  assert.deepEqual(nguon.map(r => r.ma), ['nice-ng226', 'hunter-felson-bmj-osteoarthritis', 'mayo-clinic-knee-pain-leg-swelling', 'who-arthritis']);
+  assert.equal(menhDe[0].ma, 'tap-luyen-la-dieu-tri-cot-loi');
+  assert.equal(menhDe[0].nguon, 'nice-ng226');
 });

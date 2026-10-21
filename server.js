@@ -26,6 +26,7 @@ const { LOAI_LOI, mucTrong, docVanDe, docDaXuLy, docDuyetLai, docTinNhan, chuFil
 const { docCauHoi: parseQuestions, laCauHoiMoiTruong, locBaiHocMoi, phanLoaiCauHoi, chonChuDe, chuDeTu } = require('./lib/van-ban');
 const { chuDeTriThuc, docBangTriThuc, hopNhatMenhDe, hopNhatNguon, capNhatTruyCap, hopNhatTuThe, maHinh, hopNhatHinh, cacChuDe, vietMocChuDe, vietBanDoTriThuc, docThuatNgu, dienThuatNgu, timTriThuc, goiNguCanh } = require('./lib/tri-thuc');
 const { docGhiChu } = require('./lib/ghi-chu');
+const { docBaiHoc, noiDungBaiHoc, banXemKinhNghiem } = require('./lib/bai-hoc');
 
 const ROOT = __dirname;
 const CONFIG_PATH = path.join(ROOT, 'config.json');
@@ -131,7 +132,7 @@ async function ensureWorkspace() {
     if (!fs.existsSync(dst)) await fsp.copyFile(path.join(TEMPLATES_DIR, f), dst).catch(() => {});
   }
   // Bộ não chung: khung thư mục + mẫu note (cũng chỉ chép file còn thiếu)
-  for (const d of ['menh-de', 'nguon', 'tu-the', 'hinh', 'chu-de', 'ghi-chu-chuyen-mon']) await fsp.mkdir(path.join(ws, 'tri-thuc', d), { recursive: true });
+  for (const d of ['menh-de', 'nguon', 'tu-the', 'hinh', 'chu-de', 'ghi-chu-chuyen-mon', 'bai-hoc']) await fsp.mkdir(path.join(ws, 'tri-thuc', d), { recursive: true });
   const chepThieu = async (src, dst) => {
     for (const e of await fsp.readdir(src, { withFileTypes: true }).catch(() => [])) {
       const s = path.join(src, e.name), d = path.join(dst, e.name);
@@ -1023,7 +1024,7 @@ async function nhapTriThuc(agent, run, banGhi) {
 const khoCache = new Map();
 function docKhoTriThuc() {
   const out = [], con = new Set();
-  for (const d of ['menh-de', 'nguon', 'tu-the', 'hinh']) {
+  for (const d of ['menh-de', 'nguon', 'tu-the', 'hinh', 'bai-hoc']) {
     const dir = insideWorkspace(`tri-thuc/${d}`);
     let names = [];
     try { names = fs.readdirSync(dir); } catch { continue; }
@@ -1040,7 +1041,8 @@ function docKhoTriThuc() {
       const sau = lines.slice(t + 1), dau = sau.findIndex(l => l.trim() && !/^#{1,6}\s/.test(l));
       const doan = [];
       if (dau >= 0) for (const l of sau.slice(dau)) { if (!l.trim() || /^#{1,6}\s/.test(l)) break; doan.push(l.trim()); }
-      const note = { path: rel, data, title: t >= 0 ? lines[t].replace(/^#\s+/, '').trim() : n.replace(/\.md$/, ''), para: doan.join(' ').slice(0, 300) };
+      const note = { path: rel, data, title: t >= 0 ? lines[t].replace(/^#\s+/, '').trim() : n.replace(/\.md$/, ''), para: doan.join(' ').slice(0, 300),
+        ...(d === 'bai-hoc' ? { noiDung: noiDungBaiHoc(body) } : {}) };
       khoCache.set(rel, { mtime, note });
       out.push(note);
     }
@@ -1068,6 +1070,19 @@ function goiChoLuot(agent, task, opts = {}) {
   return goiNguCanh({ quyTac, quyetDinh: qd, vanDe, lienQuan, coBanDo: wsExists('tri-thuc/00-ban-do.md') });
 }
 
+// agents/<id>/kinh-nghiem.md thành bản xem của tri-thuc/bai-hoc/. Chưa có note bài học nào (chưa chuyển bài cũ) thì giữ file cũ
+async function vietKinhNghiem(agentId) {
+  if (config.brain === false) return;
+  const ds = docBaiHoc(docKhoTriThuc());
+  if (!ds.length) return;
+  for (const a of config.agents.filter(a => !agentId || a.id === agentId)) {
+    const rel = `agents/${a.id}/kinh-nghiem.md`, abs = insideWorkspace(rel), text = banXemKinhNghiem(a.name, a.id, ds);
+    if (!abs || readWs(rel) === text) continue;
+    await fsp.mkdir(path.dirname(abs), { recursive: true });
+    await fsp.writeFile(abs, text, 'utf8');
+  }
+}
+
 function henBanDoTriThuc() {
   if (config.brain === false) return;
   clearTimeout(banDoTimer);
@@ -1079,6 +1094,7 @@ function henBanDoTriThuc() {
       const moi = !wsExists('tri-thuc/00-ban-do.md');
       await ghiTriThuc('tri-thuc/00-ban-do.md', vietBanDoTriThuc(notes, ngay));
       if (moi) scheduleIndex(); // index.md trỏ tới bản đồ bộ não
+      await vietKinhNghiem(); // bạn sửa bài học trong Obsidian: bản xem theo
     } catch (e) { console.error('Bộ não: không dựng được bản đồ:', e.message); }
   }, 3000);
 }
@@ -2304,7 +2320,9 @@ function lintBlockFix(issues) {
 }
 
 // Bài học sau nghiệm thu: server tự ghi vào cuối kinh-nghiem.md, điều phối viên không phải mở và sửa từng file
+// Chỉ dùng khi tắt bộ não (brain: false); bật thì bài học là note trong tri-thuc/bai-hoc/
 async function appendLessons(lessons, date) {
+  if (config.brain !== false) return 0;
   if (!lessons || typeof lessons !== 'object' || Array.isArray(lessons)) return 0;
   let n = 0;
   for (const [id, list] of Object.entries(lessons)) {
@@ -2325,6 +2343,7 @@ async function appendLessons(lessons, date) {
 
 // Giữ kinh-nghiem.md gọn: mọi agent đọc file này mỗi lượt. Giữ phần đầu + maxLessons dòng bài học gần nhất.
 async function trimLessons(ids) {
+  if (config.brain !== false) return; // kinh-nghiem.md là bản xem do máy chủ sinh
   const max = Math.max(5, cfgNum('maxLessons', 30));
   for (const id of ids) {
     const abs = insideWorkspace(`agents/${id}/kinh-nghiem.md`);

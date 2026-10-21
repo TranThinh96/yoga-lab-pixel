@@ -164,6 +164,8 @@ test('timTriThuc', () => {
   assert.deepEqual(tt.timTriThuc(ns, { tuKhoa: 'hypothyroidism mayo', loai: 'nguon' }).map(x => x.loai), ['nguon']);
   assert.deepEqual(tt.timTriThuc(ns, { tuKhoa: 'em bé', chuDe: 'mat-ngu-v2' }).map(x => x.path), ['tri-thuc/tu-the/balasana.md']);
   assert.deepEqual(tt.timTriThuc(ns, { tuKhoa: 'và của' }), []);
+  const bh = { path: 'tri-thuc/bai-hoc/BH-1.md', title: 'BH-1', para: 'Kiểm levothyroxine lúc đói.', data: { loai: 'bai-hoc', ma: 'BH-1' } };
+  assert.ok(!tt.timTriThuc([...ns, bh], { tuKhoa: 'levothyroxine lúc đói' }).some(x => x.loai === 'bai-hoc')); // bài học có phần riêng trong gói
 });
 
 test('goiNguCanh', () => {

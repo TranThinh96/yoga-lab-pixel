@@ -493,6 +493,8 @@ dialog.reader[open]{display:grid; grid-template-rows:auto minmax(0,1fr) auto}
 .utable tbody tr{cursor:pointer}
 .utable tbody tr:hover{background:var(--paper-2)}
 .utable tfoot td{font-weight:700; border-top:2px solid var(--line); border-bottom:0}
+.utable .dat,.tile .v.dat{color:var(--ok)}
+.u-muctieu{font-size:12.5px; color:var(--muted); padding:8px 14px 0}
 .utable .bar{display:inline-block; height:6px; background:var(--s3); border-radius:3px; vertical-align:middle; margin-right:6px}
 .u-more{padding:10px 14px}
 .rd-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:8px; margin-bottom:12px}
@@ -3922,6 +3924,7 @@ const RUN_ST = { done: 'Xong', error: 'Lỗi', stopped: 'Đã dừng', working: 
 async function loadUsage(){
   try { U.data = S.demo ? demoUsage(U.days) : await http('GET', '/api/usage?days=' + U.days); }
   catch (e) { U.data = { runs: [], plans: [], agents: S.agents, error: e.message }; }
+  U.triNao = S.demo ? null : await http('GET', '/api/tri-nao?days=' + U.days).catch(() => null);
   renderUsage();
 }
 let usageTimer;
@@ -3978,6 +3981,7 @@ function renderUsage(){
     <p class="u-cols"><label class="att"><input type="checkbox" id="uDetail" ${U.detail ? 'checked' : ''}><span>Hiện cột chi tiết token (cache, đầu vào, đầu ra, model…)</span></label></p>
     <section class="box u-card"><h3>Theo agent <small>bấm một dòng để lọc theo agent đó</small></h3>${agentTable(list)}</section>
     ${projectTable()}
+    ${triNaoBlock()}
     <section class="box u-card"><h3>Từng lượt chạy (session) <small>${list.length} lượt · bấm để xem chi tiết</small></h3>${runTable(list)}</section>`;
 }
 const tile = (k, v, sub) => `<div class="box tile"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${sub}</div></div>`;
@@ -4048,6 +4052,46 @@ function projectTable(){
     ${plans.map(p => { const rs = runs.filter(r => r.planId === p.id), s = sumRuns(rs), c = sumRuns(rs.filter(r => !r.step));
       return `<tr data-uplan="${esc(p.id)}"><td class="wrap"><span class="clamp2" title="${esc(p.goal)}">${esc(p.goal)}</span></td><td>${PLAN_TXT[p.status] || p.status}</td><td>${esc(uAgentName(p.coordinatorId))}</td><td class="num">${p.steps.length}</td><td class="num">${s.n}</td><td class="num">${s.err || ''}</td><td class="num">${fmtTok(s.total)}</td><td class="num dt">${fmtTok(c.total)} <small class="muted">${pct(c.total, s.total)}</small></td><td class="num">${s.hasCost ? fmtUsd(s.cost) : '—'}</td><td>${fmtTime(p.createdAt)}</td></tr>`; }).join('')}
   </tbody></table></div></section>`;
+}
+// ── Trí não: chỉ số so với mục tiêu ở mục 5 của docs/ke-hoach-tri-nao.md (ghi cứng ở đây) ──
+const MUC_TIEU = {
+  bash: { txt: 'dưới 5%', dat: v => v < 5 },
+  vong: { txt: 'dưới 0,6', dat: v => v < 0.6 },
+  diem: { txt: 'từ 85', dat: v => v >= 85 },
+  taiPham: { txt: '0', dat: v => v === 0 },
+  khongChu: { txt: '0', dat: v => v === 0 },
+  nguon: { txt: 'dưới 0,8 triệu', dat: v => v < 800000 }
+};
+const datCls = (k, v) => v != null && MUC_TIEU[k].dat(v) ? 'dat' : '';
+const LOAI_TOKEN = [['work', 'làm'], ['review', 'duyệt'], ['rereview', 'duyệt lại'], ['fix', 'sửa'], ['dieu-phoi', 'điều phối']];
+function triNaoBlock(){
+  const k = U.triNao; if (!k) return '';
+  const so = n => String(n).replace('.', ',');
+  const dongTT = obj => Object.entries(obj || {}).map(([t, n]) => `${esc(t)} ${n}`).join(' · ') || '—';
+  const y = k.boNao.y, ng = k.boNao.nguon, tongNguon = Object.values(ng).reduce((a, b) => a + b, 0);
+  const tiles = `<div class="tiles" style="padding:12px 14px 0">
+      ${`<div class="box tile"><div class="k">Lần chạy gọi Bash</div><div class="v ${datCls('bash', k.tong.tiLeBash)}">${k.tong.tiLeBash == null ? '—' : so(k.tong.tiLeBash) + '%'}</div><div class="s">${k.tong.luotBash}/${k.tong.luot} lượt · mục tiêu ${MUC_TIEU.bash.txt}</div></div>`}
+      ${`<div class="box tile"><div class="k">Bài học tái phạm</div><div class="v ${datCls('taiPham', k.baiHoc.taiPham30)}">${k.baiHoc.taiPham30}</div><div class="s">30 ngày qua · mục tiêu ${MUC_TIEU.taiPham.txt}</div></div>`}
+      ${tile('Ý đã duyệt', y['da-duyet'] || 0, `nháp ${y.nhap || 0} · cần xem lại ${y['can-xem-lai'] || 0}`)}
+      ${tile('Nguồn bị chặn', k.boNao.nguonBiChan, `trên ${tongNguon} nguồn · ${dongTT(ng)}`)}
+    </div>`;
+  const duAn = k.duAn.length ? `<div class="tscroll"><table class="utable"><thead><tr><th>Dự án</th>${LOAI_TOKEN.map(([, l]) => `<th class="num">Token ${l}</th>`).join('')}<th class="num" title="Số vòng duyệt lại ÷ số bước làm">Vòng duyệt–sửa / bước làm</th><th class="num">BẮT BUỘC</th><th class="num" title="Vấn đề không rõ ai phụ trách file">Không rõ người sửa</th><th class="num">Giao ban</th><th class="num">Điểm lần đầu</th><th class="num" title="Token quy đổi bước làm của người nghiên cứu, chỉ ở dự án tiếp nối">Bước nguồn (tiếp nối)</th></tr></thead><tbody>
+      ${k.duAn.map(d => `<tr data-uplan="${esc(d.id)}"><td class="wrap"><span class="clamp2" title="${esc(d.goal)}">${esc(d.goal)}</span></td>
+        ${LOAI_TOKEN.map(([t]) => `<td class="num">${d.token[t] ? fmtTok(d.token[t]) : '—'}</td>`).join('')}
+        <td class="num ${datCls('vong', d.tiLeVong)}">${d.tiLeVong == null ? '—' : so(d.tiLeVong)} <small class="muted">${d.vongSua}/${d.buocLam}</small></td>
+        <td class="num" title="${esc('Theo loại: ' + dongTT(d.batBuoc.theoLoai) + '\nTheo gốc: ' + dongTT(d.batBuoc.theoGoc))}">${d.batBuoc.tong}</td>
+        <td class="num ${datCls('khongChu', d.khongChu)}">${d.khongChu}</td><td class="num">${d.giaoBan}</td>
+        <td class="num ${datCls('diem', d.diemDau)}">${d.diemDau == null ? '—' : d.diemDau}</td>
+        <td class="num ${datCls('nguon', d.tokenNguon)}">${d.tokenNguon == null ? '—' : fmtTok(d.tokenNguon)}</td></tr>`).join('')}
+    </tbody></table></div>` : '<p class="u-more muted">Không có dự án nào trong khoảng này.</p>';
+  const agent = k.agent.length ? `<div class="tscroll"><table class="utable"><thead><tr><th>Agent</th><th class="num">Lượt</th><th class="num">Có gọi Bash</th><th class="num">tra_cuu</th><th class="num">soat_loi</th><th class="num">kiem_link</th></tr></thead><tbody>
+      ${k.agent.map(a => `<tr data-uagent="${esc(a.id)}"><td><b>${esc(uAgentName(a.id))}</b></td><td class="num">${a.luot}</td><td class="num ${a.luotBash ? '' : 'dat'}">${a.luotBash || 0}</td><td class="num">${a.tra_cuu || ''}</td><td class="num">${a.soat_loi || ''}</td><td class="num">${a.kiem_link || ''}</td></tr>`).join('')}
+    </tbody></table></div>` : '';
+  return `<section class="box u-card"><h3>Trí não <small>chữ xanh là đã đạt mục tiêu</small></h3>
+    <p class="u-muctieu">Mục tiêu: lần chạy gọi Bash ${MUC_TIEU.bash.txt} · vòng duyệt–sửa ${MUC_TIEU.vong.txt} lần mỗi bước làm · điểm nghiệm thu lần đầu ${MUC_TIEU.diem.txt} · bài học tái phạm ${MUC_TIEU.taiPham.txt} · vấn đề không rõ người sửa ${MUC_TIEU.khongChu.txt} · token bước nguồn khi tiếp nối ${MUC_TIEU.nguon.txt}.</p>
+    ${tiles}${duAn}${agent}
+    <p class="u-muctieu" style="padding-bottom:10px">Bài học: ${k.baiHoc.tong} (${dongTT(k.baiHoc.theoTrangThai)}). Dự án gần nhất dùng ${k.boNao.noteDung} note của bộ não.</p>
+  </section>`;
 }
 function runTable(list){
   if (!list.length) return '<p class="u-more muted">Không có lượt chạy nào.</p>';

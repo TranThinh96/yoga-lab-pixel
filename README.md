@@ -295,6 +295,10 @@ Bấm **📊 Báo cáo** ở đầu trang (hoặc mở `http://127.0.0.1:4321/#u
 - **Bảng theo agent**: lượt, lỗi, từng loại token, tỉ lệ trúng cache, trung bình mỗi lượt, công cụ dùng nhiều.
   Bấm một dòng để lọc theo agent đó.
 - **Bảng theo dự án**: token cả dự án và phần điều phối viên dùng.
+- **Trí não**: các chỉ số so với mục tiêu của kế hoạch nâng cấp (chữ xanh là đã đạt):
+  - thẻ số: tỉ lệ lần chạy có gọi Bash (mục tiêu dưới 5%), bài học tái phạm trong 30 ngày (0), số ý đã duyệt, số nguồn bị chặn;
+  - theo dự án: token quy đổi theo loại bước (làm, duyệt, duyệt lại, sửa, điều phối), vòng duyệt–sửa so với bước làm (dưới 0,6), số vấn đề BẮT BUỘC (rê chuột để xem theo loại và theo gốc), vấn đề không rõ người sửa (0), số lần giao ban, điểm nghiệm thu lần đầu (từ 85), token bước nguồn ở dự án tiếp nối (dưới 0,8 triệu);
+  - theo agent: số lượt có gọi Bash, số lần dùng `tra_cuu`, `soat_loi`, `kiem_link`.
 - **Từng lượt chạy (session)**: bấm vào để xem nhiệm vụ, đính kèm, kết quả hoặc lỗi, model thực tế,
   công cụ đã gọi và **diễn biến** từng bước kèm thời điểm.
 - **Tải CSV** theo đúng bộ lọc đang chọn để mở bằng Excel hoặc Google Sheets.

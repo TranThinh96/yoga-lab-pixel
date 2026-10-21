@@ -27,6 +27,7 @@ const { docCauHoi: parseQuestions, laCauHoiMoiTruong, locBaiHocMoi, phanLoaiCauH
 const { chuDeTriThuc, docBangTriThuc, hopNhatMenhDe, hopNhatNguon, capNhatTruyCap, hopNhatTuThe, maHinh, hopNhatHinh, cacChuDe, vietMocChuDe, vietBanDoTriThuc, docThuatNgu, dienThuatNgu, timTriThuc, goiNguCanh, slug, KIEU_MAU, trichMauTot, taoMauTot, chonMauTot } = require('./lib/tri-thuc');
 const { docGhiChu } = require('./lib/ghi-chu');
 const { chonBuocChay } = require('./lib/lich');
+const { chiSoTriNao } = require('./lib/chi-so');
 const { soMa, docBaiHoc, noiDungBaiHoc, suaBaiHoc, banXemKinhNghiem, nhanBuoc, chonBaiHoc, maTrong, danhGiaBaiHoc, themLoHong, demLoHongMo, thongKeHoc, hocTuJson, apDungHoc, apDungSuaHuongDan, hoanTacSuaHuongDan, themTuTranh } = require('./lib/bai-hoc');
 
 const ROOT = __dirname;
@@ -1240,6 +1241,7 @@ async function danhGiaSauDuAn(plan) {
     if (r.ghi) plan.log.push(r.ghi);
   }
   const taiPham = kq.filter(r => r.sua.trang_thai === 'khong-hieu-qua').map(r => r.ma);
+  plan.baiHocTaiPham = taiPham; // cho chỉ số "bài học tái phạm" ở trang Báo cáo
   await ghiLoHong(plan, kq.filter(r => r.loHong).map(r => r.loHong));
   themDeXuat(plan, kq.filter(r => r.deXuat).map(r => r.deXuat));
   if (kq.length) { plan.log.push(`Bài học: ${taiPham.length} tái phạm, ${kq.length - taiPham.length} có hiệu quả ở dự án này`); await vietKinhNghiem(); }
@@ -3091,6 +3093,12 @@ const server = http.createServer(async (req, res) => {
     }
 
     // Báo cáo sử dụng: đọc toàn bộ lịch sử trong runs.jsonl (không chỉ 300 lượt trong bộ nhớ)
+    if (req.method === 'GET' && p === '/api/tri-nao') {
+      const days = Math.max(0, Math.min(3650, Number(url.searchParams.get('days')) || 0));
+      const nguonIds = config.agents.filter(a => (geminiWebOf(a) || {}).mode === 'deep-research').map(a => a.id);
+      return send(res, 200, chiSoTriNao({ runs: await readAllRuns(), plans, notes: config.brain !== false ? docKhoTriThuc() : [], days, quyDoi: weightOf, nguonIds }));
+    }
+
     if (req.method === 'GET' && p === '/api/usage') {
       const days = Math.max(0, Math.min(3650, Number(url.searchParams.get('days')) || 0));
       const since = days ? Date.now() - days * 86400000 : 0;

@@ -81,6 +81,7 @@ const DEFAULT_CONFIG = {
   brain: true, // bộ não chung tri-thuc/: máy chủ chép bảng của agent thành note, soạn gói ngữ cảnh, công cụ tra_cuu
   brainApprovers: ['an'], // ai được đưa ý lên da-duyet (và ghi note tư thế)
   obsidianVault: '', // tên vault Obsidian của folder làm việc (nút "Mở trong Obsidian"); để trống = tên thư mục workspace
+  stepModel: {}, // model theo loại bước, vd {"rereview": "haiku"}; không áp dụng cho agent dùng Chrome
   deepResearchTwoPhase: false, // Deep Research hai lượt ngắn: lượt 1 khởi chạy, máy chủ chờ (không tốn token), lượt 2 lấy kết quả
   agents: []
 };
@@ -324,6 +325,8 @@ const geminiWebOf = agent => agent.engine === 'claude' && agent.geminiWeb && GEM
 const usesChrome = agent => agent.engine === 'claude' && (!!agent.chrome || !!geminiWebOf(agent));
 // Haiku không được dùng Claude in Chrome (công cụ báo "Claude in Chrome requires permission"): agent dùng Chrome chạy bằng Sonnet
 const chromeModel = agent => usesChrome(agent) && /haiku/i.test(agent.model || '') ? 'sonnet' : agent.model;
+// Model thực dùng của agent Claude cho một loại bước (stepModel); agent dùng Chrome giữ model riêng
+const claudeModel = (agent, kind) => { const m = (config.stepModel || {})[kind]; return m && !usesChrome(agent) ? m : chromeModel(agent); };
 // Chờ Gemini trên web tốn nhiều lượt (mỗi lần chờ là một lượt)
 const defaultTurns = agent => { const g = geminiWebOf(agent); return g ? ({ 'deep-research': 150, image: 150 }[g.mode] || 60) : undefined; };
 // Agent Deep Research không tự tìm web (để Gemini làm, tính vào quota Gemini), trừ bước sửa chỉ cần vài nguồn;
@@ -525,7 +528,7 @@ function cliArgs(agent, maxTurns, effort, kind, lab = [], mcpFile = null) {
   else if (config.skipMcp && !agent.useMcp) args.push('--strict-mcp-config');
   // Claude in Chrome: điều khiển Chrome thật của bạn (đã đăng nhập sẵn), ví dụ để chạy Gemini Deep Research bằng gói Gemini Pro
   if (usesChrome(agent)) args.push('--chrome');
-  const model = chromeModel(agent);
+  const model = claudeModel(agent, kind);
   if (model) args.push('--model', model);
   if (effort || agent.effort) args.push('--effort', effort || agent.effort);
   return { cmd: config.claudeCommand || 'claude', args: args.concat(config.claudeExtraArgs || []) };
@@ -587,7 +590,7 @@ async function startRun(agent, task, attachments = [], opts = {}) {
 
   const run = {
     id: `${stamp(startedAt)}-${agent.id}`, agentId: agent.id, agentName: agent.name,
-    engine: agent.engine, model: (agent.engine === 'claude' ? chromeModel(agent) : agent.model) || '', task, attachments,
+    engine: agent.engine, model: (agent.engine === 'claude' ? claudeModel(agent, opts.kind) : agent.model) || '', task, attachments,
     startedAt: startedAt.toISOString(), endedAt: null, status: 'working',
     summary: '', handoff: null, error: '',
     // Số liệu cho trang báo cáo: tokens = tổng mọi loại; tokensIn = đầu vào mới (không tính cache)

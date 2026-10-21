@@ -229,6 +229,7 @@ Nâng cấp từ bản trước Đợt 3: chạy một lần `node scripts/chuye
 | `brain` | Bộ não chung `tri-thuc/`: máy chủ chép bảng của agent thành note, soạn bối cảnh cho mỗi lượt, công cụ `tra_cuu`. `false` = tắt. Mặc định bật |
 | `brainApprovers` | Ai được đưa ý lên "đã duyệt" và ghi note tư thế (mặc định `["an"]`) |
 | `obsidianVault` | Tên vault Obsidian của folder làm việc, cho nút "Mở trong Obsidian". Để trống = tên thư mục workspace |
+| `stepModel` | Model riêng theo loại bước (`work`, `review`, `rereview`, `fix`), vd `{"rereview": "haiku"}`. Không áp dụng cho agent dùng Chrome. Gợi ý: sau khi sổ vấn đề đã chạy ổn, đặt `{"rereview": "haiku"}`, vì duyệt lại chỉ còn kiểm danh sách vấn đề. Mặc định `{}` |
 | `deepResearchTwoPhase` | Deep Research hai lượt ngắn: lượt 1 chỉ khởi chạy trên Gemini, máy chủ chờ (không tốn token), lượt 2 lấy báo cáo. Mặc định tắt |
 
 Model chọn trong ô **Model** khi thêm hoặc sửa agent:

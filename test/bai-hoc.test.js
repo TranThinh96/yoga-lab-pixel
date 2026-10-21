@@ -121,3 +121,44 @@ test('chonBaiHoc', () => {
 test('maTrong', () => {
   assert.deepEqual(bh.maTrong('- [BH-17] đã kiểm\n- BH-3 không ngoặc\n- [BH-4]'), ['BH-17', 'BH-4']);
 });
+
+test('danhGiaBaiHoc: tái phạm thì lên bậc, không tái phạm thì tính hiệu quả', () => {
+  const ds = bh.docBaiHoc([note('BH-17', { loai_loi: 'lech-hai-file', ap_dung_khi: ['fix', 'slides'] })]);
+  const vd = [{ id: 'VD-1', kind: 'lech-hai-file', owner: 'lam' }, { id: 'VD-2', kind: 'lech-hai-file', owner: 'lam' }];
+  const ctx = { batDau: '2026-10-20', nguoiThamGia: ['lam', 'an'], nhanTheoNguoi: { lam: ['work', 'slides'], an: ['review'] } };
+  const [r] = bh.danhGiaBaiHoc(ds, vd, ctx);
+  assert.deepEqual(r.sua, { lan_tai_pham: 1, trang_thai: 'khong-hieu-qua', bac: 2 });
+  assert.ok(r.ghi);
+  const [h] = bh.danhGiaBaiHoc(ds, [{ id: 'VD-1', kind: 'phong-dai', owner: 'lam' }], ctx);
+  assert.deepEqual(h.sua, { lan_hieu_qua: 1 });
+  // lỗi của người khác không tính cho bài của Lam; Lam không làm bước khớp thì không tính gì
+  assert.deepEqual(bh.danhGiaBaiHoc(ds, [{ id: 'VD-1', kind: 'lech-hai-file', owner: 'vy' }], { ...ctx, nhanTheoNguoi: { lam: ['review'] } }), []);
+  // bài có từ chính ngày dự án bắt đầu (bài mới) không xét
+  assert.deepEqual(bh.danhGiaBaiHoc(ds, vd, { ...ctx, batDau: '2026-10-16' }), []);
+  // lần hiệu quả thứ hai, chưa tái phạm → hieu-qua
+  const ds2 = bh.docBaiHoc([note('BH-3', { loai_loi: 'qua-chu' })]);
+  ds2[0].data.lan_hieu_qua = 1;
+  assert.deepEqual(bh.danhGiaBaiHoc(ds2, [], ctx)[0].sua, { lan_hieu_qua: 2, trang_thai: 'hieu-qua' });
+});
+
+test('danhGiaBaiHoc: bậc 2 → lỗ hổng + đề xuất len-bac; bậc 3 → đề xuất sửa hướng dẫn', () => {
+  const vd = [{ id: 'VD-4', kind: 'qua-chu', owner: 'lam' }];
+  const ctx = { batDau: '2026-11-01', nguoiThamGia: ['lam'], nhanTheoNguoi: { lam: ['work'] } };
+  const [r2] = bh.danhGiaBaiHoc(bh.docBaiHoc([note('BH-5', { loai_loi: 'qua-chu', bac: 2 })]), vd, ctx);
+  assert.equal(r2.sua.bac, undefined);
+  assert.match(r2.loHong.mo_ta, /^Cần luật máy soát cho: Bài BH-5\./);
+  assert.equal(r2.deXuat.loai, 'len-bac');
+  const [r3] = bh.danhGiaBaiHoc(bh.docBaiHoc([note('BH-6', { loai_loi: 'qua-chu', bac: 3 })]), vd, ctx);
+  assert.deepEqual([r3.deXuat.loai, r3.deXuat.agent, r3.deXuat.cu], ['sua-huong-dan', 'lam', '']);
+  const [rn] = bh.danhGiaBaiHoc(bh.docBaiHoc([note('BH-7', { loai_loi: 'qua-chu', bac: 3, pham_vi: 'nhom' })]), vd, ctx);
+  assert.equal(rn.deXuat.loai, 'quy-trinh');
+});
+
+test('themLoHong chỉ thêm dòng, bỏ mô tả đã có', () => {
+  const t1 = bh.themLoHong('', [{ mo_ta: 'Máy chủ đặt ảnh sai thư mục', bang_chung: 'VD-3' }], { ngay: '2026-11-02', planId: 'plan-1' });
+  assert.match(t1, /^# Lỗ hổng hệ thống\n/);
+  assert.match(t1, /\n- \[ \] \(2026-11-02, plan-1\) Máy chủ đặt ảnh sai thư mục — VD-3\n$/);
+  const t2 = bh.themLoHong(t1.replace('- [ ]', '- [x]') + '', [{ mo_ta: 'Máy chủ đặt ảnh sai thư mục' }, { mo_ta: 'Thiếu công cụ đếm chữ' }], { ngay: '2026-11-03' });
+  assert.equal(bh.demLoHongMo(t2), 2); // dòng cũ đã [x] thì thêm lại được
+  assert.equal(bh.themLoHong(t2, [{ mo_ta: 'Thiếu công cụ đếm chữ' }], { ngay: '2026-11-04' }), t2);
+});

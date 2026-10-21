@@ -26,7 +26,7 @@ const { LOAI_LOI, mucTrong, docVanDe, docDaXuLy, docDuyetLai, docTinNhan, chuFil
 const { docCauHoi: parseQuestions, laCauHoiMoiTruong, locBaiHocMoi, phanLoaiCauHoi, chonChuDe, chuDeTu } = require('./lib/van-ban');
 const { chuDeTriThuc, docBangTriThuc, hopNhatMenhDe, hopNhatNguon, capNhatTruyCap, hopNhatTuThe, maHinh, hopNhatHinh, cacChuDe, vietMocChuDe, vietBanDoTriThuc, docThuatNgu, dienThuatNgu, timTriThuc, goiNguCanh } = require('./lib/tri-thuc');
 const { docGhiChu } = require('./lib/ghi-chu');
-const { docBaiHoc, noiDungBaiHoc, banXemKinhNghiem, nhanBuoc, chonBaiHoc, maTrong } = require('./lib/bai-hoc');
+const { soMa, docBaiHoc, noiDungBaiHoc, suaBaiHoc, banXemKinhNghiem, nhanBuoc, chonBaiHoc, maTrong, danhGiaBaiHoc, themLoHong } = require('./lib/bai-hoc');
 
 const ROOT = __dirname;
 const CONFIG_PATH = path.join(ROOT, 'config.json');
@@ -1080,6 +1080,56 @@ function goiChoLuot(agent, task, opts = {}) {
   const ck = chon.filter(b => Number(b.data.bac) === 2);
   return { text: goiNguCanh({ quyTac, quyetDinh: qd, vanDe, lienQuan, checklist: ck.map(dongBH), baiHoc: chon.filter(b => !ck.includes(b)).map(dongBH),
     coBanDo: wsExists('tri-thuc/00-ban-do.md') }), checklist: ck.map(b => b.ma) };
+}
+
+// ── Tự học: đề xuất cải tiến chờ bạn duyệt, lỗ hổng hệ thống cho người phát triển ──
+const dxFile = () => path.join(stateDir(), 'de-xuat.json');
+let deXuat = [], dxSave = Promise.resolve();
+async function loadDeXuat() {
+  try { const l = JSON.parse(await fsp.readFile(dxFile(), 'utf8')); if (Array.isArray(l)) deXuat = l; } catch {}
+}
+function saveDeXuat() {
+  const data = JSON.stringify(deXuat, null, 1);
+  dxSave = dxSave.then(() => fsp.writeFile(dxFile(), data, 'utf8')).catch(e => console.error('Không lưu được đề xuất:', e.message));
+  broadcast({ type: 'de-xuat', list: deXuat });
+}
+function themDeXuat(plan, list) {
+  for (const x of list) {
+    // Cùng một việc đang chờ duyệt thì không thêm lại (bài học tái phạm ở nhiều dự án liền nhau)
+    if (deXuat.some(d => d.trang_thai === 'cho' && d.loai === x.loai && (x.ma ? d.ma === x.ma : d.agent === x.agent && d.cu === x.cu && d.moi === x.moi))) continue;
+    const n = deXuat.reduce((m, d) => Math.max(m, soMa(d.id)), 0) + 1;
+    deXuat.push({ id: `DX-${n}`, ...x, planId: plan ? plan.id : null, at: new Date().toISOString(), trang_thai: 'cho' });
+  }
+  if (list.length) saveDeXuat();
+}
+function ghiLoHong(plan, list) {
+  if (!list.length || config.brain === false) return Promise.resolve();
+  return capNhatNote('tri-thuc/he-thong/lo-hong.md', cu => themLoHong(cu, list, { ngay: homNay(), planId: plan ? plan.id : null }))
+    .then(() => henBanDoTriThuc()).catch(e => console.error('Không ghi được lỗ hổng:', e.message));
+}
+
+// Sau nghiệm thu: bài học cũ có tái phạm không, có hiệu quả không; lên bậc; ghi lại note và bản xem kinh-nghiem.md
+async function danhGiaSauDuAn(plan) {
+  if (config.brain === false) return;
+  const ds = docBaiHoc(docKhoTriThuc());
+  if (!ds.length) return;
+  const nhanTheoNguoi = {};
+  for (const s of plan.steps.filter(s => s.status === 'done')) {
+    const agent = config.agents.find(a => a.id === s.agentId) || { id: s.agentId };
+    nhanTheoNguoi[s.agentId] = [...new Set([...(nhanTheoNguoi[s.agentId] || []), ...nhanBuoc({ kind: stepKind(s), task: s.task, files: s.files || [], agent })])];
+  }
+  const kq = danhGiaBaiHoc(ds, (plan.issues || []).filter(v => v.level === 'BẮT BUỘC'),
+    { batDau: String(plan.createdAt || '').slice(0, 10), nguoiThamGia: Object.keys(nhanTheoNguoi), nhanTheoNguoi });
+  const theoMa = new Map(ds.map(b => [b.ma, b]));
+  for (const r of kq) {
+    const w = await capNhatNote(theoMa.get(r.ma).path, cu => suaBaiHoc(cu, r.sua));
+    if (w.boQua) continue;
+    if (r.ghi) plan.log.push(r.ghi);
+  }
+  const taiPham = kq.filter(r => r.sua.trang_thai === 'khong-hieu-qua').map(r => r.ma);
+  await ghiLoHong(plan, kq.filter(r => r.loHong).map(r => r.loHong));
+  themDeXuat(plan, kq.filter(r => r.deXuat).map(r => r.deXuat));
+  if (kq.length) { plan.log.push(`Bài học: ${taiPham.length} tái phạm, ${kq.length - taiPham.length} có hiệu quả ở dự án này`); await vietKinhNghiem(); }
 }
 
 // agents/<id>/kinh-nghiem.md thành bản xem của tri-thuc/bai-hoc/. Chưa có note bài học nào (chưa chuyển bài cũ) thì giữ file cũ
@@ -2437,6 +2487,12 @@ function finishPlan(plan) {
       plan.summary = stripJson(text).slice(0, 2000); plan.reviewHandoff = run.handoff;
       plan.acceptFile = wsExists(acceptPath(plan)) ? acceptPath(plan) : null;
       lessonsDone = appendLessons(j.lessons, new Date().toISOString().slice(0, 10)).then(n => { if (n) { plan.log.push(`Server ghi ${n} bài học vào kinh-nghiem.md`); emitPlan(plan); } }).catch(() => {});
+      // Đánh giá bài học cũ một lần mỗi dự án (nghiệm thu lại sau vòng sửa thì không đếm lại)
+      if (config.brain !== false && !plan.daDanhGiaBaiHoc) {
+        plan.daDanhGiaBaiHoc = true;
+        lessonsDone = lessonsDone.then(() => danhGiaSauDuAn(plan)).then(() => emitPlan(plan))
+          .catch(e => console.error('Không đánh giá được bài học:', e.message));
+      }
       if (plan.status !== 'reviewing') return emitPlan(plan);
       if (run.status !== 'done' && LIMIT_RE.test(run.error || '')) return pauseForLimit(plan, 'Nghiệm thu', run.error);
       if (run.status !== 'done') return end('Nghiệm thu không xong: ' + (run.error || 'lỗi'));
@@ -2972,6 +3028,7 @@ const server = http.createServer(async (req, res) => {
   await loadRuns();
   await loadPlans();
   await loadQuyetDinh();
+  await loadDeXuat();
   loadLinkCache();
   scheduleIndex();
   henBanDoTriThuc();

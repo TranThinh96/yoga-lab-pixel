@@ -82,12 +82,12 @@ Gửi những thứ đó cho người triển khai, hoặc ghi vào mục "Phát
 
 ## Sau Đợt 3: tự học
 
-1. Mở `tri-thuc/he-thong/chuyen-bai-hoc.md`: bảng phân loại 67 bài học cũ. Bài nào xếp sai thì mở note `BH-…` trong Obsidian và sửa `goc`, `trang_thai`.
+1. Mở `tri-thuc/he-thong/chuyen-bai-hoc.md`: bảng phân loại 81 bài học cũ. Bài nào xếp sai thì mở note `BH-…` trong Obsidian và sửa `goc`, `trang_thai`.
 2. Chạy một dự án. Khi xong, mở cửa sổ **Dự án**:
    - khối **Đề xuất cải tiến**: đọc từng đề xuất sửa hướng dẫn vai (cũ → mới), bấm Duyệt, Sửa rồi duyệt, hoặc Bỏ;
    - thử **Hoàn tác** một đề xuất vừa duyệt.
 3. Mở `tri-thuc/he-thong/lo-hong.md`: đây là việc của người phát triển, không phải của agent. Gửi danh sách này khi muốn sửa tiếp hệ thống.
-4. Ở một bước bất kỳ, mở ngăn chi tiết → "Việc được giao": phần BỐI CẢNH chỉ có bài học hợp với bước đó. Bài bậc 2 hiện ở mục "Checklist bắt buộc".
+4. Bài học hợp bước: ngăn "Việc được giao" chưa hiện phần BỐI CẢNH (xem "Phát hiện thêm" số 20 của dot-3.md). Tạm thời kiểm bằng bàn giao: ở bước có bài bậc 2, mục "Tự kiểm theo brief" phải có mã `[BH-…]` kèm "đã kiểm"; thiếu thì bảng dự án có dòng "chưa ghi checklist".
 
 ---
 

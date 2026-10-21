@@ -384,3 +384,12 @@ Thấy thêm, không sửa (ngoài đặc tả):
 15. `saveConfig` ghi cả các khoá mặc định vào `config.json` và đổi thứ tự khoá (hành vi có sẵn, giống khi sửa agent trong giao diện). Mỗi lần duyệt đề xuất sửa hướng dẫn, `config.json` sẽ đổi kiểu này.
 16. Quy tắc tiết kiệm số 3 trong `buildPrompt` vẫn lấy ví dụ "ghi bài học vào kinh-nghiem.md khi nghiệm thu", giờ đã lỗi thời.
 17. Dòng B mới áp dụng ngay khi bật bộ não, kể cả workspace chưa chạy script chuyển bài học: lúc đó agent không còn được dặn đọc `kinh-nghiem.md` cũ. README đã nhắc chạy script khi nâng cấp.
+
+Thử trên máy (2026-10-21, dự án thử `plan-20261021-195355`, thoái hoá khớp gối, 88/100):
+
+18. **Đạt:** khối số liệu hồi cứu có đủ 6 dòng, đúng dữ liệu. Hồi cứu ra 6 bài học mới, 1 lần gộp (BH-46 thành `huy`), 2 lỗ hổng, 2 mẫu tốt. BH-37, BH-48, BH-49 của Lam tái phạm và lên checklist; 29 bài được tính có hiệu quả. Chọn bài học theo bước đúng: Lam bước sửa slides thấy 8/15 bài, An bước duyệt nguồn thấy 8/13. An tự ghi `[BH-26] đã kiểm` vào mục Tự kiểm.
+19. **Checklist mới không tới vòng sửa nhanh ngay sau nghiệm thu.** Hồi cứu chạy nền, còn hai bước sửa nhanh (11, 12) bắt đầu cùng lúc, nên chưa nhận checklist vừa lên bậc. Dự án sau mới có.
+20. **Ngăn "Việc được giao" chỉ hiện phần nhiệm vụ** (`run.task`), không hiện prompt đầy đủ, nên không xem được phần BỐI CẢNH như `thu-tren-may.md` hướng dẫn. Muốn xem được thì cần lưu gói ngữ cảnh vào lượt chạy.
+21. **Phân loại theo từ khoá có chỗ sai:** BH-48 ("Khi đạo cụ trong ảnh tư thế đổi…") bị xếp `an-toan-thieu-ccd` vì dính chữ "an toàn", nên bị tính tái phạm theo lỗi an toàn của Lam. Cần chủ dự án xem lại bảng `chuyen-bai-hoc.md`.
+22. Dự án này không sinh đề xuất sửa hướng dẫn nào, nên khối Đề xuất cải tiến chỉ thử được bằng một đề xuất giả.
+23. Lỗ hổng điều phối viên ghi (đã nằm trong `tri-thuc/he-thong/lo-hong.md`): vấn đề NÊN của người không có vấn đề BẮT BUỘC nào không được giao sửa (`handleReview` chỉ cho vấn đề NÊN đi kèm người đã có vấn đề BẮT BUỘC); `soat_loi` đếm 0 chữ cho `thiet-ke.md`.

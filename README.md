@@ -120,6 +120,8 @@ Chỉnh trong form **Sửa agent → Chrome & Gemini**, hoặc trong `config.jso
 
 Agent Deep Research không dùng WebSearch của Claude (trừ khi bạn tự đặt `tools`), và mặc định có 150 lượt (chat: 60, tạo ảnh: 150).
 
+**Deep Research hai pha** (`deepResearchTwoPhase: true` trong `config.json`): ở bước làm của dự án, agent chỉ khởi chạy Deep Research, ghi link cuộc chat vào `agents/<id>/<chu-de>-deep-research.md` với dòng "Trạng thái: đang chạy" rồi kết thúc lượt. Máy chủ chờ (bằng nửa `maxWaitMinutes`, ít nhất 10 phút; không tốn token), rồi gọi agent một lượt nữa để lấy báo cáo. Gemini chưa xong thì máy chủ chờ thêm 10 phút, tối đa 3 lần kiểm. Trong lúc chờ, bảng dự án ghi "Chờ Gemini Deep Research tới <giờ>".
+
 **Tạo ảnh (`image`)**: agent đọc "Danh sách hình" trong `output/<chủ đề>/thiet-ke.md`, tạo từng ảnh trong một cuộc chat Gemini, tự xem lại rồi bấm tải ảnh kích thước đầy đủ. Chrome lưu ảnh vào thư mục Downloads (đổi bằng `downloadsDir` trong `config.json`). Mỗi lần tải, agent ghi tên dự kiến vào `agents/<id>/anh-gemini.txt`. Xong lượt, máy chủ ghép các file `Gemini_*` tải về trong lượt đó (theo thứ tự thời gian) với danh sách tên này, rồi chép vào `output/<chủ đề>/hinh/`, giống ảnh của agy: bản cũ chuyển vào `cac-ban/`, ảnh AI cho hình y khoa bị để riêng, không dùng. Trước khi chạy: trong Chrome, tắt "Hỏi nơi lưu từng tệp" và cho gemini.google.com tải nhiều file.
 3. Mai xong → ở "Lần gần nhất", chọn **An** → **Chuyển tiếp**. Bàn giao được đính kèm sẵn.
 4. Cứ thế chuyển cho **Lam** (soạn bài), rồi **Hạ** (biên tập, duyệt chữ và trải nghiệm người học).
@@ -227,6 +229,7 @@ Nâng cấp từ bản trước Đợt 3: chạy một lần `node scripts/chuye
 | `brain` | Bộ não chung `tri-thuc/`: máy chủ chép bảng của agent thành note, soạn bối cảnh cho mỗi lượt, công cụ `tra_cuu`. `false` = tắt. Mặc định bật |
 | `brainApprovers` | Ai được đưa ý lên "đã duyệt" và ghi note tư thế (mặc định `["an"]`) |
 | `obsidianVault` | Tên vault Obsidian của folder làm việc, cho nút "Mở trong Obsidian". Để trống = tên thư mục workspace |
+| `deepResearchTwoPhase` | Deep Research hai lượt ngắn: lượt 1 chỉ khởi chạy trên Gemini, máy chủ chờ (không tốn token), lượt 2 lấy báo cáo. Mặc định tắt |
 
 Model chọn trong ô **Model** khi thêm hoặc sửa agent:
 - **Claude**: `haiku` (nhẹ, rẻ), `sonnet` (cân bằng), `opus` (mạnh), `fable` (mạnh nhất, tốn nhất).

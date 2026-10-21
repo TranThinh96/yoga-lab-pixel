@@ -81,6 +81,7 @@ const DEFAULT_CONFIG = {
   brain: true, // bộ não chung tri-thuc/: máy chủ chép bảng của agent thành note, soạn gói ngữ cảnh, công cụ tra_cuu
   brainApprovers: ['an'], // ai được đưa ý lên da-duyet (và ghi note tư thế)
   obsidianVault: '', // tên vault Obsidian của folder làm việc (nút "Mở trong Obsidian"); để trống = tên thư mục workspace
+  deepResearchTwoPhase: false, // Deep Research hai lượt ngắn: lượt 1 khởi chạy, máy chủ chờ (không tốn token), lượt 2 lấy kết quả
   agents: []
 };
 
@@ -335,7 +336,8 @@ function claudeToolsOf(agent, kind, lab = []) {
   return lab.length ? tools.concat('mcp__yogalab') : tools;
 }
 
-function chromePrompt(agent, kind) {
+// pha: 1 hoặc 2 khi chạy Deep Research hai pha (4.1); file: file Deep Research của chủ đề, nếu máy chủ biết
+function chromePrompt(agent, kind, pha, file) {
   const g = geminiWebOf(agent);
   const L = [
     `DÙNG CHROME (công cụ mcp__claude-in-chrome__*, Chrome thật của chủ dự án, đã đăng nhập sẵn):`,
@@ -356,6 +358,21 @@ function chromePrompt(agent, kind) {
       ? `- Cần tìm nguồn thay thế cho vài ý: dùng WebSearch, rồi mở link bằng WebFetch để xác minh trước khi ghi. Chỉ khi WebSearch không ra mới hỏi Gemini trên https://gemini.google.com trong một tab mới (chat thường, KHÔNG bật Deep Research).`
       : `- Cần tìm nguồn thay thế cho vài ý: hỏi Gemini trên https://gemini.google.com trong một tab mới, chat thường (KHÔNG bật Deep Research), rồi mở link nó đưa bằng WebFetch để xác minh trước khi ghi.`,
     `- Gặp trang đăng nhập, CAPTCHA hoặc hết quota: dừng, ghi nguyên văn vào Vướng mắc.`);
+  const f = file || raw;
+  if (deep && pha === 1) return L.concat('',
+    `CÁCH LÀM: GEMINI DEEP RESEARCH, PHA 1/2 (KHỞI CHẠY). Lượt này chỉ khởi chạy, không chờ kết quả.`,
+    `- Việc chính chạy trên https://gemini.google.com trong tab đó, bằng tài khoản Gemini của chủ dự án. Không dùng WebSearch.`,
+    `- Mở chat mới.${g.model ? ` Chọn model "${g.model}" trong menu model của Gemini (không có thì dùng model mạnh nhất có sẵn và ghi lại).` : ''} Bật "Deep Research" trong ô nhập.`,
+    `- Viết MỘT prompt gộp toàn bộ câu hỏi theo từng mục của brief/nhiệm vụ (bỏ những mục bộ não đã có ý đã duyệt), nêu loại nguồn ưu tiên, yêu cầu báo cáo bằng ${g.language} có link nguồn. Gửi.`,
+    `- Gemini hiện kế hoạch nghiên cứu: ${g.checkPlan ? 'đối chiếu với brief, thiếu mục nào thì bấm sửa kế hoạch và bổ sung; ' : ''}bấm "Start research"/"Bắt đầu nghiên cứu".`,
+    `- Ngay khi Gemini bắt đầu nghiên cứu: ghi ${f} với 3 dòng đầu "Link: <URL cuộc chat dạng /app/…>", "Trạng thái: đang chạy", "Bắt đầu: <giờ>". Rồi ghi bàn giao ngắn và KẾT THÚC lượt. Không chờ kết quả: máy chủ sẽ chờ (không tốn token) rồi gọi lại bạn để lấy báo cáo.`,
+    `- Gặp trang đăng nhập, CAPTCHA, hết quota: dừng, ghi nguyên văn vào Vướng mắc.`);
+  if (deep && pha === 2) return L.concat('',
+    `CÁCH LÀM: GEMINI DEEP RESEARCH, PHA 2/2 (LẤY KẾT QUẢ).`,
+    `- Đọc ${f}, lấy dòng "Link:". Mở link đó trong một tab mới, kiểm tra Gemini đã xong chưa (có nút Xuất/Export, không còn dòng tiến độ).`,
+    `- CHƯA XONG: sửa dòng "Trạng thái:" thành "Trạng thái: đang chạy (kiểm lúc <giờ>)", ghi bàn giao một dòng rồi KẾT THÚC lượt; máy chủ sẽ gọi lại sau.`,
+    `- ĐÃ XONG: lấy toàn văn báo cáo và danh sách nguồn bằng get_page_text với max_chars: 200000. Ghi nguyên bản vào ${f} (giữ dòng Link, đổi thành "Trạng thái: xong"). Rồi tổng hợp sang file nguồn theo hướng dẫn riêng; nguồn chỉ có trong báo cáo mà bạn chưa mở thì ghi "chưa kiểm".`,
+    `- Gemini báo lỗi hoặc hết quota: ghi nguyên văn vào Vướng mắc.`);
   L.push('',
     deep ? `CÁCH NGHIÊN CỨU: GEMINI DEEP RESEARCH (bắt buộc)` : `CÁCH LÀM: HỎI GEMINI TRÊN WEB (bắt buộc)`,
     `- Việc chính chạy trên https://gemini.google.com trong tab đó, bằng tài khoản Gemini của chủ dự án. Không dùng Antigravity, không dùng API.${deep ? ' Không tự tìm bằng WebSearch; WebFetch chỉ để mở lại link nguồn khi cần kiểm.' : ''}`,
@@ -397,7 +414,7 @@ function geminiImagePrompt(agent, g) {
 }
 
 // kind: loại bước trong kế hoạch (work / review / rereview / fix); không có khi giao việc lẻ
-function buildPrompt(agent, task, handoffPath, attachments, kind, lab = [], goi = '') {
+function buildPrompt(agent, task, handoffPath, attachments, kind, lab = [], goi = '', pha, drFile) {
   const lines = [
     `Bạn là ${agent.name} — ${agent.role} trong Yoga Lab (nhóm nghiên cứu yoga & y khoa).`,
     `Thư mục hiện tại là folder làm việc chung của cả nhóm.`,
@@ -430,7 +447,7 @@ function buildPrompt(agent, task, handoffPath, attachments, kind, lab = [], goi 
   ];
   // agy chạy ngầm không được phép chạy lệnh terminal: gọi run_command sẽ bị từ chối và cả lượt dừng ngay
   if (agent.engine === 'antigravity') lines.push(`8. Chỉ làm việc trong folder hiện tại. Xem folder bằng list_dir, find_by_name, grep_search; đọc bằng view_file; ghi bằng write_to_file. Lệnh terminal duy nhất được phép là Get-ChildItem đứng một mình (không nối ; | &); mọi lệnh khác và việc đọc file ngoài folder sẽ bị chặn.`);
-  if (usesChrome(agent)) lines.push('', ...chromePrompt(agent, kind));
+  if (usesChrome(agent)) lines.push('', ...chromePrompt(agent, kind, pha, drFile));
   if (lab.length) lines.push('', 'CÔNG CỤ CỦA MÁY CHỦ (gọi như công cụ thường):',
     ...(lab.includes('soat_loi') ? ['- soat_loi(file): soát lỗi máy móc và đếm chữ từng trang của một file .md; với slides.md, thiet-ke.md còn đối chiếu hai file và kiểm file hình. Trước khi bàn giao, gọi soat_loi cho từng file sản phẩm bạn vừa ghi hoặc sửa, rồi sửa những chỗ đúng là lỗi.'] : []),
     ...(lab.includes('tai_hinh') ? ['- tai_hinh(link, ten): máy chủ tải một hình có giấy phép (trang File: của Commons hoặc link thẳng .jpg/.png/.webp) vào output/<chủ đề>/hinh-nguon/ (hoặc hinh/) và ghi danh-sach.md. Hình có link giấy phép mà file chưa có trong thư mục hình: gọi tai_hinh ngay, đừng chỉ ghi "chưa có file". Đừng thử tự tải bằng lệnh.'] : []),
@@ -540,7 +557,7 @@ function labCtx(lab) {
   };
 }
 
-// opts: { prompt (thay prompt mặc định), maxTurns, effort, planId, step, onDone(run) }
+// opts: { prompt (thay prompt mặc định), maxTurns, effort, planId, step, pha, drFile, onDone(run) }
 async function startRun(agent, task, attachments = [], opts = {}) {
   if (running.has(agent.id)) throw Object.assign(new Error(`${agent.name} đang bận`), { status: 409 });
   running.set(agent.id, null); // giữ chỗ ngay, tránh hai việc cùng lúc chen vào trong lúc chờ
@@ -565,7 +582,7 @@ async function startRun(agent, task, attachments = [], opts = {}) {
     try { ({ text: goi, checklist } = goiChoLuot(agent, task, { ...opts, files: [...attachments, ...(opts.files || [])] })); }
     catch (e) { console.error('Bộ não: không soạn được gói ngữ cảnh:', e.message); }
   }
-  const prompt = opts.prompt || buildPrompt(agent, task, handoffRel, attachments, opts.kind, lab, goi);
+  const prompt = opts.prompt || buildPrompt(agent, task, handoffRel, attachments, opts.kind, lab, goi, opts.pha, opts.drFile);
   const { cmd, args, stdinJson } = cliArgs(agent, opts.maxTurns, opts.effort, opts.kind, lab, mcpFile);
 
   const run = {
@@ -923,6 +940,10 @@ async function loadPlans() {
   if (!Array.isArray(plans)) plans = [];
   // Máy chủ tắt giữa chừng: dừng lại để bạn bấm "Chạy tiếp"
   for (const p of plans) if (PLAN_BUSY.has(p.status)) {
+    // Chỉ đang chờ Gemini Deep Research (không bước nào chạy dở): chờ tiếp, tới giờ thì gọi lấy kết quả
+    if (p.status === 'running' && !p.steps.some(s => s.status === 'working' || s.status === 'error') && p.steps.some(s => s.status === 'pending' && s.henLuc)) {
+      setTimeout(() => pumpPlan(p), 3000); continue;
+    }
     for (const s of p.steps) if (s.status === 'working') { s.status = 'error'; s.error = 'Máy chủ đã khởi động lại'; }
     p.waiting = null;
     p.status = p.steps.length ? 'paused' : 'error';
@@ -1542,6 +1563,24 @@ function handleReview(plan, idx, text, banGhi = '') {
   plan.log.push(`Bước ${n}: ${name(s.agentId)} kết luận CẦN SỬA → ${chu.map(([a]) => name(a)).join(', ')} sửa (bước ${n + 1}${fixes.length > 1 ? '–' + (n + fixes.length) : ''}), duyệt lại ở bước ${n + fixes.length + 1}`);
 }
 
+// ── Deep Research hai pha: lượt 1 khởi chạy trên Gemini, máy chủ chờ (không tốn token), lượt 2 lấy kết quả ──
+const haiPha = (agent, kind) => !!config.deepResearchTwoPhase && kind === 'work' && (geminiWebOf(agent) || {}).mode === 'deep-research';
+const drFileOf = (plan, agent) => { const t = planTopic(plan); return t ? `agents/${agent.id}/${t}-deep-research.md` : null; };
+// Giá trị dòng "Trạng thái:" (agent hay in đậm hoặc gạch đầu dòng)
+const trangThaiDr = text => { const m = /^[\s>*_-]*Trạng thái[\s*_]*:[\s*_]*(.*)$/imu.exec(text || ''); return m ? m[1].trim() : ''; };
+const gioPhut = d => new Date(d).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+const henTimers = new Map(); // id kế hoạch → hẹn chạy tiếp bước đang chờ Gemini
+// Bước có henLuc ở tương lai: chưa chạy, hẹn gọi lại pumpPlan đúng lúc đó
+function choGemini(plan, s) {
+  const ms = s.henLuc ? new Date(s.henLuc).getTime() - Date.now() : 0;
+  if (!(ms > 0)) return false;
+  const note = `Chờ Gemini Deep Research tới ${gioPhut(s.henLuc)}`;
+  if (plan.note !== note) { plan.note = note; emitPlan(plan); }
+  clearTimeout(henTimers.get(plan.id));
+  henTimers.set(plan.id, setTimeout(() => { henTimers.delete(plan.id); pumpPlan(plan); }, ms + 1000));
+  return true;
+}
+
 const checkingIn = new Set(); // id kế hoạch đang chờ điều phối viên giao ban
 function pumpPlan(plan) {
   if (plan.status !== 'running') return;
@@ -1550,6 +1589,7 @@ function pumpPlan(plan) {
   if (idx < 0) return finishPlan(plan);
   const s = plan.steps[idx];
   if (s.status !== 'pending') return; // đang chạy, hoặc lỗi đang được xử lý
+  if (choGemini(plan, s)) return;
   const agent = config.agents.find(a => a.id === s.agentId);
   if (!agent) { s.status = 'error'; s.error = 'Agent không còn trong văn phòng'; return onStepError(plan, idx); }
   if (running.has(agent.id)) { if (plan.waiting !== agent.id) { plan.waiting = agent.id; emitPlan(plan); } return; }
@@ -1618,10 +1658,13 @@ function pumpPlan(plan) {
     ...(tinMoi.length ? ['', 'TIN TỪ ĐỒNG ĐỘI:', ...tinMoi.map(m => `- (từ ${(config.agents.find(a => a.id === m.from) || {}).name || m.from}, bước ${m.step}) ${m.text}`)] : [])
   ].join('\n');
 
+  const pha = haiPha(agent, kind) ? (s.pha || 1) : undefined;
+  if (s.henLuc) { s.henLuc = null; if (/^Chờ Gemini/.test(plan.note || '')) plan.note = ''; }
   s.status = 'working'; s.error = '';
   for (const x of srcs) if (x.handoff && x.agentId !== agent.id) broadcast({ type: 'handoff', from: x.agentId, to: agent.id, file: x.handoff, planId: plan.id });
   startRun(agent, task, att, {
-    planId: plan.id, step: idx + 1, kind, maxTurns: stepTurns(agent, kind), effort: stepEffort(agent, kind), files: s.fileSua || [],
+    planId: plan.id, step: idx + 1, kind, maxTurns: pha === 1 ? 40 : stepTurns(agent, kind), effort: stepEffort(agent, kind), files: s.fileSua || [],
+    ...(pha ? { pha, drFile: s.drFile || drFileOf(plan, agent) } : {}),
     onDone: (run, full) => {
       s.runId = run.id; s.handoff = run.handoff; s.summary = (run.summary || '').slice(0, 1200);
       s.tokens = (s.tokens || 0) + (run.tokens || 0); // cộng dồn cả các lần thử lại
@@ -1630,6 +1673,30 @@ function pumpPlan(plan) {
         s.status = 'done'; s.prevFiles = null;
         s.files = [...new Set([...(s.files || []), ...(run.files || []).filter(isProductFile)])].slice(0, 20);
         s.images = [...new Set([...(s.images || []), ...(run.files || []).filter(f => /\/hinh(-nguon)?\/[^/]+\.(png|jpe?g|webp|svg)$/i.test(f))])].slice(0, 60);
+        if (pha) {
+          // Agent có thể đặt tên chủ đề khác máy chủ: lấy file *-deep-research.md nó vừa ghi
+          s.drFile = (run.files || []).find(f => f.startsWith(`agents/${agent.id}/`) && f.endsWith('-deep-research.md')) || s.drFile || drFileOf(plan, agent);
+          const tt = trangThaiDr(readWs(s.drFile));
+          if (/^đang chạy/i.test(tt)) {
+            const g = geminiWebOf(agent);
+            s.status = 'pending';
+            if (pha === 1) {
+              s.pha = 2; s.lanKiem = 0;
+              s.henLuc = new Date(Date.now() + Math.max(10, g.maxWaitMinutes * 0.5) * 60e3).toISOString();
+              plan.log.push(`Bước ${idx + 1}: Deep Research đang chạy trên Gemini; máy chủ chờ tới ${gioPhut(s.henLuc)} (không tốn token) rồi gọi ${agent.name} lấy kết quả`);
+            } else if ((s.lanKiem || 0) < 3) {
+              s.lanKiem = (s.lanKiem || 0) + 1;
+              s.henLuc = new Date(Date.now() + 10 * 60e3).toISOString();
+              plan.log.push(`Bước ${idx + 1}: Gemini chưa xong (lần kiểm ${s.lanKiem}/3); máy chủ chờ tới ${gioPhut(s.henLuc)}`);
+            } else {
+              s.status = 'error'; s.error = s.lastError = 'Gemini chưa xong sau 3 lần kiểm';
+              if (plan.status !== 'running') return emitPlan(plan);
+              return onStepError(plan, idx);
+            }
+            emitPlan(plan);
+            return pumpPlan(plan);
+          }
+        }
         if (kind === 'fix') {
           const doi = (run.files || []).filter(f => (s.fileSua || []).includes(f));
           if ((s.fileSua || []).length && !doi.length) {
@@ -2646,6 +2713,7 @@ async function retryPlan(old) {
 
 function stopPlan(plan, note) {
   clearTimeout(resumeTimers.get(plan.id)); resumeTimers.delete(plan.id); plan.resumeAt = null;
+  clearTimeout(henTimers.get(plan.id)); henTimers.delete(plan.id);
   plan.status = 'stopped'; plan.waiting = null; plan.endedAt = new Date().toISOString();
   if (note) plan.note = note;
   for (const e of running.values()) if (e && e.run.planId === plan.id) { e.stopped = true; killProc(e.proc); }

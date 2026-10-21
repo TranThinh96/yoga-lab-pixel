@@ -162,3 +162,55 @@ test('themLoHong chỉ thêm dòng, bỏ mô tả đã có', () => {
   assert.equal(bh.demLoHongMo(t2), 2); // dòng cũ đã [x] thì thêm lại được
   assert.equal(bh.themLoHong(t2, [{ mo_ta: 'Thiếu công cụ đếm chữ' }], { ngay: '2026-11-04' }), t2);
 });
+
+test('apDungHoc với hoc mẫu đủ 5 mục', () => {
+  const ds = bh.docBaiHoc([note('BH-3', {}, 'Sau khi sửa dòng Hình trong slides.md, mở thiet-ke.md đối chiếu từng trang một lần nữa.'), note('BH-9', {}, 'Bài cần gộp.')]);
+  const hoc = {
+    bai_hoc_moi: [
+      { pham_vi: 'agent:lam', ap_dung_khi: ['fix', 'slides', 'xyz'], loai_loi: 'lech-hai-file', goc: 'agent', noi_dung: 'Khi đổi đạo cụ trong ảnh, sửa mọi chỗ nhắc tư thế trong slides.md trước khi bàn giao.' },
+      { pham_vi: 'agent:lam', goc: 'agent', noi_dung: 'Sau khi sửa dòng Hình trong slides.md, mở lại thiet-ke.md đối chiếu từng trang một.' }, // trùng BH-3
+      { pham_vi: 'agent:vy', goc: 'cong-cu', noi_dung: 'Máy chủ không chép ảnh từ hinh-moi sang hinh.' },
+      { pham_vi: 'nhom', goc: 'tri-thuc', noi_dung: 'Số cấp cứu ở Việt Nam là 115.' },
+      { pham_vi: 'agent:ai-do', goc: 'agent', noi_dung: 'Phạm vi sai.' }
+    ],
+    gop: [{ giu: 'BH-3', bo: ['BH-9'], noi_dung: 'Nội dung gộp.' }],
+    sua_huong_dan: [{ agent: 'lam', cu: 'Viết ngắn.', moi: 'Viết ngắn, mỗi trang tối đa 40 chữ.', ly_do: 'quá chữ lặp lại' }],
+    lo_hong: [{ mo_ta: 'Thiếu công cụ đếm chữ cho thiet-ke.md', bang_chung: 'VD-4' }],
+    mau_tot: [{ file: 'output/x/slides.md', vi_tri: 'Trang 12', kieu: 'trang-slide', ly_do: 'gọn' }]
+  };
+  const kq = bh.apDungHoc(hoc, { baiHoc: ds, agentIds: ['lam', 'vy'], ngay: '2026-11-02', planId: 'plan-1', loaiLoi: ['lech-hai-file', 'khac'] });
+  assert.deepEqual(kq.moi.map(m => m.ma), ['BH-10']);
+  const d = docGhiChu(kq.moi[0].text).data;
+  assert.deepEqual([d.pham_vi, d.bac, d.loai_loi, d.ap_dung_khi], ['agent:lam', 1, 'lech-hai-file', ['fix', 'slides']]);
+  assert.deepEqual(kq.loHong.map(l => l.mo_ta), ['(cong-cu) Máy chủ không chép ảnh từ hinh-moi sang hinh.', 'Thiếu công cụ đếm chữ cho thiet-ke.md']);
+  assert.deepEqual(kq.yNhap, [{ y: 'Số cấp cứu ở Việt Nam là 115.' }]);
+  assert.deepEqual(kq.deXuat.map(x => [x.loai, x.agent, x.cu]), [['sua-huong-dan', 'lam', 'Viết ngắn.']]);
+  assert.deepEqual(kq.sua.map(s => [s.ma, s.sua.trang_thai || '']), [['BH-3', ''], ['BH-9', 'huy']]);
+  assert.equal(kq.sua[0].opts.noi_dung, 'Nội dung gộp.');
+  assert.equal(kq.mauTot.length, 1);
+  assert.equal(kq.boQua.length, 2); // trùng BH-3, phạm vi sai
+});
+
+test('hocTuJson nhận kiểu cũ "lessons"', () => {
+  const h = bh.hocTuJson({ score: 90, lessons: { lam: ['Bài A.'], la: ['Không có người này.'] } }, ['lam']);
+  assert.deepEqual(h.bai_hoc_moi, [{ pham_vi: 'agent:lam', goc: 'agent', loai_loi: 'khac', ap_dung_khi: [], noi_dung: 'Bài A.' }]);
+  assert.equal(bh.hocTuJson({ hoc: { lo_hong: [] }, lessons: { lam: ['x'] } }, ['lam']).bai_hoc_moi, undefined);
+});
+
+test('thongKeHoc', () => {
+  const plan = { createdAt: '2026-11-01T10:00:00Z', steps: [{ agentId: 'lam' }, { agentId: 'an' }], checklistThieu: 2,
+    issues: [{ id: 'VD-1', level: 'BẮT BUỘC', kind: 'lech-hai-file', owner: 'lam', goc: 'quy-trinh' }, { id: 'VD-2', level: 'BẮT BUỘC', kind: 'lech-hai-file', owner: 'lam' },
+      { id: 'VD-3', level: 'NÊN', kind: 'qua-chu', owner: 'lam' }, { id: 'VD-4', level: 'BẮT BUỘC', kind: 'link-chet', owner: null }],
+    answers: [{ q: 'Giữ trang 5? Đề xuất: giữ nguyên trang 5', a: 'Bỏ hẳn trang 5, thay bằng hình thở bụng' }, { q: 'X? Đề xuất: làm X', a: '(Chủ dự án để nhóm tự quyết theo phương án đề xuất)' },
+      { q: 'Dùng gạch thấp? Đề xuất: dùng gạch thấp nhất', a: 'dùng gạch thấp nhất' }] };
+  const runs = [{ agentId: 'lam', tools: { Bash: 3, Read: 9 } }, { agentId: 'lam', tools: { Bash: 1 } }, { agentId: 'an', tools: { PowerShell: 2 } }];
+  const t = bh.thongKeHoc(plan, runs, bh.docBaiHoc([note('BH-17', { loai_loi: 'lech-hai-file' })]), id => ({ lam: 'Lam', an: 'An' })[id] || id);
+  assert.match(t, /^SỐ LIỆU ĐỂ RÚT KINH NGHIỆM \(máy chủ tổng hợp\):/);
+  assert.match(t, /- Vấn đề BẮT BUỘC theo người và loại: Lam: lech-hai-file ×2; \(chưa rõ người\): link-chet ×1/);
+  assert.match(t, /- Theo gốc mặc định: agent 0, quy-trinh 2, cong-cu 0, moi-truong 1, tri-thuc 0/);
+  assert.match(t, /- Bài học tái phạm \(có từ trước, vẫn lỗi cùng loại\): \[BH-17\] \(Lam, lech-hai-file\)/);
+  assert.match(t, /- Công cụ bị chặn: Lam gọi Bash 4 lần, An gọi PowerShell 2 lần/);
+  assert.match(t, /- Checklist chưa ghi: 2 lần/);
+  assert.match(t, /Bỏ hẳn trang 5/);
+  assert.ok(!/gạch thấp nhất →/.test(t));
+});

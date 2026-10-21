@@ -24,9 +24,9 @@ const { vietBanDo } = require('./lib/ban-do');
 const { ghiQuyetDinh, goiYChoCauHoi, quyetDinhChoKeHoach, vietSoQuyetDinh } = require('./lib/quyet-dinh');
 const { LOAI_LOI, mucTrong, docVanDe, docDaXuLy, docDuyetLai, docTinNhan, chuFile, ganVanDe, nhomTheoChu, capNhatTuSua, capNhatTuDuyetLai, vietSoVanDe } = require('./lib/van-de');
 const { docCauHoi: parseQuestions, laCauHoiMoiTruong, locBaiHocMoi, phanLoaiCauHoi, chonChuDe, chuDeTu } = require('./lib/van-ban');
-const { chuDeTriThuc, docBangTriThuc, hopNhatMenhDe, hopNhatNguon, capNhatTruyCap, hopNhatTuThe, maHinh, hopNhatHinh, cacChuDe, vietMocChuDe, vietBanDoTriThuc, docThuatNgu, dienThuatNgu, timTriThuc, goiNguCanh } = require('./lib/tri-thuc');
+const { chuDeTriThuc, docBangTriThuc, hopNhatMenhDe, hopNhatNguon, capNhatTruyCap, hopNhatTuThe, maHinh, hopNhatHinh, cacChuDe, vietMocChuDe, vietBanDoTriThuc, docThuatNgu, dienThuatNgu, timTriThuc, goiNguCanh, slug } = require('./lib/tri-thuc');
 const { docGhiChu } = require('./lib/ghi-chu');
-const { soMa, docBaiHoc, noiDungBaiHoc, suaBaiHoc, banXemKinhNghiem, nhanBuoc, chonBaiHoc, maTrong, danhGiaBaiHoc, themLoHong } = require('./lib/bai-hoc');
+const { soMa, docBaiHoc, noiDungBaiHoc, suaBaiHoc, banXemKinhNghiem, nhanBuoc, chonBaiHoc, maTrong, danhGiaBaiHoc, themLoHong, thongKeHoc, hocTuJson, apDungHoc } = require('./lib/bai-hoc');
 
 const ROOT = __dirname;
 const CONFIG_PATH = path.join(ROOT, 'config.json');
@@ -1106,6 +1106,38 @@ function ghiLoHong(plan, list) {
   if (!list.length || config.brain === false) return Promise.resolve();
   return capNhatNote('tri-thuc/he-thong/lo-hong.md', cu => themLoHong(cu, list, { ngay: homNay(), planId: plan ? plan.id : null }))
     .then(() => henBanDoTriThuc()).catch(e => console.error('Không ghi được lỗ hổng:', e.message));
+}
+
+// Mục "hoc" của JSON nghiệm thu: bài học mới, gộp bài, đề xuất sửa hướng dẫn (chờ bạn duyệt), lỗ hổng, ý nháp cho bộ não
+async function apDungHocSauNghiemThu(plan, j, coord) {
+  const ds = docBaiHoc(docKhoTriThuc()), ngay = homNay(), ids = config.agents.map(a => a.id);
+  const kq = apDungHoc(hocTuJson(j, ids), { baiHoc: ds, agentIds: ids, ngay, planId: plan.id, loaiLoi: LOAI_LOI });
+  let moi = 0, sua = 0;
+  for (const b of kq.moi) {
+    const r = await capNhatNote(`tri-thuc/bai-hoc/${b.ma}.md`, cu => cu ? { boQua: 'trùng mã' } : b.text);
+    if (r.ghi) moi++;
+  }
+  const theoMa = new Map(ds.map(b => [b.ma, b]));
+  for (const s of kq.sua) {
+    const r = await capNhatNote(theoMa.get(s.ma).path, cu => suaBaiHoc(cu, s.sua, s.opts));
+    if (r.ghi) sua++; else if (r.boQua) plan.log.push(`Bài học ${s.ma}: bỏ qua (${r.boQua})`);
+  }
+  // Ý nháp cho bộ não (gốc tri-thuc): chưa có nguồn, để An kiểm ở dự án sau
+  const chuDe = chuDeTriThuc(planTopic(plan));
+  if (chuDe) for (const y of kq.yNhap) {
+    const ma = slug(y.y.split(/\s+/).slice(0, 8).join(' ')); // cùng cách đặt mã với bảng "Danh sách đã duyệt"
+    await capNhatNote(`tri-thuc/menh-de/${ma}.md`, cu => hopNhatMenhDe(cu, { ma, y: y.y, muc: '', nguon: '', trich: '', ghiChu: 'Điều phối viên rút ra lúc nghiệm thu: cần nguồn.' },
+      { chuDe, duyet: false, tacGia: coord.id, ngay, planId: plan.id }));
+  } else kq.loHong.push(...kq.yNhap.map(y => ({ mo_ta: `(tri-thuc) ${y.y}`, bang_chung: 'không rõ chủ đề để ghi ý nháp' })));
+  await ghiLoHong(plan, kq.loHong);
+  themDeXuat(plan, kq.deXuat);
+  plan.mauTot = kq.mauTot.slice(0, 2); // 3.8
+  const ghi = [moi && `${moi} bài học mới`, sua && `${sua} bài học sửa/gộp`, kq.loHong.length && `${kq.loHong.length} lỗ hổng`,
+    kq.deXuat.length && `${kq.deXuat.length} đề xuất chờ bạn duyệt`, kq.yNhap.length && chuDe && `${kq.yNhap.length} ý nháp cho bộ não`].filter(Boolean);
+  if (ghi.length) plan.log.push(`Hồi cứu: ${ghi.join(', ')}`);
+  if (kq.boQua.length) plan.log.push(`Hồi cứu bỏ qua: ${snippet(kq.boQua.join('; '))}`);
+  if (moi || sua) await vietKinhNghiem();
+  henBanDoTriThuc();
 }
 
 // Sau nghiệm thu: bài học cũ có tái phạm không, có hiệu quả không; lên bậc; ghi lại note và bản xem kinh-nghiem.md
@@ -2458,18 +2490,28 @@ function finishPlan(plan) {
   const canFix = round < cfgNum('maxFixRounds', 1) && plan.steps.length < cfgNum('maxTotalSteps', 20);
   const people = [...new Set(plan.steps.map(s => s.agentId))];
   const polish = config.polishAfterPass !== false;
+  const tenAgent = id => (config.agents.find(a => a.id === id) || {}).name || id;
+  const tuHoc = config.brain !== false;
+  let thongKe = '';
+  if (tuHoc) try { thongKe = thongKeHoc(plan, runs.filter(r => r.planId === plan.id), docBaiHoc(docKhoTriThuc()), tenAgent); }
+  catch (e) { console.error('Không tổng hợp được số liệu hồi cứu:', e.message); }
   const task = [
     `Nghiệm thu dự án "${plan.goal}"${round ? ` (lần ${round + 1}, sau vòng sửa)` : ''}.`,
     `1. Đọc brief (tiêu chí hoàn thành, tài liệu mẫu) và bảng dự án đính kèm.`,
     `2. Mở và đọc chính sản phẩm cuối trong output/ (không chỉ đọc bàn giao). Nếu brief có tài liệu mẫu, đối chiếu độ phủ với mẫu theo từng mục. Chỉ mở lại tối đa 3 nguồn ở chỗ nghi ngờ nhất (thuốc, an toàn, số liệu).`,
     lintBlock(lintFiles(plan.steps.flatMap(s => s.files || []))).replace(/^- /, ''),
     `3. Ghi ${acceptPath(plan)}: bảng chấm từng tiêu chí (đạt / một phần / chưa, kèm bằng chứng: trang, mục), điểm tổng 0–100, việc cần người thật kiểm tra (đặc biệt an toàn học viên).`,
-    `4. Rút 1–3 bài học cụ thể, dùng lại được, cho từng người đã tham gia (${people.join(', ')}): đưa vào mục "lessons" của khối JSON, mỗi bài một câu. KHÔNG tự mở hay sửa kinh-nghiem.md: server sẽ ghi và bỏ bài trùng.`,
+    ...(tuHoc ? [...(thongKe ? [thongKe] : []),
+      `4. Đọc SỐ LIỆU ĐỂ RÚT KINH NGHIỆM ở trên. Với mỗi lỗi lặp lại, tự hỏi gốc ở đâu: agent làm sai (bài học), thiếu bước hay giao sai người (quy trình), máy chủ hay công cụ lỗi (lỗ hổng), trang web hay tài khoản (môi trường), hay thiếu một sự thật (tri thức). Ghi vào mục "hoc" của khối JSON; KHÔNG tự sửa kinh-nghiem.md hay tri-thuc/.`,
+      `   "bai_hoc_moi" chỉ cho gốc agent (pham_vi "agent:<id>" hoặc "nhom"; người đã tham gia: ${people.join(', ')}), mỗi người tối đa 3 bài, mỗi bài một câu dùng lại được. Gốc khác thì đưa vào "lo_hong" hoặc "sua_huong_dan". "sua_huong_dan": "cu" phải là đoạn nguyên văn đang có trong hướng dẫn vai của người đó. "gop": gộp các bài BH-… trùng ý. "mau_tot": tối đa 2 đoạn sản phẩm đạt chuẩn đáng làm ví dụ (kieu: trang-slide, prompt-anh hoặc kiem-chung). Mục nào không có thì để mảng rỗng.`]
+      : [`4. Rút 1–3 bài học cụ thể, dùng lại được, cho từng người đã tham gia (${people.join(', ')}): đưa vào mục "lessons" của khối JSON, mỗi bài một câu. KHÔNG tự mở hay sửa kinh-nghiem.md: server sẽ ghi và bỏ bài trùng.`]),
     canFix ? `5. Nếu điểm < ${pass} và nhóm tự sửa được, liệt kê tối đa 4 việc sửa: mỗi việc một người trong nhóm (${teamOf(plan).join(', ')}), nêu rõ file cần sửa và tiêu chí nào cần đạt.` +
       (polish ? ` Nếu điểm ≥ ${pass} mà vẫn còn lỗi nhỏ sửa nhanh được (chính tả, gán nguồn, hai file lệch nhau), cũng liệt kê (tối đa 4, gộp theo người): server giao một vòng sửa nhanh, không nghiệm thu lại.` : '')
       : `5. Đây là lần nghiệm thu cuối: không giao thêm việc sửa ("fixes" để trống); ghi rõ phần còn thiếu trong ${acceptPath(plan)}.`,
     `Câu hỏi cho chủ dự án (nếu có, kèm đề xuất) ghi vào mục "## Câu hỏi cho chủ dự án" của bàn giao.`,
-    `CÂU TRẢ LỜI CUỐI: 2–3 câu tóm tắt, rồi một khối \`\`\`json {"score": <0-100>, "fixes": [{"agent": "<id>", "task": "<việc>"}], "lessons": {"<id>": ["<bài học>"]}}\`\`\``
+    tuHoc
+      ? `CÂU TRẢ LỜI CUỐI: 2–3 câu tóm tắt, rồi một khối \`\`\`json {"score": <0-100>, "fixes": [{"agent": "<id>", "task": "<việc>"}], "hoc": {"bai_hoc_moi": [{"pham_vi": "agent:<id>", "ap_dung_khi": ["fix", "slides"], "loai_loi": "<loại>", "goc": "agent", "noi_dung": "<bài học>"}], "gop": [{"giu": "BH-<n>", "bo": ["BH-<n>"], "noi_dung": "<nội dung gộp>"}], "sua_huong_dan": [{"agent": "<id>", "cu": "<đoạn nguyên văn đang có trong hướng dẫn>", "moi": "<đoạn thay thế>", "ly_do": "<lý do>"}], "lo_hong": [{"mo_ta": "<mô tả>", "bang_chung": "<bằng chứng>"}], "mau_tot": [{"file": "output/<chu-de>/slides.md", "vi_tri": "Trang <n>", "kieu": "trang-slide", "ly_do": "<lý do>"}]}}\`\`\``
+      : `CÂU TRẢ LỜI CUỐI: 2–3 câu tóm tắt, rồi một khối \`\`\`json {"score": <0-100>, "fixes": [{"agent": "<id>", "task": "<việc>"}], "lessons": {"<id>": ["<bài học>"]}}\`\`\``
   ].join('\n');
   let lessonsDone = Promise.resolve();
   const end = (note) => {
@@ -2487,11 +2529,12 @@ function finishPlan(plan) {
       plan.summary = stripJson(text).slice(0, 2000); plan.reviewHandoff = run.handoff;
       plan.acceptFile = wsExists(acceptPath(plan)) ? acceptPath(plan) : null;
       lessonsDone = appendLessons(j.lessons, new Date().toISOString().slice(0, 10)).then(n => { if (n) { plan.log.push(`Server ghi ${n} bài học vào kinh-nghiem.md`); emitPlan(plan); } }).catch(() => {});
-      // Đánh giá bài học cũ một lần mỗi dự án (nghiệm thu lại sau vòng sửa thì không đếm lại)
-      if (config.brain !== false && !plan.daDanhGiaBaiHoc) {
+      if (tuHoc) {
+        const danhGia = !plan.daDanhGiaBaiHoc; // bài học cũ: đánh giá một lần mỗi dự án (nghiệm thu lại thì không đếm lại)
         plan.daDanhGiaBaiHoc = true;
-        lessonsDone = lessonsDone.then(() => danhGiaSauDuAn(plan)).then(() => emitPlan(plan))
-          .catch(e => console.error('Không đánh giá được bài học:', e.message));
+        lessonsDone = lessonsDone.then(() => apDungHocSauNghiemThu(plan, j, coord))
+          .then(() => danhGia && danhGiaSauDuAn(plan)).then(() => emitPlan(plan))
+          .catch(e => console.error('Không áp dụng được kết quả hồi cứu:', e.message));
       }
       if (plan.status !== 'reviewing') return emitPlan(plan);
       if (run.status !== 'done' && LIMIT_RE.test(run.error || '')) return pauseForLimit(plan, 'Nghiệm thu', run.error);

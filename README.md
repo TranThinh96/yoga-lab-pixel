@@ -235,6 +235,7 @@ Nâng cấp từ bản trước Đợt 3: chạy một lần `node scripts/chuye
 | `obsidianVault` | Tên vault Obsidian của folder làm việc, cho nút "Mở trong Obsidian". Để trống = tên thư mục workspace |
 | `stepModel` | Model riêng theo loại bước (`work`, `review`, `rereview`, `fix`), vd `{"rereview": "haiku"}`. Không áp dụng cho agent dùng Chrome. Gợi ý: sau khi sổ vấn đề đã chạy ổn, đặt `{"rereview": "haiku"}`, vì duyệt lại chỉ còn kiểm danh sách vấn đề. Mặc định `{}` |
 | `maxParallel` | Số bước của dự án được chạy cùng lúc. `1` = tuần tự như trước (mặc định). Từ `2`: các bước độc lập chạy song song, vd sau một lần duyệt có lỗi của nhiều người thì những người đó sửa cùng lúc; bước cần bản cuối của sản phẩm vẫn chờ đủ vòng duyệt lại. Chỉ rút ngắn thời gian, không bớt token |
+| `consultTool` | Thử nghiệm, cần bật `labTools`: agent trong dự án được gọi `hoi_dong_nghiep(ai, cau_hoi)` để hỏi nhanh một đồng nghiệp dùng Claude. Máy chủ chạy một lượt rất ngắn của người được hỏi (chỉ đọc file, tối đa 4 lượt, chờ tối đa 3 phút) và trả câu trả lời. Mỗi dự án tối đa 3 lần; token tính vào dự án. Mặc định tắt |
 | `deepResearchTwoPhase` | Deep Research hai lượt ngắn: lượt 1 chỉ khởi chạy trên Gemini, máy chủ chờ (không tốn token), lượt 2 lấy báo cáo. Mặc định tắt |
 
 Model chọn trong ô **Model** khi thêm hoặc sửa agent:

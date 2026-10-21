@@ -84,6 +84,7 @@ const DEFAULT_CONFIG = {
   obsidianVault: '', // tên vault Obsidian của folder làm việc (nút "Mở trong Obsidian"); để trống = tên thư mục workspace
   stepModel: {}, // model theo loại bước, vd {"rereview": "haiku"}; không áp dụng cho agent dùng Chrome
   maxParallel: 1, // số bước của dự án chạy cùng lúc (1 = tuần tự); từ 2: các bước độc lập, vd nhiều người sửa sau một lần duyệt
+  consultTool: false, // thử nghiệm: công cụ hoi_dong_nghiep (cần labTools), mỗi dự án tối đa 3 lần hỏi nhanh
   deepResearchTwoPhase: false, // Deep Research hai lượt ngắn: lượt 1 khởi chạy, máy chủ chờ (không tốn token), lượt 2 lấy kết quả
   agents: []
 };
@@ -458,6 +459,7 @@ function buildPrompt(agent, task, handoffPath, attachments, kind, lab = [], goi 
     ...(lab.includes('tai_hinh') ? ['- tai_hinh(link, ten): máy chủ tải một hình có giấy phép (trang File: của Commons hoặc link thẳng .jpg/.png/.webp) vào output/<chủ đề>/hinh-nguon/ (hoặc hinh/) và ghi danh-sach.md. Hình có link giấy phép mà file chưa có trong thư mục hình: gọi tai_hinh ngay, đừng chỉ ghi "chưa có file". Đừng thử tự tải bằng lệnh.'] : []),
     ...(lab.includes('kiem_link') ? ['- kiem_link(urls): máy chủ mở thử tối đa 10 link một lần: còn mở được, bị chặn (403, CAPTCHA), không có (404); link Commons thì kiểm file có thật và đọc giấy phép. Có từ 3 link trở lên cần mở (bảng nguồn, Danh sách hình, khi duyệt): gọi kiem_link cho cả loạt TRƯỚC, rồi chỉ WebFetch những link mở được mà bạn cần đọc nội dung; link bị chặn thì không WebFetch lại, ghi "bị chặn" và tìm nguồn khác.'] : []),
     ...(lab.includes('tra_cuu') ? ['- tra_cuu(tu_khoa): tìm trong bộ não chung (ý đã kiểm chứng, nguồn, tư thế, hình). Tra trước khi tìm web: mục nào đã có ý đã duyệt còn hạn thì dùng lại, không tìm lại.'] : []),
+    ...(lab.includes('hoi_dong_nghiep') ? ['- hoi_dong_nghiep(ai, cau_hoi): hỏi nhanh một đồng nghiệp (mã người), nhận 3–6 câu trả lời. Mỗi dự án tối đa 3 lần; chỉ dùng khi tra_cuu và file bàn giao không đủ.'] : []),
     '- Không có Bash: đừng thử chạy lệnh, script hay python. Việc máy móc thì dùng công cụ trên.');
   if (agent.instructions && agent.instructions.trim()) {
     lines.push('', 'HƯỚNG DẪN RIÊNG CHO VAI CỦA BẠN:', agent.instructions.trim());
@@ -498,6 +500,7 @@ function describeTool(name, input = {}) {
   if (n === 'mcp__yogalab__kiem_link') return { kind: 'web', text: `Kiểm ${(input.urls || []).length} link` };
   if (n === 'mcp__yogalab__tai_hinh') return { kind: 'write', text: `Tải hình ${short(input.ten || input.link)}` };
   if (n === 'mcp__yogalab__tra_cuu') return { kind: 'read', text: `Tra bộ não: ${short(input.tu_khoa)}` };
+  if (n === 'mcp__yogalab__hoi_dong_nghiep') return { kind: 'think', text: `Hỏi nhanh ${short(input.ai)}: ${short(input.cau_hoi)}` };
   if (/^mcp__claude-in-chrome__navigate$/.test(n)) return { kind: 'web', text: `Chrome: mở ${short(input.url)}` };
   if (/^mcp__claude-in-chrome__(get_page_text|read_page|find)$/.test(n)) return { kind: 'web', text: 'Chrome: đọc trang' };
   if (/^mcp__claude-in-chrome__/.test(n)) return { kind: 'web', text: `Chrome: ${short(input.action_summary || input.action || n.replace('mcp__claude-in-chrome__', ''))}` };
@@ -507,7 +510,7 @@ function describeTool(name, input = {}) {
 const AGY_MAX_CONTINUES = 3;
 const ENGINE_NAME = { claude: 'Claude Code', gemini: 'Gemini CLI', antigravity: 'Antigravity CLI (agy)' };
 
-function cliArgs(agent, maxTurns, effort, kind, lab = [], mcpFile = null) {
+function cliArgs(agent, maxTurns, effort, kind, lab = [], mcpFile = null, chiDoc = false) {
   if (agent.engine === 'antigravity') {
     // Antigravity CLI (agy): prompt gửi qua stdin dạng NDJSON; "-p=" bật chế độ in kết quả rồi thoát.
     // accept-edits: tự duyệt việc đọc/ghi file; lệnh shell và quyền chưa cấp sẽ bị từ chối ngầm (không treo).
@@ -522,14 +525,16 @@ function cliArgs(agent, maxTurns, effort, kind, lab = [], mcpFile = null) {
     if (agent.model) args.push('--model', agent.model);
     return { cmd: config.geminiCommand || 'gemini', args: args.concat(config.geminiExtraArgs || []) };
   }
+  // Chỉ đọc (hỏi nhanh đồng nghiệp): acceptEdits tự duyệt Write/Edit dù không có trong --allowedTools, nên dùng quyền mặc định và cấm hẳn công cụ ghi
   const args = ['-p', '--output-format', 'stream-json', '--verbose',
-    '--permission-mode', 'acceptEdits',
+    '--permission-mode', chiDoc ? 'default' : 'acceptEdits',
     '--max-turns', String(maxTurns || agent.maxTurns || defaultTurns(agent) || config.maxTurns || 15),
-    '--allowedTools', claudeToolsOf(agent, kind, lab).join(',')];
+    '--allowedTools', (chiDoc ? ['Read', 'Glob', 'Grep'] : claudeToolsOf(agent, kind, lab)).join(',')];
+  if (chiDoc) args.push('--disallowedTools', 'Write,Edit,MultiEdit,NotebookEdit,Bash,WebFetch,WebSearch');
   if (mcpFile) { args.push('--mcp-config', mcpFile); if (!agent.useMcp) args.push('--strict-mcp-config'); }
-  else if (config.skipMcp && !agent.useMcp) args.push('--strict-mcp-config');
+  else if (chiDoc || (config.skipMcp && !agent.useMcp)) args.push('--strict-mcp-config');
   // Claude in Chrome: điều khiển Chrome thật của bạn (đã đăng nhập sẵn), ví dụ để chạy Gemini Deep Research bằng gói Gemini Pro
-  if (usesChrome(agent)) args.push('--chrome');
+  if (usesChrome(agent) && !chiDoc) args.push('--chrome');
   const model = claudeModel(agent, kind);
   if (model) args.push('--model', model);
   if (effort || agent.effort) args.push('--effort', effort || agent.effort);
@@ -548,26 +553,57 @@ function quoteWinArg(x) {
 
 // Công cụ máy chủ cho từng lượt (MCP nội bộ). Đợt 1, 2 thêm kiem_link, tai_hinh, tra_cuu theo loại bước.
 const labKeys = new Map(); // khoá của lượt chạy → { entry, agent, tools }
-function labToolsFor(agent, kind) {
+function labToolsFor(agent, kind, trongDuAn = false) {
   if (!config.labTools || agent.engine !== 'claude' || agent.labTools === false) return [];
   return ['soat_loi', 'kiem_link', ...(kind !== 'review' && kind !== 'rereview' ? ['tai_hinh'] : []), // người duyệt chỉ kiểm, không tải
-    ...(config.brain !== false ? ['tra_cuu'] : [])];
+    ...(config.brain !== false ? ['tra_cuu'] : []), ...(config.consultTool && trongDuAn ? ['hoi_dong_nghiep'] : [])];
 }
 function labCtx(lab) {
   return {
     read: rel => readWs(rel), exists: rel => wsExists(rel), lint: rel => lintFiles([rel]), listImages: rel => listedImages(rel), kiemMotLink, taiHinh: a => taiHinhCho(lab, a),
-    timTriThuc: q => timTriThuc(docKhoTriThuc(), q),
+    timTriThuc: q => timTriThuc(docKhoTriThuc(), q), hoiDongNghiep: a => hoiDongNghiep(lab, a),
     hasImages: rel => { const a = insideWorkspace(rel); try { return !!a && fs.readdirSync(a).some(n => IMG_EXT.test(n)); } catch { return false; } },
     entry: lab.entry, agent: lab.agent
   };
 }
 
-// opts: { prompt (thay prompt mặc định), maxTurns, effort, planId, step, pha, drFile, onDone(run) }
+// Hỏi nhanh đồng nghiệp (thử nghiệm): một lượt rất ngắn, chỉ đọc file, của người được hỏi; người hỏi chờ câu trả lời
+async function hoiDongNghiep(lab, { ai, cauHoi }) {
+  const hoi = lab.agent, plan = lab.entry.run.planId && plans.find(p => p.id === lab.entry.run.planId);
+  if (!plan) return { loi: 'Chỉ hỏi nhanh được trong lúc làm dự án.' };
+  const b = findAgent(ai);
+  if (!b) return { loi: `Không có ai mã "${ai}" trong văn phòng. Mã người: ${config.agents.map(a => a.id).join(', ')}.` };
+  if (b.id === hoi.id) return { loi: 'Không tự hỏi chính mình được.' };
+  // Chỉ Claude giới hạn được công cụ chỉ đọc
+  if (b.engine !== 'claude') return { loi: `${b.name} không chạy bằng Claude nên không hỏi nhanh được; đọc bàn giao của ${b.name}.` };
+  if (running.has(b.id)) return { loi: `${b.name} đang bận. Dựa vào file bàn giao hoặc tra_cuu.` };
+  if ((plan.consults || 0) >= 3) return { loi: 'Dự án đã hỏi nhanh đủ 3 lần. Dựa vào file bàn giao hoặc tra_cuu.' };
+  plan.consults = (plan.consults || 0) + 1;
+  const prompt = `Bạn là ${b.name} — ${b.role}. Đồng nghiệp ${hoi.name} đang làm dự án "${plan.goal}" hỏi bạn: "${cauHoi}". Trả lời ngắn (3–6 câu) dựa trên file của bạn trong agents/${b.id}/ và sản phẩm của bạn; được đọc file nhưng không ghi file nào. Không chắc thì nói không chắc.`;
+  let xong;
+  const traLoi = new Promise(r => { xong = r; });
+  let run;
+  try {
+    run = await startRun(b, `Hỏi nhanh từ ${hoi.name}: ${cauHoi}`, [], { prompt, maxTurns: 4, effort: 'low', planId: plan.id, step: 0, chiDoc: true,
+      onDone: r => { addUsage(plan, r); emitPlan(plan); xong(r); } });
+  } catch (e) { plan.consults--; return { loi: `Không hỏi được ${b.name}: ${e.message}` }; }
+  plan.log.push(`Hỏi nhanh: ${hoi.name} hỏi ${b.name}`); emitPlan(plan);
+  const r = await Promise.race([traLoi, new Promise(ok => setTimeout(() => ok(null), 3 * 60e3))]);
+  if (!r) {
+    const e = running.get(b.id);
+    if (e && e.run.id === run.id) { e.stopped = true; killProc(e.proc); }
+    return { loi: `${b.name} chưa trả lời sau 3 phút. Dựa vào file bàn giao hoặc tra_cuu.` };
+  }
+  if (r.status !== 'done') return { loi: `${b.name} không trả lời được: ${snippet(r.error || r.status)}` };
+  return { text: String(r.summary || '').slice(0, 1500) };
+}
+
+// opts: { prompt (thay prompt mặc định), maxTurns, effort, planId, step, pha, drFile, chiDoc (chỉ Read/Glob/Grep), onDone(run) }
 async function startRun(agent, task, attachments = [], opts = {}) {
   if (running.has(agent.id)) throw Object.assign(new Error(`${agent.name} đang bận`), { status: 409 });
   running.set(agent.id, null); // giữ chỗ ngay, tránh hai việc cùng lúc chen vào trong lúc chờ
   try { await ensureWorkspace(); } catch (e) { running.delete(agent.id); throw e; }
-  const lab = labToolsFor(agent, opts.kind);
+  const lab = opts.chiDoc ? [] : labToolsFor(agent, opts.kind, !!opts.planId && !!opts.kind);
 
   const startedAt = new Date();
   let labKey = null, mcpFile = null;
@@ -588,7 +624,7 @@ async function startRun(agent, task, attachments = [], opts = {}) {
     catch (e) { console.error('Bộ não: không soạn được gói ngữ cảnh:', e.message); }
   }
   const prompt = opts.prompt || buildPrompt(agent, task, handoffRel, attachments, opts.kind, lab, goi, opts.pha, opts.drFile);
-  const { cmd, args, stdinJson } = cliArgs(agent, opts.maxTurns, opts.effort, opts.kind, lab, mcpFile);
+  const { cmd, args, stdinJson } = cliArgs(agent, opts.maxTurns, opts.effort, opts.kind, lab, mcpFile, !!opts.chiDoc);
 
   const run = {
     id: `${stamp(startedAt)}-${agent.id}`, agentId: agent.id, agentName: agent.name,

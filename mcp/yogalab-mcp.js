@@ -9,7 +9,8 @@ const BASE = process.env.YOGALAB_URL || 'http://127.0.0.1:4321', KEY = process.e
 function goi(duong, body) {
   return new Promise((resolve, reject) => {
     const data = Buffer.from(JSON.stringify(body));
-    const req = http.request(BASE + '/api/lab/' + duong, { method: 'POST', timeout: 120000,
+    // hoi_dong_nghiep chờ đồng nghiệp trả lời tối đa 3 phút
+    const req = http.request(BASE + '/api/lab/' + duong, { method: 'POST', timeout: 240000,
       headers: { 'Content-Type': 'application/json', 'Content-Length': data.length } }, res => {
       let s = ''; res.setEncoding('utf8');
       res.on('data', d => { s += d; });

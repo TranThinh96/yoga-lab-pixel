@@ -1,0 +1,53 @@
+'use strict';
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const { gocBuoc, chonBuocChay } = require('../lib/lich');
+
+// Sau một bước duyệt (3) có lỗi của cả Vy (thiết kế, bước 2) và Lam (kịch bản, bước 1)
+const B = () => [
+  { agentId: 'lam', status: 'done', from: [] },
+  { agentId: 'vy', status: 'done', from: [1] },
+  { agentId: 'ha', status: 'done', from: [2], checks: 2 },
+  { agentId: 'vy', status: 'pending', from: [2, 3], fixOf: 2 },
+  { agentId: 'lam', status: 'pending', from: [1, 3], fixOf: 1 },
+  { agentId: 'ha', status: 'pending', from: [3, 4, 5], checks: 4 },
+  { agentId: 'nhi', status: 'pending', from: [2] }
+];
+
+test('gocBuoc: đi theo checks/fixOf về bước làm ban đầu', () => {
+  const b = B();
+  assert.equal(gocBuoc(b, 1), 1);
+  assert.equal(gocBuoc(b, 4), 2);
+  assert.equal(gocBuoc(b, 6), 2);
+  assert.equal(gocBuoc(b, 5), 1);
+});
+
+test('chonBuocChay: Vy và Lam sửa cùng lúc; max 1 giữ cách tuần tự', () => {
+  assert.deepEqual(chonBuocChay(B(), { max: 2 }), [3, 4]);
+  assert.deepEqual(chonBuocChay(B(), { max: 1 }), [3]);
+});
+
+test('chonBuocChay: duyệt lại chờ Lam; Nhi chờ bản thiết kế qua duyệt lại', () => {
+  const b = B();
+  b[3].status = 'done'; b[4].status = 'working';
+  assert.deepEqual(chonBuocChay(b, { max: 2 }), []);
+  b[4].status = 'done';
+  assert.deepEqual(chonBuocChay(b, { max: 3 }), [5]);
+  b[5].status = 'done';
+  assert.deepEqual(chonBuocChay(b, { max: 3 }), [6]);
+});
+
+test('chonBuocChay: agent đang bận việc khác thì bỏ qua bước của người đó', () => {
+  assert.deepEqual(chonBuocChay(B(), { max: 2, dangBan: new Set(['vy']) }), [4]);
+});
+
+test('chonBuocChay: có bước lỗi thì không chạy gì', () => {
+  const b = B();
+  b[3].status = 'error';
+  assert.deepEqual(chonBuocChay(b, { max: 2 }), []);
+});
+
+test('chonBuocChay: chuỗi tuần tự với max 1', () => {
+  const b = ['done', 'done', 'pending', 'pending'].map((status, i) => ({ agentId: 'a' + i, status, from: [] }));
+  assert.deepEqual(chonBuocChay(b, { max: 1 }), [2]);
+});

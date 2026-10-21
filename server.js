@@ -26,6 +26,7 @@ const { LOAI_LOI, mucTrong, docVanDe, docDaXuLy, docDuyetLai, docTinNhan, chuFil
 const { docCauHoi: parseQuestions, laCauHoiMoiTruong, locBaiHocMoi, phanLoaiCauHoi, chonChuDe, chuDeTu } = require('./lib/van-ban');
 const { chuDeTriThuc, docBangTriThuc, hopNhatMenhDe, hopNhatNguon, capNhatTruyCap, hopNhatTuThe, maHinh, hopNhatHinh, cacChuDe, vietMocChuDe, vietBanDoTriThuc, docThuatNgu, dienThuatNgu, timTriThuc, goiNguCanh, slug, KIEU_MAU, trichMauTot, taoMauTot, chonMauTot } = require('./lib/tri-thuc');
 const { docGhiChu } = require('./lib/ghi-chu');
+const { chonBuocChay } = require('./lib/lich');
 const { soMa, docBaiHoc, noiDungBaiHoc, suaBaiHoc, banXemKinhNghiem, nhanBuoc, chonBaiHoc, maTrong, danhGiaBaiHoc, themLoHong, demLoHongMo, thongKeHoc, hocTuJson, apDungHoc, apDungSuaHuongDan, hoanTacSuaHuongDan, themTuTranh } = require('./lib/bai-hoc');
 
 const ROOT = __dirname;
@@ -82,6 +83,7 @@ const DEFAULT_CONFIG = {
   brainApprovers: ['an'], // ai được đưa ý lên da-duyet (và ghi note tư thế)
   obsidianVault: '', // tên vault Obsidian của folder làm việc (nút "Mở trong Obsidian"); để trống = tên thư mục workspace
   stepModel: {}, // model theo loại bước, vd {"rereview": "haiku"}; không áp dụng cho agent dùng Chrome
+  maxParallel: 1, // số bước của dự án chạy cùng lúc (1 = tuần tự); từ 2: các bước độc lập, vd nhiều người sửa sau một lần duyệt
   deepResearchTwoPhase: false, // Deep Research hai lượt ngắn: lượt 1 khởi chạy, máy chủ chờ (không tốn token), lượt 2 lấy kết quả
   agents: []
 };
@@ -1590,6 +1592,21 @@ function pumpPlan(plan) {
   if (checkingIn.has(plan.id) || chromeChecking.has(plan.id)) return;
   const idx = plan.steps.findIndex(s => s.status !== 'done');
   if (idx < 0) return finishPlan(plan);
+  const max = Math.floor(cfgNum('maxParallel', 1));
+  if (!(max >= 2)) return startStep(plan, idx);
+  // Song song: các bước độc lập (vd nhiều người sửa sau cùng một lần duyệt) chạy cùng lúc
+  const chon = chonBuocChay(plan.steps, { max, dangBan: new Set(running.keys()) });
+  for (const k of chon) {
+    if (plan.status !== 'running' || chromeChecking.has(plan.id)) break;
+    startStep(plan, k); // startStep kiểm ngân sách trước khi giao
+  }
+  if (chon.length || plan.steps.some(x => x.status === 'working')) { if (plan.waiting) { plan.waiting = null; emitPlan(plan); } return; }
+  const cho = plan.steps.find(x => x.status === 'pending' && running.has(x.agentId)); // bị chặn vì người đó đang làm việc lẻ
+  if (cho && plan.waiting !== cho.agentId) { plan.waiting = cho.agentId; emitPlan(plan); }
+}
+
+// Giao một bước của kế hoạch (idx đánh số từ 0)
+function startStep(plan, idx) {
   const s = plan.steps[idx];
   if (s.status !== 'pending') return; // đang chạy, hoặc lỗi đang được xử lý
   if (choGemini(plan, s)) return;
@@ -1669,6 +1686,7 @@ function pumpPlan(plan) {
     planId: plan.id, step: idx + 1, kind, maxTurns: pha === 1 ? 40 : stepTurns(agent, kind), effort: stepEffort(agent, kind), files: s.fileSua || [],
     ...(pha ? { pha, drFile: s.drFile || drFileOf(plan, agent) } : {}),
     onDone: (run, full) => {
+      idx = plan.steps.indexOf(s); // chạy song song: bước khác có thể đã chèn bước phía trước bước này
       s.runId = run.id; s.handoff = run.handoff; s.summary = (run.summary || '').slice(0, 1200);
       s.tokens = (s.tokens || 0) + (run.tokens || 0); // cộng dồn cả các lần thử lại
       addUsage(plan, run);
@@ -1783,6 +1801,7 @@ function pumpPlan(plan) {
     }
   }).then(run => { s.runId = run.id; for (const m of tinMoi) m.delivered = true; emitPlan(plan); })
     .catch(e => {
+      idx = plan.steps.indexOf(s);
       if (e.status === 409) { s.status = 'pending'; plan.waiting = agent.id; return emitPlan(plan); } // vừa có người giao việc khác
       s.status = 'error'; s.error = e.message; onStepError(plan, idx);
     });
@@ -2020,6 +2039,12 @@ function onStepError(plan, idx) {
     emitPlan(plan);
     return setTimeout(() => pumpPlan(plan), 2000);
   }
+  // Chạy song song: lập lại kế hoạch sẽ thay các bước chưa xong, kể cả bước người khác đang làm, nên dừng chờ bạn
+  if (plan.steps.some(x => x.status === 'working')) {
+    plan.status = 'paused'; plan.note = `Bước ${idx + 1} lỗi: ${err || 'không rõ'}. Các bước khác đang chạy sẽ làm nốt; bấm "Chạy tiếp" để chạy lại bước lỗi.`;
+    plan.log.push(`Bước ${idx + 1} lỗi khi còn bước khác đang chạy → tạm dừng`);
+    return emitPlan(plan);
+  }
   if (plan.replans < Math.max(0, Number(config.maxReplans ?? 1))) return runCoordinator(plan, idx);
   plan.status = 'paused';
   plan.note = `Bước ${idx + 1} lỗi: ${err || 'không rõ'}`;
@@ -2034,7 +2059,8 @@ function resumePlan(plan) {
   plan.resumeAt = null; plan.note = ''; plan.endedAt = null; plan.waiting = null;
   if (overBudget(plan)) { plan.budgetX = usedOf(plan) / cfgNum('planTokenBudget', 1) + 0.5; plan.log.push(`Bạn cho thêm ngân sách: tới ${fmtTok(budgetOf(plan))}`); }
   if (!plan.steps.length) return runCoordinator(plan); // hỏng ngay lúc lập kế hoạch: lập lại
-  for (const s of plan.steps) if (s.status !== 'done') { s.status = 'pending'; s.error = ''; s.retries = 0; }
+  // Bước còn đang chạy (chạy song song, tạm dừng giữa chừng) thì để nó làm nốt
+  for (const s of plan.steps) if (s.status !== 'done' && s.status !== 'working') { s.status = 'pending'; s.error = ''; s.retries = 0; }
   if (plan.reviewDone && plan.steps.every(s => s.status === 'done')) plan.review = false; // đã nghiệm thu xong rồi
   plan.status = 'running';
   emitPlan(plan); pumpPlan(plan);

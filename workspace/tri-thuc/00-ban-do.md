@@ -4,7 +4,7 @@
 
 ## Chủ đề
 - [[chu-de/suy-giap|suy-giap]] · 55 ý đã duyệt · 26 nguồn · 5 tư thế · 0 hình
-- [[chu-de/thoai-hoa-khop-goi|thoai-hoa-khop-goi]] · 14 ý đã duyệt · 18 nguồn · 7 tư thế · 4 hình
+- [[chu-de/thoai-hoa-khop-goi|thoai-hoa-khop-goi]] · 14 ý đã duyệt · 21 nguồn · 7 tư thế · 4 hình
 
 ## Cần bạn xem
 | Ý | Chủ đề | Lý do |
@@ -19,7 +19,6 @@
 ## Nguồn đang bị chặn
 - [[nguon/ata-2014-dieu-tri|Guidelines for the Treatment of Hypothyroidism]] · chan (2026-10-21)
 - [[nguon/baishya-metri-2024|Tổng quan yoga và suy giáp (PMC10966165)]] · chan (2026-10-21)
-- [[nguon/chua-kiem|Knee pain; Leg swelling]] · chan (2026-10-21)
 - [[nguon/lemieux-2021-thai-ky|Trích hướng dẫn ATA 2017 về thai kỳ]] · chan (2026-10-21)
 - [[nguon/nice-ng226|Osteoarthritis in over 16s: diagnosis and management (NG226)]] · chan (2026-10-21)
 - [[nguon/nilkantham-2025|Yoga và suy giáp (PMC12246764)]] · chan (2026-10-21)

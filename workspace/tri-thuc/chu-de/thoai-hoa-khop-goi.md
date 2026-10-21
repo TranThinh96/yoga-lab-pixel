@@ -45,8 +45,9 @@
 - [[nguon/bachmai-so-cuu-dot-quy|Sơ cứu đột quỵ tại nhà: những thao tác "sống còn"]] · Bệnh viện Bạch Mai · truy cập: ok
 - [[nguon/bv-thong-nhat-thoai-hoa-goi|Tìm hiểu về thoái hóa khớp gối và các phương pháp điều trị]] · BV Đa khoa Thống Nhất – Đồng Nai · truy cập: ok
 - [[nguon/cap-cuu-115-hcm|Trang chủ]] · TT Cấp cứu 115 TP.HCM · truy cập: ok
-- [[nguon/chua-kiem|Knee pain; Leg swelling]] · Mayo Clinic · truy cập: chan
+- [[nguon/hunter-felson-bmj-osteoarthritis|Osteoarthritis]] · Hunter & Felson (BMJ) · truy cập: chua-kiem
 - [[nguon/lauche-2019-yoga-oa|Yoga for Osteoarthritis: a Systematic Review and Meta-analysis]] · Lauche R et al. · truy cập: ok
+- [[nguon/mayo-clinic-knee-pain-leg-swelling|Knee pain; Leg swelling]] · Mayo Clinic · truy cập: chua-kiem
 - [[nguon/nhs-dau-goi|Knee pain]] · NHS · truy cập: ok
 - [[nguon/nhs-dvt|DVT (deep vein thrombosis)]] · NHS · truy cập: ok
 - [[nguon/nhs-ibuprofen|Ibuprofen for adults]] · NHS · truy cập: ok
@@ -56,7 +57,9 @@
 - [[nguon/nice-ng226|Osteoarthritis in over 16s: diagnosis and management (NG226)]] · NICE · truy cập: chan
 - [[nguon/oarsi-2019|OARSI guidelines for non-surgical management of knee, hip, polyarticular OA]] · OARSI · truy cập: ok
 - [[nguon/plos-2024-yoga-koa|The impact of Yoga on patients with knee osteoarthritis: SR and meta-analysis of RCTs]] · PLOS ONE · truy cập: ok
+- [[nguon/silbernagel-thomee-pain-monitoring-model-gan-achilles|Pain-monitoring model (gân Achilles)]] · Silbernagel/Thomeé · truy cập: chua-kiem
 - [[nguon/vinmec-dau-hieu-goi-115|10 dấu hiệu nhận biết nguy hiểm cho sức khoẻ]] · Vinmec · truy cập: ok
+- [[nguon/yoga-vs-strengthening-rct-n-117-researchgate-bi-chan|ResearchGate (bị chặn)]] · Yoga vs strengthening RCT N=117 · truy cập: chua-kiem
 
 ## Dự án đã dùng
 - [[du-an/plan-20261021-195355/brief|plan-20261021-195355]]

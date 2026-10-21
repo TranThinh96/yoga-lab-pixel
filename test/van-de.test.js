@@ -67,6 +67,7 @@ test('chuFile', () => {
 test('ganVanDe và nhomTheoChu', () => {
   const plan = taoVanDe();
   assert.deepEqual(plan.issues.map(x => [x.id, x.owner]), [['VD-1', 'lam'], ['VD-2', 'vy'], ['VD-3', 'lam'], ['VD-4', 'nhi']]);
+  assert.deepEqual(plan.issues.map(x => x.goc), ['agent', 'quy-trinh', 'agent', 'agent']);
   const { nhom, khongChu } = vd.nhomTheoChu(plan.issues.filter(x => x.level === 'BẮT BUỘC'));
   assert.deepEqual([...nhom].map(([a, g]) => [a, g.issues.map(x => x.id)]), [['lam', ['VD-1']], ['vy', ['VD-2']], ['nhi', ['VD-4']]]);
   assert.equal(khongChu.length, 0);

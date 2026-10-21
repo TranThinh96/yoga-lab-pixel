@@ -1638,7 +1638,7 @@ function giaoThayHinh(plan, idx, hong) {
   const moi = hong.map(x => {
     const chu = chuFile(plan.steps, x.file, idx + 1);
     return { id: `VD-${++plan.issueSeq}`, file: x.file, where: 'Bảng hình', level: 'BẮT BUỘC', kind: 'file-khong-ton-tai',
-      text: `Máy chủ không tải được ${x.name}: ${x.why}`,
+      text: `Máy chủ không tải được ${x.name}: ${x.why}`, goc: /Commons không có file này/.test(x.why) ? 'agent' : 'moi-truong', // tên file sai là lỗi người ghi link
       fix: 'Thay bằng trang File: Commons có thật (kiểm bằng công cụ kiem_link nếu có) hoặc link thẳng .jpg/.png',
       from: 'may-chu', owner: chu ? chu.agentId : null, ownerStep: chu ? chu.step : null, status: 'mo', note: '', round: 0, lastStep: idx + 1, fixStep: null };
   });

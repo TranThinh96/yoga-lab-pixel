@@ -218,3 +218,18 @@ test('vietBanDoTriThuc: link lỗ hổng hệ thống khi đã có file', () => 
   assert.ok(!/he-thong\/lo-hong/.test(tt.vietBanDoTriThuc([], '2026-11-02')));
   assert.match(tt.vietBanDoTriThuc([], '2026-11-02', { loHongMo: 3 }), /\n## Hệ thống\n- \[\[he-thong\/lo-hong\|Lỗ hổng hệ thống\]\] · 3 việc chưa sửa/);
 });
+
+test('docBangTriThuc: mã giữ chỗ "(chưa kiểm)" không gộp các nguồn vào một note', () => {
+  // Chép từ agents/mai/thoai-hoa-khop-goi-nguon.md (dự án thử 2026-10-21)
+  const t = ['## Danh sách nguồn', '| Mã nguồn | [n] | Tổ chức | Tiêu đề | Link | Loại nguồn |', '|---|---|---|---|---|---|',
+    '| nice-ng226 | [1] | NICE | Osteoarthritis in over 16s: diagnosis and management (NG226) | https://www.nice.org.uk/guidance/ng226 | hướng dẫn quốc gia |',
+    '| (chưa kiểm) | — | Hunter & Felson (BMJ) | Osteoarthritis | https://pmc.ncbi.nlm.nih.gov/articles/PMC1403209/ | tổng quan lâm sàng |',
+    '| (chưa kiểm) | — | Mayo Clinic | Knee pain; Leg swelling | bị chặn 403 | cơ quan y tế |',
+    '| — | | WHO | Arthritis | https://www.who.int/x | cơ quan y tế |',
+    '', '## Danh sách đã duyệt', '| Mã | Ý | Mức bằng chứng | Nguồn | Câu trích | Ghi chú |', '|---|---|---|---|---|---|',
+    '| (chưa có) | Tập luyện là điều trị cốt lõi. | Mạnh | 1, (chưa kiểm) | | |'].join('\n');
+  const { nguon, menhDe } = tt.docBangTriThuc(t);
+  assert.deepEqual(nguon.map(r => r.ma), ['nice-ng226', 'hunter-felson-bmj-osteoarthritis', 'mayo-clinic-knee-pain-leg-swelling', 'who-arthritis']);
+  assert.equal(menhDe[0].ma, 'tap-luyen-la-dieu-tri-cot-loi');
+  assert.equal(menhDe[0].nguon, 'nice-ng226');
+});

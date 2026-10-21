@@ -67,7 +67,7 @@ Khi việc lớn cần nhiều người, bạn không phải tự chuyển tay t
    Họ **chỉ được giao việc cho người trực thuộc mình** (trực tiếp hoặc gián tiếp). Thiếu thông tin quan trọng thì họ hỏi bạn trước.
 3. Kế hoạch hiện ra để bạn duyệt. Bạn có thể đổi người làm, sửa nội dung, đổi thứ tự, thêm hoặc xoá bước. Xong thì bấm **Chạy kế hoạch**.
 4. Máy chủ tự chạy từng bước. Mỗi người nhận brief, **bảng dự án** `du-an/<mã>/bang.md` (tiến độ, kết luận duyệt, câu trả lời của bạn) và bàn giao cần đọc.
-   Mỗi người tự kiểm sản phẩm theo tiêu chí trong brief trước khi bàn giao, và đọc `agents/<tên>/kinh-nghiem.md` của mình.
+   Mỗi người tự kiểm sản phẩm theo tiêu chí trong brief trước khi bàn giao, và áp dụng những bài học máy chủ chọn sẵn cho bước đó (xem "Nhóm tự học thế nào").
 5. **Vòng duyệt:** người duyệt kết thúc bàn giao bằng `KẾT LUẬN: ĐẠT` hoặc `KẾT LUẬN: CẦN SỬA`. Cần sửa thì máy chủ tự chèn bước sửa và duyệt lại (người duyệt), tối đa `maxReviewRounds` vòng.
    **Sổ vấn đề** (`issueLedger`): người duyệt ghi lỗi thành bảng "Danh sách vấn đề" (mã, file, vị trí, mức, loại, vấn đề, đề xuất). Máy chủ ghi vào `du-an/<mã>/van-de.md` và giao sửa cho **người phụ trách file có lỗi**, nên một vòng sửa có thể gồm nhiều người.
    Người sửa báo lại từng mã trong bảng "Đã xử lý". Báo "Đã sửa" mà file không đổi thì vấn đề vẫn mở. Bước duyệt lại chỉ kiểm các vấn đề còn mở.
@@ -75,7 +75,8 @@ Khi việc lớn cần nhiều người, bạn không phải tự chuyển tay t
    Trước mỗi bước duyệt, **máy chủ tự soát lỗi máy móc** (không tốn token): dấu câu đôi, dấu cách trước dấu câu, lặp từ, từ cần tránh (`lintBanned`), cách gọi lẫn lộn (`lintVariants`), trang slide quá `lintMaxWords` chữ. Kết quả được đưa vào việc của người duyệt, nên họ không phải tự dò. Bước duyệt chỉ kiểm, không tự đi tìm nguồn mới. Bước duyệt lại và bước sửa chạy ở mức suy nghĩ thấp hơn (`stepEffort`).
 6. **Hỏi chủ dự án:** bàn giao có mục "Câu hỏi cho chủ dự án" thì dự án dừng ở trạng thái **Chờ bạn trả lời**. Bạn trả lời từng câu hoặc bấm **Để nhóm tự quyết**; câu trả lời được ghi vào bảng dự án cho mọi người làm theo. Câu hỏi giống câu đã trả lời trong cùng dự án thì nhóm không hỏi lại. Câu giống câu bạn đã trả lời ở dự án trước thì ô trả lời được điền sẵn câu cũ. Mọi quyết định được ghi vào `workspace/tri-thuc/quyet-dinh.md`.
 7. Nếu một bước lỗi, điều phối viên được gọi lại **một lần** để lập lại phần còn lại. Nếu vẫn lỗi, kế hoạch **tạm dừng** để bạn bấm **Chạy tiếp**.
-8. **Nghiệm thu:** điều phối viên mở sản phẩm thật, chấm từng tiêu chí trong brief (điểm 0–100) vào `du-an/<mã>/nghiem-thu.md`, rồi trả bài học cho từng người trong khối JSON; **máy chủ tự ghi** vào `kinh-nghiem.md` (bỏ bài trùng, giữ `maxLessons` bài gần nhất).
+8. **Nghiệm thu:** điều phối viên mở sản phẩm thật, chấm từng tiêu chí trong brief (điểm 0–100) vào `du-an/<mã>/nghiem-thu.md`, rồi **rút kinh nghiệm** từ số liệu máy chủ tổng hợp (xem "Nhóm tự học thế nào"). Máy chủ tự ghi kết quả; điều phối viên không sửa file bài học.
+   Khi tắt bộ não (`brain: false`): bài học vào cuối `kinh-nghiem.md` như trước (bỏ bài trùng, giữ `maxLessons` bài gần nhất).
    Điểm dưới `passScore` (mặc định 85) thì giao thêm một vòng sửa (`maxFixRounds`) rồi nghiệm thu lại.
    Điểm đạt nhưng còn lỗi nhỏ thì giao **vòng sửa nhanh** (`polishAfterPass`): không nghiệm thu lại, máy chủ soát lỗi lần cuối và ghi phần còn lại vào bảng dự án.
    Câu hỏi của điều phối viên lúc nghiệm thu cũng được đưa lên cho bạn trả lời, trước khi vòng sửa chạy.
@@ -174,6 +175,8 @@ nút **🔗 Mở trong Obsidian** mở đúng note đó.
 - `nguon/`: nguồn và tình trạng truy cập (máy chủ tự mở thử link);
 - `tu-the/`: tư thế (đạo cụ, chống chỉ định, prompt ảnh đã đạt, lỗi AI hay vẽ sai), `hinh/`: hình có giấy phép đã tải;
 - `quyet-dinh.md`: sổ quyết định; `thuat-ngu.md`: từ cần tránh và cách gọi thống nhất, máy soát lỗi đọc hai bảng này;
+- `bai-hoc/`: bài học của nhóm, mỗi bài một note `BH-…`; `mau-tot/`: đoạn sản phẩm đạt chuẩn làm ví dụ;
+- `he-thong/lo-hong.md`: lỗi không phải của agent, việc của người phát triển (xem mục dưới);
 - `quy-tac-cua-toi.md` và `ghi-chu-chuyen-mon/`: **bạn viết**, máy chủ không bao giờ sửa.
 
 Agent chỉ viết bảng trong file của mình (An: "Danh sách đã duyệt", "Tư thế"; Mai: "Danh sách nguồn"). Sau mỗi lượt,
@@ -188,6 +191,19 @@ máy chủ chép bảng thành note. Chỉ người trong `brainApprovers` (mặ
 **Agent dùng thế nào**: mỗi lượt, máy chủ soạn sẵn phần "BỐI CẢNH TỪ BỘ NÃO CHUNG" (quy tắc của bạn, quyết định đã chốt,
 vấn đề đang mở của người đó, các note có thể liên quan). Agent gọi công cụ `tra_cuu` trước khi tìm web và chỉ tìm phần còn thiếu
 (công cụ chỉ có khi bật `labTools`).
+
+## Nhóm tự học thế nào
+
+1. Mỗi lỗi trong sổ vấn đề có **loại** (vd `lech-hai-file`) và **gốc**: `agent` (người làm sai), `quy-trinh` (thiếu bước, giao sai người), `cong-cu` (máy chủ, công cụ lỗi), `moi-truong` (trang web, tài khoản), `tri-thuc` (thiếu một sự thật).
+   Chỉ lỗi gốc `agent` mới thành bài học. Gốc khác đi vào **lỗ hổng hệ thống** `tri-thuc/he-thong/lo-hong.md`, vào bộ não (ý nháp chờ kiểm), hoặc thành **đề xuất sửa quy trình** chờ bạn duyệt.
+2. Bài học nằm trong `tri-thuc/bai-hoc/`, mỗi bài một note `BH-…` có phạm vi (cả nhóm, một người, một chủ đề), lúc áp dụng (`ap_dung_khi`: loại bước, loại file), bậc và trạng thái.
+   Agent **chỉ thấy bài hợp với bước đang làm**, trong phần BỐI CẢNH của việc được giao (tối đa 12 bài). Bài đã được hệ thống chữa (`da-thang-cap`) hay đã huỷ thì không hiện nữa.
+   Sau mỗi dự án, máy chủ đếm: bài có từ trước mà người đó vẫn mắc đúng loại lỗi thì tính **tái phạm** và bài lên **checklist bắt buộc** (bậc 2): agent phải ghi mã `[BH-…]` kèm "đã kiểm" vào mục Tự kiểm của bàn giao. Checklist vẫn tái phạm thì máy chủ ghi vào lỗ hổng hệ thống là cần một luật máy soát. Bài đã áp dụng ở hai dự án mà chưa tái phạm lần nào thì được đánh dấu `hieu-qua`.
+3. Lúc nghiệm thu, máy chủ đưa điều phối viên **số liệu để rút kinh nghiệm**: lỗi BẮT BUỘC theo người và loại, theo gốc, bài học tái phạm, số lần agent thử chạy lệnh bị chặn, checklist chưa ghi, và những câu bạn trả lời khác phương án nhóm đề xuất. Điều phối viên trả lại bài học mới, bài cần gộp, lỗ hổng, đề xuất sửa hướng dẫn vai, và tối đa 2 **mẫu tốt** (chỉ khi đạt `passScore`). Mẫu tốt hiện làm "Ví dụ đạt chuẩn" ở bước cùng loại sau này.
+4. **Đề xuất sửa hướng dẫn vai** hiện ở đầu cửa sổ **Dự án** (nút Dự án có dấu `!` khi có đề xuất chờ). Hướng dẫn chỉ đổi khi bạn bấm **Duyệt** hoặc **Sửa rồi duyệt**; bấm **Bỏ** để bỏ qua. Trong 7 ngày sau khi duyệt, bấm **Hoàn tác** để trả lại đoạn cũ. Trước mỗi lần đổi, máy chủ giữ bản `config.json` cũ trong `workspace/.yogalab/config-cu/`.
+5. `agents/<id>/kinh-nghiem.md` giờ là **bản xem** do máy chủ sinh từ `tri-thuc/bai-hoc/`. Sửa bài học trong Obsidian (đổi `goc`, `trang_thai`, `bac`, nội dung, hoặc thêm `khoa: true`), không sửa ở `kinh-nghiem.md`.
+
+Nâng cấp từ bản trước Đợt 3: chạy một lần `node scripts/chuyen-bai-hoc.js workspace` để chuyển bài học cũ trong `kinh-nghiem.md` thành note. Bảng phân loại nằm ở `tri-thuc/he-thong/chuyen-bai-hoc.md`; bài nào xếp sai thì sửa note `BH-…` tương ứng.
 
 ## config.json
 

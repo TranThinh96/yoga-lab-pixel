@@ -183,3 +183,14 @@ test('goiNguCanh', () => {
   assert.ok(dem('z') < 8);
   assert.ok(tt.goiNguCanh({ quyTac: 'q'.repeat(9000) }).length <= 6000);
 });
+
+test('goiNguCanh: checklist và bài học đứng trước phần bộ não', () => {
+  const g = tt.goiNguCanh({ checklist: ['[BH-17] Kiểm dòng Hình'], baiHoc: ['[BH-3] Đếm chữ'], lienQuan: ['menh-de/x · ý'] });
+  const L = g.split('\n');
+  const i = k => L.findIndex(l => l.startsWith(k));
+  assert.equal(L[i('Checklist bắt buộc') + 1], '- [BH-17] Kiểm dòng Hình');
+  assert.equal(L[i('Bài học của bạn:') + 1], '- [BH-3] Đếm chữ');
+  assert.ok(i('Checklist bắt buộc') < i('Bài học của bạn:') && i('Bài học của bạn:') < i('Trong bộ não'));
+  const dai = tt.goiNguCanh({ checklist: ['[BH-1] c'], baiHoc: Array(40).fill('b'.repeat(300)), lienQuan: Array(8).fill('l'.repeat(300)) });
+  assert.ok(dai.length <= 6000 && dai.includes('[BH-1] c') && !dai.includes('Trong bộ não'));
+});

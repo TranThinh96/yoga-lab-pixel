@@ -26,7 +26,7 @@ const { LOAI_LOI, mucTrong, docVanDe, docDaXuLy, docDuyetLai, docTinNhan, chuFil
 const { docCauHoi: parseQuestions, laCauHoiMoiTruong, locBaiHocMoi, phanLoaiCauHoi, chonChuDe, chuDeTu } = require('./lib/van-ban');
 const { chuDeTriThuc, docBangTriThuc, hopNhatMenhDe, hopNhatNguon, capNhatTruyCap, hopNhatTuThe, maHinh, hopNhatHinh, cacChuDe, vietMocChuDe, vietBanDoTriThuc, docThuatNgu, dienThuatNgu, timTriThuc, goiNguCanh } = require('./lib/tri-thuc');
 const { docGhiChu } = require('./lib/ghi-chu');
-const { docBaiHoc, noiDungBaiHoc, banXemKinhNghiem } = require('./lib/bai-hoc');
+const { docBaiHoc, noiDungBaiHoc, banXemKinhNghiem, nhanBuoc, chonBaiHoc, maTrong } = require('./lib/bai-hoc');
 
 const ROOT = __dirname;
 const CONFIG_PATH = path.join(ROOT, 'config.json');
@@ -404,7 +404,9 @@ function buildPrompt(agent, task, handoffPath, attachments, kind, lab = [], goi 
     ``,
     `CÁCH LÀM VIỆC (bạn là một nhân viên thực thụ, chịu trách nhiệm về kết quả chứ không chỉ làm cho xong lượt):`,
     `A. Hiểu đúng việc: nếu có brief dự án (du-an/<mã>/brief.md) thì đọc trước tiên, nhất là "Tiêu chí hoàn thành" và "Tài liệu mẫu". Hỏi tự mình: người nhận sản phẩm cần gì, thế nào là đạt?`,
-    `B. Đọc agents/${agent.id}/kinh-nghiem.md (bài học của chính bạn từ dự án trước) và áp dụng.`,
+    config.brain !== false
+      ? `B. Áp dụng bài học và checklist trong phần BỐI CẢNH (máy chủ đã chọn đúng những bài hợp với bước này). Checklist bắt buộc: ghi mã [BH-…] kèm "đã kiểm" vào mục "Tự kiểm theo brief" của bàn giao.`
+      : `B. Đọc agents/${agent.id}/kinh-nghiem.md (bài học của chính bạn từ dự án trước) và áp dụng.`,
     `C. Tự lập kế hoạch ngắn trong đầu, rồi làm. Gặp chỗ chưa rõ mà tự quyết được thì quyết, ghi rõ giả định.`,
     `D. Trước khi bàn giao, TỰ KIỂM: đối chiếu sản phẩm với từng tiêu chí trong brief và với nhiệm vụ được giao; thiếu thì làm tiếp, đừng bàn giao sản phẩm biết là chưa đạt.`,
     `E. Quyết định thuộc về chủ dự án (đổi phạm vi, mâu thuẫn giữa tài liệu mẫu và nguyên tắc an toàn, chọn giữa hai hướng ngang nhau) thì KHÔNG tự âm thầm bỏ hay đổi: làm phần không bị chặn, rồi ghi câu hỏi vào mục "Câu hỏi cho chủ dự án" (tối đa 3 câu, mỗi câu kèm phương án bạn đề xuất).`,
@@ -558,8 +560,11 @@ async function startRun(agent, task, attachments = [], opts = {}) {
     } catch (e) { running.delete(agent.id); throw e; }
   }
   const handoffRel = `handoff/${stamp(startedAt)}-${agent.id}.md`;
-  let goi = '';
-  if (!opts.prompt && config.brain !== false) { try { goi = goiChoLuot(agent, task, opts); } catch (e) { console.error('Bộ não: không soạn được gói ngữ cảnh:', e.message); } }
+  let goi = '', checklist = [];
+  if (!opts.prompt && config.brain !== false) {
+    try { ({ text: goi, checklist } = goiChoLuot(agent, task, { ...opts, files: [...attachments, ...(opts.files || [])] })); }
+    catch (e) { console.error('Bộ não: không soạn được gói ngữ cảnh:', e.message); }
+  }
   const prompt = opts.prompt || buildPrompt(agent, task, handoffRel, attachments, opts.kind, lab, goi);
   const { cmd, args, stdinJson } = cliArgs(agent, opts.maxTurns, opts.effort, opts.kind, lab, mcpFile);
 
@@ -571,7 +576,8 @@ async function startRun(agent, task, attachments = [], opts = {}) {
     // Số liệu cho trang báo cáo: tokens = tổng mọi loại; tokensIn = đầu vào mới (không tính cache)
     tokens: 0, tokensIn: 0, cacheWrite: 0, cacheRead: 0, tokensOut: 0, costUsd: null, turns: 0,
     effort: agent.engine !== 'gemini' ? agent.effort || '' : '', models: [], toolCalls: 0, tools: {}, acts: [], files: [],
-    ...(opts.planId ? { planId: opts.planId, step: opts.step || 0 } : {})
+    ...(opts.planId ? { planId: opts.planId, step: opts.step || 0 } : {}),
+    ...(checklist.length ? { checklist } : {}) // mã bài học bậc 2 đã giao: máy chủ kiểm mục Tự kiểm của bàn giao
   };
 
   // Gemini CLI chạy không tương tác sẽ từ chối folder chưa được "tin cậy" và hạ approval mode về default.
@@ -1067,7 +1073,13 @@ function goiChoLuot(agent, task, opts = {}) {
   let tim = timTriThuc(notes, { ...q, chuDe: chuDeTriThuc(topic) }, 8);
   if (!tim.length) tim = timTriThuc(notes, q, 8);
   const lienQuan = tim.map(dongTraCuu);
-  return goiNguCanh({ quyTac, quyetDinh: qd, vanDe, lienQuan, coBanDo: wsExists('tri-thuc/00-ban-do.md') });
+  // Bài học hợp với bước này; bậc 2 thành checklist bắt buộc
+  const nhan = nhanBuoc({ kind: opts.kind, task, files: opts.files || [], agent });
+  const chon = chonBaiHoc(docBaiHoc(notes), { agentId: agent.id, nhan, chuDe: chuDeTriThuc(topic) });
+  const dongBH = b => `[${b.ma}] ${b.noi_dung}`.slice(0, 450);
+  const ck = chon.filter(b => Number(b.data.bac) === 2);
+  return { text: goiNguCanh({ quyTac, quyetDinh: qd, vanDe, lienQuan, checklist: ck.map(dongBH), baiHoc: chon.filter(b => !ck.includes(b)).map(dongBH),
+    coBanDo: wsExists('tri-thuc/00-ban-do.md') }), checklist: ck.map(b => b.ma) };
 }
 
 // agents/<id>/kinh-nghiem.md thành bản xem của tri-thuc/bai-hoc/. Chưa có note bài học nào (chưa chuyển bài cũ) thì giữ file cũ
@@ -1507,7 +1519,7 @@ function pumpPlan(plan) {
   s.status = 'working'; s.error = '';
   for (const x of srcs) if (x.handoff && x.agentId !== agent.id) broadcast({ type: 'handoff', from: x.agentId, to: agent.id, file: x.handoff, planId: plan.id });
   startRun(agent, task, att, {
-    planId: plan.id, step: idx + 1, kind, maxTurns: stepTurns(agent, kind), effort: stepEffort(agent, kind),
+    planId: plan.id, step: idx + 1, kind, maxTurns: stepTurns(agent, kind), effort: stepEffort(agent, kind), files: s.fileSua || [],
     onDone: (run, full) => {
       s.runId = run.id; s.handoff = run.handoff; s.summary = (run.summary || '').slice(0, 1200);
       s.tokens = (s.tokens || 0) + (run.tokens || 0); // cộng dồn cả các lần thử lại
@@ -1529,6 +1541,13 @@ function pumpPlan(plan) {
         if (!run.handoff) plan.log.push(`Bước ${idx + 1}: ${agent.name} không ghi file bàn giao, người sau chỉ nhận câu trả lời cuối`);
         const text = [handoffText, full || run.summary || ''].filter(Boolean).join('\n\n');
         const banGhi = chuCuaLuot(run, handoffText, full);
+        if ((run.checklist || []).length) { // không chặn bước; số lần thiếu đưa vào số liệu hồi cứu
+          const daGhi = maTrong(mucTrong(handoffText || text, /^#{2,3}\s*Tự kiểm(?![\p{L}\p{N}])/iu).join('\n'));
+          if (!run.checklist.some(m => daGhi.includes(m))) {
+            plan.checklistThieu = (plan.checklistThieu || 0) + 1;
+            plan.log.push(`Bước ${idx + 1}: chưa ghi checklist ${run.checklist.join(', ')}`);
+          }
+        }
         const seqTruoc = plan.issueSeq || 0; // để biết vấn đề nào mới có ở bước này
         const tatCa = parseQuestions(handoffText || text), moiTruong = tatCa.filter(laCauHoiMoiTruong);
         if (moiTruong.length) {

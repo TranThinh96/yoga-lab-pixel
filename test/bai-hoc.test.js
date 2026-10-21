@@ -87,3 +87,37 @@ test('doanApDungKhi', () => {
   assert.deepEqual(bh.doanApDungKhi('Khi duyệt, kiểm prompt ảnh'), ['review', 'anh']);
   assert.deepEqual(bh.doanApDungKhi('Viết ngắn gọn.'), []);
 });
+
+test('nhanBuoc', () => {
+  assert.deepEqual(bh.nhanBuoc({ task: 'Viết output/x/slides.md' }), ['work', 'slides']);
+  assert.deepEqual(bh.nhanBuoc({ kind: 'review', files: ['output/x/thiet-ke.md', 'agents/mai/x-nguon.md'] }), ['review', 'thiet-ke', 'nguon']);
+  assert.deepEqual(bh.nhanBuoc({ agent: { engine: 'claude', geminiWeb: { mode: 'deep-research' } } }), ['work', 'nguon']);
+  assert.deepEqual(bh.nhanBuoc({ kind: 'fix', agent: { engine: 'antigravity' } }), ['fix', 'anh']);
+});
+
+test('chonBaiHoc', () => {
+  const ds = bh.docBaiHoc([
+    note('BH-1', { ap_dung_khi: ['anh'] }),
+    note('BH-2', { pham_vi: 'agent:an' }),
+    note('BH-3', { ap_dung_khi: ['slides'], ngay: '2026-10-17' }),
+    note('BH-4', { bac: 2, ap_dung_khi: ['fix'] }),
+    note('BH-5', { trang_thai: 'da-thang-cap' }),
+    note('BH-6', { pham_vi: 'nhom' }),
+    note('BH-7', { pham_vi: 'chu-de:mat-ngu' }),
+    note('BH-8', { trang_thai: 'khong-hieu-qua' })
+  ]);
+  const ma = x => x.map(b => b.ma);
+  const lam = bh.chonBaiHoc(ds, { agentId: 'lam', nhan: ['fix', 'slides'], chuDe: 'mat-ngu' });
+  assert.ok(!ma(lam).includes('BH-1'));  // ảnh không ra cho bước slides
+  assert.ok(!ma(lam).includes('BH-2'));  // bài của An không ra cho Lam
+  assert.ok(!ma(lam).includes('BH-5'));  // đã thăng cấp
+  assert.equal(lam[0].ma, 'BH-4');       // bậc 2 đứng đầu
+  assert.deepEqual(ma(lam).slice(1, 2), ['BH-3']); // rồi bài mới hơn
+  assert.ok(ma(lam).includes('BH-6') && ma(lam).includes('BH-7') && ma(lam).includes('BH-8'));
+  assert.ok(!ma(bh.chonBaiHoc(ds, { agentId: 'lam', nhan: ['work', 'slides'], chuDe: 'suy-giap' })).includes('BH-7'));
+  assert.equal(bh.chonBaiHoc(ds, { agentId: 'lam', nhan: ['fix', 'slides'] }, 2).length, 2);
+});
+
+test('maTrong', () => {
+  assert.deepEqual(bh.maTrong('- [BH-17] đã kiểm\n- BH-3 không ngoặc\n- [BH-4]'), ['BH-17', 'BH-4']);
+});

@@ -86,6 +86,10 @@ Khi việc lớn cần nhiều người, bạn không phải tự chuyển tay t
 
 **Nhắn đồng đội:** bàn giao được thêm mục "Gửi đồng đội" (mỗi dòng `@<mã người>: …`) và "Cho cả nhóm biết". Máy chủ chuyển tin tới bước kế tiếp của người nhận và ghi cả hai vào bảng dự án.
 
+**Tiếp nối:** làm lại một chủ đề đã có (vd suy giáp bản 8) thì ở ô tạo dự án chọn **Tiếp nối từ dự án…** (danh sách dự án đã xong).
+Máy chủ chép sản phẩm của dự án cũ sang thư mục chủ đề mới (`<chủ đề>-v<số tiếp theo>`): các file `.md`, ảnh trong `hinh/` và `hinh-nguon/` (bỏ `cac-ban/`), cùng brief và câu trả lời của bạn.
+Điều phối viên nhận "Phần còn thiếu" trong nghiệm thu cũ và các vấn đề còn mở, rồi chỉ lập kế hoạch cho phần chênh.
+
 **Giao ban:** khi có tín hiệu (vấn đề không rõ ai sửa, hình tải hỏng, tin gửi điều phối viên), máy chủ gọi điều phối viên một lượt ngắn để chèn tối đa 2 bước. Tối đa `maxCheckins` lần mỗi dự án.
 
 Mẹo: có slide hoặc tài liệu mẫu thì xuất ra PDF, bỏ vào `sources/` và nhắc tên file trong mục tiêu, nhóm sẽ lấy nó làm chuẩn.

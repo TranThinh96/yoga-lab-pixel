@@ -2968,6 +2968,7 @@ function renderTeamNote(){
 function planForm(){
   const coordId = agentById(S.coordinatorId) ? S.coordinatorId : ([...S.agents].sort((a, b) => subsOf(b.id).length - subsOf(a.id).length)[0] || {}).id;
   const past = S.plans.filter(p => !PLAN_ACTIVE.includes(p.status)).slice(0, 5);
+  const xong = S.plans.filter(p => p.status === 'done');
   return `<div class="plan-form">
     <ol class="steps-mini">
       <li><b>Bạn viết mục tiêu</b>, càng cụ thể càng tốt (cho ai, bao lâu, cần ra gì).</li>
@@ -2981,6 +2982,9 @@ function planForm(){
       <label>Điều phối viên <select id="coord">${S.agents.map(a => `<option value="${esc(a.id)}" ${a.id === coordId ? 'selected' : ''}>${esc(a.name)} · ${esc(a.role)}</option>`).join('')}</select></label>
       <span class="muted" id="teamNote" style="font-size:13px; align-self:center"></span>
     </div>
+    ${xong.length ? `<div class="opts">
+      <label title="Bản mới bắt đầu từ sản phẩm, brief và câu trả lời của dự án cũ; chỉ làm phần còn thiếu và phần đổi">Tiếp nối từ dự án… <select id="tiepNoi"><option value="">Không</option>${xong.map(x => `<option value="${esc(x.id)}">${esc(x.goal.length > 60 ? x.goal.slice(0, 57) + '…' : x.goal)}${x.topic ? ' · ' + esc(x.topic) : ''}</option>`).join('')}</select></label>
+    </div>` : ''}
     <div class="opts">
       <label><input type="checkbox" id="autoStart"> Chạy luôn, không cần tôi xem kế hoạch</label>
       <label><input type="checkbox" id="review" checked> Nghiệm thu ở cuối</label>
@@ -3086,7 +3090,7 @@ $('#book').addEventListener('click', async e => {
     const goal = $('#goal').value.trim(); if (!goal){ toast('Viết mục tiêu trước đã.'); return $('#goal').focus(); }
     b.disabled = true;
     return planAction(async () => {
-      await api.plan({ goal, coordinatorId: $('#coord').value, autoStart: $('#autoStart').checked, review: $('#review').checked });
+      await api.plan({ goal, coordinatorId: $('#coord').value, autoStart: $('#autoStart').checked, review: $('#review').checked, ...($('#tiepNoi') && $('#tiepNoi').value ? { tiepNoiTu: $('#tiepNoi').value } : {}) });
       S.goalDraft = ''; S.planView = null; S.sub = 'plan'; S._planKey = null; renderBook();
     }).finally(() => { b.disabled = false; });
   }

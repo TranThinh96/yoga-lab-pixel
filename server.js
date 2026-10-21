@@ -23,7 +23,7 @@ const { soatVanBan } = require('./lib/soat-loi');
 const { vietBanDo } = require('./lib/ban-do');
 const { ghiQuyetDinh, goiYChoCauHoi, quyetDinhChoKeHoach, vietSoQuyetDinh } = require('./lib/quyet-dinh');
 const { LOAI_LOI, mucTrong, docVanDe, docDaXuLy, docDuyetLai, docTinNhan, chuFile, ganVanDe, nhomTheoChu, capNhatTuSua, capNhatTuDuyetLai, vietSoVanDe } = require('./lib/van-de');
-const { docCauHoi: parseQuestions, laCauHoiMoiTruong, locBaiHocMoi, phanLoaiCauHoi, chonChuDe, chuDeTu } = require('./lib/van-ban');
+const { docCauHoi: parseQuestions, laCauHoiMoiTruong, locBaiHocMoi, phanLoaiCauHoi, chonChuDe, chuDeTu, chuDeTiepNoi } = require('./lib/van-ban');
 const { chuDeTriThuc, docBangTriThuc, hopNhatMenhDe, hopNhatNguon, capNhatTruyCap, hopNhatTuThe, maHinh, hopNhatHinh, cacChuDe, vietMocChuDe, vietBanDoTriThuc, docThuatNgu, dienThuatNgu, timTriThuc, goiNguCanh, slug, KIEU_MAU, trichMauTot, taoMauTot, chonMauTot } = require('./lib/tri-thuc');
 const { docGhiChu } = require('./lib/ghi-chu');
 const { chonBuocChay } = require('./lib/lich');
@@ -1360,6 +1360,16 @@ function buildPlanPrompt(coord, plan, failedIdx) {
     ...(coord.instructions && coord.instructions.trim() ? ['', 'HƯỚNG DẪN RIÊNG CỦA BẠN:', coord.instructions.trim()] : []),
     '', 'NGƯỜI TRỰC THUỘC (id: tên — vai; thụt lề = báo cáo cho người phía trên). Chỉ giao việc cho những người này:', ...team, '', `MỤC TIÊU: ${plan.goal}`
   ];
+  const cu = plan.tiepNoiTu && plans.find(p => p.id === plan.tiepNoiTu);
+  if (cu) {
+    const thieu = mucTrong(readWs(acceptPath(cu)), /^#{2,3}\s*Phần còn thiếu(?![\p{L}\p{N}])/iu).join('\n').trim().slice(0, 2000);
+    const mo = (cu.issues || []).filter(x => x.status === 'mo' || x.status === 'khong-sua').slice(0, 15)
+      .map(x => `- ${x.id} [${x.level || ''}] ${String(x.file || '').split(`output/${planTopic(cu)}/`).join(`output/${planTopic(plan)}/`)}${x.where ? ' (' + x.where + ')' : ''}: ${snippet(x.text)}${x.status === 'khong-sua' ? ' — không sửa' + (x.note ? ': ' + snippet(x.note) : '') : ''}`);
+    L.push(`DỰ ÁN TIẾP NỐI từ ${cu.id}: sản phẩm đã được chép sang output/${planTopic(plan)}/.`,
+      'Phần còn thiếu theo nghiệm thu cũ:', thieu || '(không có)',
+      'Vấn đề còn mở của dự án cũ:', ...(mo.length ? mo : ['- (không có)']),
+      'Chỉ lập kế hoạch cho phần chênh: sửa phần còn thiếu, cập nhật theo mục tiêu mới; không làm lại phần đã đạt.');
+  }
   const qd = quyetDinhChoKeHoach(quyetDinh, planTopic(plan));
   if (qd.length) L.push('QUYẾT ĐỊNH TỪ CÁC DỰ ÁN TRƯỚC (dùng lại nếu còn hợp với mục tiêu này và ghi vào "Quyết định đã chốt" của brief; không hỏi lại những điều đã có ở đây):',
     ...qd.map(d => `- (${d.planId}${d.tuQuyet ? ', nhóm tự quyết' : ''}) ${String(d.q).replace(/\s+/g, ' ')} → ${String(d.a).replace(/\s+/g, ' ')}`.slice(0, 300)));
@@ -2697,6 +2707,8 @@ async function createPlan(b) {
   if (!coord) throw Object.assign(new Error('Chọn điều phối viên'), { status: 400 });
   const goal = String(b.goal || '').trim().slice(0, 4000);
   if (!goal) throw Object.assign(new Error('Chưa có mục tiêu'), { status: 400 });
+  const cu = b.tiepNoiTu ? plans.find(p => p.id === b.tiepNoiTu) : null;
+  if (b.tiepNoiTu && (!cu || cu.status !== 'done')) throw Object.assign(new Error('Chỉ tiếp nối được từ một dự án đã xong'), { status: 400 });
   const now = new Date();
   const plan = {
     id: `plan-${stamp(now)}`, goal, coordinatorId: coord.id, team: teamFor(coord.id), autoStart: !!b.autoStart, review: b.review !== false,
@@ -2704,10 +2716,46 @@ async function createPlan(b) {
     questions: [], answers: [], afterAnswer: null, askRounds: 0, fixRounds: 0, wtokens: 0, costUsd: 0, score: null, acceptFile: null, reviewDone: false, resumeAt: null, budgetX: 1,
     createdAt: now.toISOString(), endedAt: null, planRunId: null, replanRunIds: [], reviewRunId: null, reviewHandoff: null, summary: ''
   };
+  if (cu) { await chepTiepNoi(cu, plan); plan.log.push(`Tiếp nối từ ${cu.id}: chép sản phẩm output/${planTopic(cu)}/ → output/${plan.topic}/`); }
   plans.push(plan);
   if (config.coordinatorId !== coord.id) { config.coordinatorId = coord.id; saveConfig().catch(() => {}); }
   await runCoordinator(plan);
   return plan;
+}
+
+// Chế độ tiếp nối: dự án mới bắt đầu từ sản phẩm, brief và câu trả lời của một dự án đã xong, chỉ làm phần chênh
+async function chepTiepNoi(old, plan) {
+  const cu = planTopic(old);
+  if (!cu) throw Object.assign(new Error('Dự án cũ chưa có thư mục chủ đề trong output/'), { status: 400 });
+  const ds = await fsp.readdir(insideWorkspace('output'), { withFileTypes: true }).catch(() => []);
+  const moi = plan.topic = chuDeTiepNoi(cu, ds.filter(d => d.isDirectory()).map(d => d.name.normalize('NFC')));
+  const src = insideWorkspace(`output/${cu}`), dst = insideWorkspace(`output/${moi}`);
+  if (!src || !dst) throw Object.assign(new Error('Thư mục chủ đề không hợp lệ'), { status: 400 });
+  await fsp.mkdir(dst, { recursive: true });
+  for (const d of await fsp.readdir(src, { withFileTypes: true }).catch(() => [])) {
+    if (d.isFile() && /\.md$/i.test(d.name)) await fsp.copyFile(path.join(src, d.name), path.join(dst, d.name));
+  }
+  // Ảnh: liên kết cứng cho nhẹ ổ đĩa (khác ổ đĩa thì không được, chép thường); thư mục con như cac-ban/ bỏ qua
+  for (const sub of ['hinh', 'hinh-nguon']) {
+    const tu = path.join(src, sub), den = path.join(dst, sub);
+    const files = await fsp.readdir(tu, { withFileTypes: true }).catch(() => null);
+    if (!files) continue;
+    await fsp.mkdir(den, { recursive: true });
+    for (const d of files) if (d.isFile()) {
+      const a = path.join(tu, d.name), b = path.join(den, d.name);
+      await fsp.link(a, b).catch(() => fsp.copyFile(a, b));
+    }
+  }
+  // Brief đã chốt (giống retryPlan): trỏ sang thư mục chủ đề mới
+  const brief = readWs(briefPath(old));
+  if (brief) {
+    const to = insideWorkspace(briefPath(plan));
+    await fsp.mkdir(path.dirname(to), { recursive: true });
+    await fsp.writeFile(to, brief.split(`output/${cu}/`).join(`output/${moi}/`)
+      .replace(/^(.*Thư mục chủ đề[^:\n]*:[\s*_`]*)[^\s*_`]+/mu, `$1${moi}`), 'utf8');
+  }
+  plan.answers = (old.answers || []).slice();
+  plan.tiepNoiTu = old.id;
 }
 
 // Chạy lại một kế hoạch đã kết thúc: kế hoạch mới cùng mục tiêu, cùng các bước điều phối viên đã chia

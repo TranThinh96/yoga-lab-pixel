@@ -213,3 +213,8 @@ test('trichMauTot, taoMauTot, chonMauTot', () => {
   const goi = tt.goiNguCanh({ viDu: { plan: 'plan-2', text: '## Trang 12 · Thở' } });
   assert.match(goi, /Ví dụ đạt chuẩn \(từ plan-2\):\n## Trang 12 · Thở/);
 });
+
+test('vietBanDoTriThuc: link lỗ hổng hệ thống khi đã có file', () => {
+  assert.ok(!/he-thong\/lo-hong/.test(tt.vietBanDoTriThuc([], '2026-11-02')));
+  assert.match(tt.vietBanDoTriThuc([], '2026-11-02', { loHongMo: 3 }), /\n## Hệ thống\n- \[\[he-thong\/lo-hong\|Lỗ hổng hệ thống\]\] · 3 việc chưa sửa/);
+});

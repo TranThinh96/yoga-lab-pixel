@@ -26,7 +26,7 @@ const { LOAI_LOI, mucTrong, docVanDe, docDaXuLy, docDuyetLai, docTinNhan, chuFil
 const { docCauHoi: parseQuestions, laCauHoiMoiTruong, locBaiHocMoi, phanLoaiCauHoi, chonChuDe, chuDeTu } = require('./lib/van-ban');
 const { chuDeTriThuc, docBangTriThuc, hopNhatMenhDe, hopNhatNguon, capNhatTruyCap, hopNhatTuThe, maHinh, hopNhatHinh, cacChuDe, vietMocChuDe, vietBanDoTriThuc, docThuatNgu, dienThuatNgu, timTriThuc, goiNguCanh, slug, KIEU_MAU, trichMauTot, taoMauTot, chonMauTot } = require('./lib/tri-thuc');
 const { docGhiChu } = require('./lib/ghi-chu');
-const { soMa, docBaiHoc, noiDungBaiHoc, suaBaiHoc, banXemKinhNghiem, nhanBuoc, chonBaiHoc, maTrong, danhGiaBaiHoc, themLoHong, thongKeHoc, hocTuJson, apDungHoc, apDungSuaHuongDan, hoanTacSuaHuongDan, themTuTranh } = require('./lib/bai-hoc');
+const { soMa, docBaiHoc, noiDungBaiHoc, suaBaiHoc, banXemKinhNghiem, nhanBuoc, chonBaiHoc, maTrong, danhGiaBaiHoc, themLoHong, demLoHongMo, thongKeHoc, hocTuJson, apDungHoc, apDungSuaHuongDan, hoanTacSuaHuongDan, themTuTranh } = require('./lib/bai-hoc');
 
 const ROOT = __dirname;
 const CONFIG_PATH = path.join(ROOT, 'config.json');
@@ -1205,7 +1205,8 @@ function henBanDoTriThuc() {
       if (!notes.length && !wsExists('tri-thuc/00-ban-do.md')) return;
       for (const c of cacChuDe(notes)) if (/^[a-z0-9][a-z0-9-]*$/.test(c)) await ghiTriThuc(`tri-thuc/chu-de/${c}.md`, vietMocChuDe(c, notes, ngay));
       const moi = !wsExists('tri-thuc/00-ban-do.md');
-      await ghiTriThuc('tri-thuc/00-ban-do.md', vietBanDoTriThuc(notes, ngay));
+      const loHong = wsExists('tri-thuc/he-thong/lo-hong.md') ? demLoHongMo(readWs('tri-thuc/he-thong/lo-hong.md')) : null;
+      await ghiTriThuc('tri-thuc/00-ban-do.md', vietBanDoTriThuc(notes, ngay, { loHongMo: loHong }));
       if (moi) scheduleIndex(); // index.md trỏ tới bản đồ bộ não
       await vietKinhNghiem(); // bạn sửa bài học trong Obsidian: bản xem theo
     } catch (e) { console.error('Bộ não: không dựng được bản đồ:', e.message); }

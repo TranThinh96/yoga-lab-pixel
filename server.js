@@ -24,7 +24,7 @@ const { vietBanDo } = require('./lib/ban-do');
 const { ghiQuyetDinh, goiYChoCauHoi, quyetDinhChoKeHoach, vietSoQuyetDinh } = require('./lib/quyet-dinh');
 const { LOAI_LOI, mucTrong, docVanDe, docDaXuLy, docDuyetLai, docTinNhan, chuFile, ganVanDe, nhomTheoChu, capNhatTuSua, capNhatTuDuyetLai, vietSoVanDe } = require('./lib/van-de');
 const { docCauHoi: parseQuestions, laCauHoiMoiTruong, locBaiHocMoi, phanLoaiCauHoi, chonChuDe, chuDeTu } = require('./lib/van-ban');
-const { chuDeTriThuc, docBangTriThuc, hopNhatMenhDe, hopNhatNguon, capNhatTruyCap, hopNhatTuThe, maHinh, hopNhatHinh, cacChuDe, vietMocChuDe, vietBanDoTriThuc, docThuatNgu, dienThuatNgu, timTriThuc, goiNguCanh, slug } = require('./lib/tri-thuc');
+const { chuDeTriThuc, docBangTriThuc, hopNhatMenhDe, hopNhatNguon, capNhatTruyCap, hopNhatTuThe, maHinh, hopNhatHinh, cacChuDe, vietMocChuDe, vietBanDoTriThuc, docThuatNgu, dienThuatNgu, timTriThuc, goiNguCanh, slug, KIEU_MAU, trichMauTot, taoMauTot, chonMauTot } = require('./lib/tri-thuc');
 const { docGhiChu } = require('./lib/ghi-chu');
 const { soMa, docBaiHoc, noiDungBaiHoc, suaBaiHoc, banXemKinhNghiem, nhanBuoc, chonBaiHoc, maTrong, danhGiaBaiHoc, themLoHong, thongKeHoc, hocTuJson, apDungHoc, apDungSuaHuongDan, hoanTacSuaHuongDan, themTuTranh } = require('./lib/bai-hoc');
 
@@ -132,7 +132,7 @@ async function ensureWorkspace() {
     if (!fs.existsSync(dst)) await fsp.copyFile(path.join(TEMPLATES_DIR, f), dst).catch(() => {});
   }
   // Bộ não chung: khung thư mục + mẫu note (cũng chỉ chép file còn thiếu)
-  for (const d of ['menh-de', 'nguon', 'tu-the', 'hinh', 'chu-de', 'ghi-chu-chuyen-mon', 'bai-hoc']) await fsp.mkdir(path.join(ws, 'tri-thuc', d), { recursive: true });
+  for (const d of ['menh-de', 'nguon', 'tu-the', 'hinh', 'chu-de', 'ghi-chu-chuyen-mon', 'bai-hoc', 'mau-tot', 'he-thong']) await fsp.mkdir(path.join(ws, 'tri-thuc', d), { recursive: true });
   const chepThieu = async (src, dst) => {
     for (const e of await fsp.readdir(src, { withFileTypes: true }).catch(() => [])) {
       const s = path.join(src, e.name), d = path.join(dst, e.name);
@@ -1030,7 +1030,7 @@ async function nhapTriThuc(agent, run, banGhi) {
 const khoCache = new Map();
 function docKhoTriThuc() {
   const out = [], con = new Set();
-  for (const d of ['menh-de', 'nguon', 'tu-the', 'hinh', 'bai-hoc']) {
+  for (const d of ['menh-de', 'nguon', 'tu-the', 'hinh', 'bai-hoc', 'mau-tot']) {
     const dir = insideWorkspace(`tri-thuc/${d}`);
     let names = [];
     try { names = fs.readdirSync(dir); } catch { continue; }
@@ -1048,7 +1048,7 @@ function docKhoTriThuc() {
       const doan = [];
       if (dau >= 0) for (const l of sau.slice(dau)) { if (!l.trim() || /^#{1,6}\s/.test(l)) break; doan.push(l.trim()); }
       const note = { path: rel, data, title: t >= 0 ? lines[t].replace(/^#\s+/, '').trim() : n.replace(/\.md$/, ''), para: doan.join(' ').slice(0, 300),
-        ...(d === 'bai-hoc' ? { noiDung: noiDungBaiHoc(body) } : {}) };
+        ...(d === 'bai-hoc' ? { noiDung: noiDungBaiHoc(body) } : d === 'mau-tot' ? { noiDung: body.trim().slice(0, 1500) } : {}) };
       khoCache.set(rel, { mtime, note });
       out.push(note);
     }
@@ -1078,8 +1078,9 @@ function goiChoLuot(agent, task, opts = {}) {
   const chon = chonBaiHoc(docBaiHoc(notes), { agentId: agent.id, nhan, chuDe: chuDeTriThuc(topic) });
   const dongBH = b => `[${b.ma}] ${b.noi_dung}`.slice(0, 450);
   const ck = chon.filter(b => Number(b.data.bac) === 2);
+  const mau = chonMauTot(notes, nhan);
   return { text: goiNguCanh({ quyTac, quyetDinh: qd, vanDe, lienQuan, checklist: ck.map(dongBH), baiHoc: chon.filter(b => !ck.includes(b)).map(dongBH),
-    coBanDo: wsExists('tri-thuc/00-ban-do.md') }), checklist: ck.map(b => b.ma) };
+    viDu: mau ? { plan: mau.data.plan, text: mau.noiDung } : null, coBanDo: wsExists('tri-thuc/00-ban-do.md') }), checklist: ck.map(b => b.ma) };
 }
 
 // ── Tự học: đề xuất cải tiến chờ bạn duyệt, lỗ hổng hệ thống cho người phát triển ──
@@ -1131,13 +1132,31 @@ async function apDungHocSauNghiemThu(plan, j, coord) {
   } else kq.loHong.push(...kq.yNhap.map(y => ({ mo_ta: `(tri-thuc) ${y.y}`, bang_chung: 'không rõ chủ đề để ghi ý nháp' })));
   await ghiLoHong(plan, kq.loHong);
   themDeXuat(plan, kq.deXuat);
-  plan.mauTot = kq.mauTot.slice(0, 2); // 3.8
+  const mau = await ghiMauTot(plan, kq.mauTot);
   const ghi = [moi && `${moi} bài học mới`, sua && `${sua} bài học sửa/gộp`, kq.loHong.length && `${kq.loHong.length} lỗ hổng`,
-    kq.deXuat.length && `${kq.deXuat.length} đề xuất chờ bạn duyệt`, kq.yNhap.length && chuDe && `${kq.yNhap.length} ý nháp cho bộ não`].filter(Boolean);
+    kq.deXuat.length && `${kq.deXuat.length} đề xuất chờ bạn duyệt`, mau && `${mau} mẫu tốt`, kq.yNhap.length && chuDe && `${kq.yNhap.length} ý nháp cho bộ não`].filter(Boolean);
   if (ghi.length) plan.log.push(`Hồi cứu: ${ghi.join(', ')}`);
   if (kq.boQua.length) plan.log.push(`Hồi cứu bỏ qua: ${snippet(kq.boQua.join('; '))}`);
   if (moi || sua) await vietKinhNghiem();
   henBanDoTriThuc();
+}
+
+// Mẫu tốt (tối đa 2 mỗi dự án, chỉ khi nghiệm thu đạt): trích đoạn sản phẩm vào tri-thuc/mau-tot/<kieu>-<n>.md
+async function ghiMauTot(plan, list) {
+  if (!(plan.score != null && plan.score >= cfgNum('passScore', 85))) return 0;
+  const daCo = (plan.mauTotDaGhi = plan.mauTotDaGhi || 0); // nghiệm thu lại vẫn tính chung trần 2
+  let n = 0;
+  for (const m of list.slice(0, Math.max(0, 2 - daCo))) {
+    const file = String(m.file || '').replace(/\\/g, '/').replace(/^\.\//, '');
+    if (!KIEU_MAU.includes(m.kieu) || !/^(output|agents)\//.test(file) || !insideWorkspace(file) || !wsExists(file)) { plan.log.push(`Mẫu tốt: bỏ qua ${file || '(không ghi file)'} (${m.kieu || 'không rõ kiểu'})`); continue; }
+    const trich = trichMauTot(readWs(file), m.vi_tri);
+    if (!trich) continue;
+    const so = docKhoTriThuc().filter(x => x.data.loai === 'mau-tot' && x.data.kieu === m.kieu).reduce((k, x) => Math.max(k, Number((/-(\d+)\.md$/.exec(x.path) || [0, 0])[1])), 0) + 1;
+    const r = await capNhatNote(`tri-thuc/mau-tot/${m.kieu}-${so}.md`, cu => cu ? { boQua: 'trùng tên' } : taoMauTot({ kieu: m.kieu, nguon_file: file + (m.vi_tri ? ' · ' + m.vi_tri : ''), plan: plan.id, ly_do: m.ly_do, trich }));
+    if (r.ghi) n++;
+  }
+  plan.mauTotDaGhi = daCo + n;
+  return n;
 }
 
 // Sau nghiệm thu: bài học cũ có tái phạm không, có hiệu quả không; lên bậc; ghi lại note và bản xem kinh-nghiem.md

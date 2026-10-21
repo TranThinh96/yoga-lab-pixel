@@ -194,3 +194,22 @@ test('goiNguCanh: checklist và bài học đứng trước phần bộ não', (
   const dai = tt.goiNguCanh({ checklist: ['[BH-1] c'], baiHoc: Array(40).fill('b'.repeat(300)), lienQuan: Array(8).fill('l'.repeat(300)) });
   assert.ok(dai.length <= 6000 && dai.includes('[BH-1] c') && !dai.includes('Trong bộ não'));
 });
+
+test('trichMauTot, taoMauTot, chonMauTot', () => {
+  const s = '# Slides\n\n## Trang 1 · Mở đầu\n- Ý chính: a\n\n---\n\n## Trang 12 · Thở\n- Ý chính: thở bụng\n- Lời giảng: chậm\n\n---\n\n## Trang 13 · Kết\n- x\n';
+  assert.equal(tt.trichMauTot(s, 'Trang 12'), '## Trang 12 · Thở\n- Ý chính: thở bụng\n- Lời giảng: chậm');
+  assert.equal(tt.trichMauTot(s, 'Trang 1'), '## Trang 1 · Mở đầu\n- Ý chính: a');
+  assert.equal(tt.trichMauTot('x'.repeat(2000), 'mục 3').length, 1200);
+  const n = tt.taoMauTot({ kieu: 'trang-slide', nguon_file: 'output/x/slides.md · Trang 12', plan: 'plan-2', ly_do: 'gọn', trich: 'y'.repeat(2000) });
+  const g = docGhiChu(n);
+  assert.deepEqual([g.data.loai, g.data.kieu, g.data.plan], ['mau-tot', 'trang-slide', 'plan-2']);
+  assert.equal(g.body.trim().length, 1500);
+  const ns = [{ path: 'tri-thuc/mau-tot/trang-slide-1.md', data: { loai: 'mau-tot', kieu: 'trang-slide', plan: 'plan-1' }, noiDung: 'cũ' },
+    { path: 'tri-thuc/mau-tot/trang-slide-2.md', data: { loai: 'mau-tot', kieu: 'trang-slide', plan: 'plan-2' }, noiDung: 'mới' },
+    { path: 'tri-thuc/mau-tot/kiem-chung-1.md', data: { loai: 'mau-tot', kieu: 'kiem-chung', plan: 'plan-1' }, noiDung: 'kc' }];
+  assert.equal(tt.chonMauTot(ns, ['work', 'slides']).noiDung, 'mới');
+  assert.equal(tt.chonMauTot(ns, ['review']).noiDung, 'kc');
+  assert.equal(tt.chonMauTot(ns, ['work', 'anh']), null);
+  const goi = tt.goiNguCanh({ viDu: { plan: 'plan-2', text: '## Trang 12 · Thở' } });
+  assert.match(goi, /Ví dụ đạt chuẩn \(từ plan-2\):\n## Trang 12 · Thở/);
+});

@@ -100,4 +100,7 @@ Gửi những thứ đó cho người triển khai, hoặc ghi vào mục "Phát
 2. `"stepModel": { "rereview": "haiku" }`: bước duyệt lại chạy Haiku (xem cột model ở trang Báo cáo). Thấy duyệt lại bỏ sót lỗi thì xoá dòng này.
 3. `"maxParallel": 2`: sau một lần duyệt có lỗi của nhiều người, các bước sửa của những người đó chạy cùng lúc.
 4. Chế độ tiếp nối: khi làm lại một chủ đề (vd suy giáp v8), chọn "Tiếp nối từ dự án…" lúc tạo dự án.
+   Xem `output/<chủ đề>-v<n>/` đã có sản phẩm cũ, và token bước nguồn của Mai ở khối Trí não (mục tiêu dưới 0,8 triệu).
 5. Trang Báo cáo → khối **Trí não**: so các chỉ số với mục tiêu.
+6. `"consultTool": true` (cần `"labTools": true`): khi agent gọi `hoi_dong_nghiep`, nhật ký dự án có dòng "Hỏi nhanh: A hỏi B".
+   Mở lượt của người được hỏi ở trang Báo cáo: chỉ có thao tác Đọc/Tìm, không có Ghi hay Sửa. Thấy lượt đó ghi được file thì tắt ngay và báo người phát triển.

@@ -221,3 +221,31 @@ Cho lần làm lại một chủ đề đã có (vd suy giáp v8). Bản mới b
 ## Phát hiện thêm
 
 (Người triển khai ghi vào đây.)
+
+Lựa chọn khi đặc tả chưa nói rõ (chủ dự án xem lại):
+
+1. **4.1 File Deep Research:** khi đã biết chủ đề, máy chủ thay `<file>` bằng đường dẫn thật `agents/<id>/<chủ đề>-deep-research.md`. Sau mỗi pha, máy chủ ưu tiên file `*-deep-research.md` agent vừa ghi (phòng khi agent đặt tên chủ đề khác) và nhớ trong `s.drFile` cho pha 2.
+2. **4.1 Dòng "Trạng thái:"** được đọc lỏng: cho phép in đậm, gạch đầu dòng (`**Trạng thái:** đang chạy`). Pha 1 xong mà file không ghi "đang chạy" (agent chờ luôn tới khi xong, hoặc không ghi file) thì xử lý như bước xong bình thường.
+3. **4.1 Bàn giao của pha 1 không được xử lý** (câu hỏi, tin gửi đồng đội, tải hình): bước chưa xong, mọi thứ đó đọc ở pha 2. Pha 2 giữ số lượt mặc định của agent Deep Research (150), vì lượt lấy được kết quả còn phải tổng hợp; chỉ pha 1 đặt 40.
+4. **4.1 Câu dòng kế hoạch nghiên cứu** (`<đối chiếu với brief nếu checkPlan>`) ghép thành: "đối chiếu với brief, thiếu mục nào thì bấm sửa kế hoạch và bổ sung; bấm …". Mỗi lần kiểm lại ở pha 2 có một dòng nhật ký "Gemini chưa xong (lần kiểm n/3)".
+5. **4.1 Lỗi "Gemini chưa xong sau 3 lần kiểm"** đi qua `onStepError`, nên còn được tự chạy lại `stepRetries` lần (mỗi lần là một lượt pha 2) trước khi lập lại kế hoạch.
+6. **4.1 Khởi động lại máy chủ:** kế hoạch chỉ đang chờ Gemini (không bước nào chạy dở hay lỗi) thì giữ "đang chạy" và hẹn lại, thay vì chuyển sang tạm dừng như các kế hoạch khác.
+7. **4.3 Ba chỗ sửa thêm cho chạy song song** (với `maxParallel: 1` không đổi hành vi):
+   - `onDone` và `.catch` của `startStep` tính lại `idx` bằng `plan.steps.indexOf(s)`: trong lúc bước này chạy, bước duyệt khác có thể đã chèn bước phía trước. Đặc tả nói giữ nguyên thân hàm; đây là dòng thêm duy nhất.
+   - `onStepError`: hết lượt chạy lại mà còn bước khác đang chạy thì **tạm dừng** thay vì lập lại kế hoạch, vì lập lại kế hoạch thay mọi bước chưa xong, kể cả bước đang chạy.
+   - `resumePlan` không đặt lại bước còn đang chạy (tạm dừng vì ngân sách khi bước khác chưa xong).
+8. **4.3** Ở chế độ song song, `plan.waiting` chỉ được đặt khi không bước nào chạy được và có bước bị chặn vì người đó đang làm việc lẻ. Bước đang chờ Gemini vẫn chiếm một chỗ khi chọn bước.
+9. **4.4 Chủ đề mới:** luật "thêm -v2 nếu chủ đề cũ chưa có đuôi" gộp vào luật "số lớn nhất + 1" (chưa có đuôi coi là bản 1), viết thành `chuDeTiepNoi` trong `lib/van-ban.js` kèm kiểm thử.
+10. **4.4 Chép ảnh:** mọi file nằm ngay trong `hinh/`, `hinh-nguon/` (cả `danh-sach.md` ghi giấy phép); ảnh liên kết cứng, file khác hoặc khi lỗi thì chép. Thư mục con (như `cac-ban/`) bỏ qua. Dòng "Thư mục chủ đề:" trong brief được đổi cả khi viết in đậm hay trong dấu `` ` ``.
+11. **4.4 Vấn đề còn mở** ghi dạng `- VD-n [mức] <file> (vị trí): <vấn đề>` (thêm "— không sửa: <ghi chú>" với vấn đề `khong-sua`); đường dẫn file đã đổi sang thư mục chủ đề mới. Đã thử trên bản sao workspace: chép đúng `output/thoai-hoa-khop-goi/` sang `-v2`, brief trỏ đúng thư mục, khối "DỰ ÁN TIẾP NỐI" có trong prompt lập kế hoạch.
+12. **4.5 Chỉ đọc:** `--permission-mode acceptEdits` tự duyệt Write/Edit dù không có trong `--allowedTools`. Lượt `chiDoc` vì vậy chạy `--permission-mode default`, `--allowedTools Read,Glob,Grep`, `--disallowedTools Write,Edit,MultiEdit,NotebookEdit,Bash,WebFetch,WebSearch`, `--strict-mcp-config`, không `--chrome`.
+13. **4.5 Chỉ hỏi được người dùng Claude** (Gemini CLI và agy không giới hạn được công cụ). Công cụ chỉ có khi bật cả `labTools` (MCP nội bộ) và `consultTool`, và chỉ cho lượt thuộc một bước dự án. Hỏi quá 3 phút thì máy chủ dừng lượt của người được hỏi. Lần hỏi không chạy được (người bận, không có…) không tính vào 3 lần. Cầu nối MCP chờ tối đa 4 phút (trước là 2).
+14. **4.6 Định nghĩa chỉ số:**
+    - Vòng duyệt–sửa = số bước duyệt lại ÷ số bước làm (mỗi vòng kết thúc bằng một bước duyệt lại).
+    - Token theo loại bước: lượt khớp bước theo `runId`, không khớp thì theo số bước lúc chạy; bước 0 là điều phối (lập kế hoạch, giao ban, nghiệm thu); lượt hỏi nhanh tách riêng.
+    - Điểm lần đầu: dòng "Nghiệm thu lần 1: n/100" trong nhật ký.
+    - Bài học tái phạm 30 ngày: `danhGiaSauDuAn` nay lưu mã vào `plan.baiHocTaiPham`; dự án cũ đọc số trong dòng nhật ký "Bài học: n tái phạm".
+    - Lần chạy gọi Bash: đếm theo `run.tools` (Bash, PowerShell, run_command); lượt cũ chưa có `tools` thì đọc diễn biến. Trên dữ liệu thật khớp số đã đo ở Đợt 1 (dự án mất ngủ: 5 lượt).
+    - Thêm hai chỉ số có sẵn mục tiêu ở mục 5: vấn đề không rõ người sửa (0) và token bước nguồn ở dự án tiếp nối (dưới 0,8 triệu; "bước nguồn" = bước làm của agent Deep Research).
+    - Bỏ qua các chỉ số mục 5 chưa có dữ liệu máy đọc được (câu hỏi trùng, link mở lại, `index.md`, ảnh ngoài thư mục chủ đề).
+15. Chưa xem được giao diện bằng trình duyệt trong môi trường viết code (trang giữ kết nối sự kiện nên trình duyệt headless không dừng). Khối "Trí não" đã kiểm bằng cách chạy riêng hàm dựng HTML trên dữ liệu thật.

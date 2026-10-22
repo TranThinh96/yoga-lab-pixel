@@ -2086,7 +2086,8 @@ function pauseForLimit(plan, who, err) {
 // vẫn lỗi → điều phối viên lập lại kế hoạch; hết lượt lập lại → tạm dừng.
 function onStepError(plan, idx) {
   const s = plan.steps[idx], err = s.error || '';
-  if (LIMIT_RE.test(err)) return pauseForLimit(plan, `Bước ${idx + 1}`, err);
+  // Lỗi "không tạo được sản phẩm" chép kèm lời agent (vd "Commons trả lỗi HTTP 429"): không phải hết hạn mức tài khoản
+  if (LIMIT_RE.test(err) && !/^Không tạo được sản phẩm nào/.test(err)) return pauseForLimit(plan, `Bước ${idx + 1}`, err);
   if ((s.retries || 0) < cfgNum('stepRetries', 1) && !/không còn trong văn phòng/.test(err)) {
     s.retries = (s.retries || 0) + 1; s.status = 'pending';
     plan.log.push(`Bước ${idx + 1} lỗi (${snippet(err)}) → chạy lại lần ${s.retries}${s.prevFiles ? ', tận dụng file đã ghi' : ''}`);

@@ -2784,7 +2784,8 @@ async function chepTiepNoi(old, plan) {
   for (const d of await fsp.readdir(src, { withFileTypes: true }).catch(() => [])) {
     if (d.isFile() && /\.md$/i.test(d.name)) await fsp.copyFile(path.join(src, d.name), path.join(dst, d.name));
   }
-  // Ảnh: liên kết cứng cho nhẹ ổ đĩa (khác ổ đĩa thì không được, chép thường); thư mục con như cac-ban/ bỏ qua
+  // Ảnh: liên kết cứng cho nhẹ ổ đĩa (khác ổ đĩa thì không được, chép thường); thư mục con như cac-ban/ bỏ qua.
+  // File khác (danh-sach.md) phải chép: máy chủ ghi đè tại chỗ, liên kết cứng sẽ sửa luôn bản của dự án cũ
   for (const sub of ['hinh', 'hinh-nguon']) {
     const tu = path.join(src, sub), den = path.join(dst, sub);
     const files = await fsp.readdir(tu, { withFileTypes: true }).catch(() => null);
@@ -2792,7 +2793,8 @@ async function chepTiepNoi(old, plan) {
     await fsp.mkdir(den, { recursive: true });
     for (const d of files) if (d.isFile()) {
       const a = path.join(tu, d.name), b = path.join(den, d.name);
-      await fsp.link(a, b).catch(() => fsp.copyFile(a, b));
+      if (/\.(png|jpe?g|webp|gif)$/i.test(d.name)) await fsp.link(a, b).catch(() => fsp.copyFile(a, b));
+      else await fsp.copyFile(a, b);
     }
   }
   // Brief đã chốt (giống retryPlan): trỏ sang thư mục chủ đề mới

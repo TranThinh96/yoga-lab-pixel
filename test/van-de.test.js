@@ -128,3 +128,13 @@ test('duyệt lại ghi nối vào cùng file: không nạp lại vấn đề c�
   assert.equal(plan.issues.length, 5);
   assert.equal(vd.docDuyetLai(banGhi)[0].ma, 'VD-1');
 });
+
+test('ganVanDe: không tìm được chủ file thì giao người làm của bước được duyệt', () => {
+  const plan = {};
+  const rows = [{ ma: 'V1', file: 'agents/mai/thu-v2-nguon.md', viTri: 'Toàn file', muc: 'BẮT BUỘC', loai: 'file-khong-ton-tai', moTa: 'File nguồn chưa được tạo' },
+    { ma: 'V2', file: 'output/thu/slides.md', viTri: 'Tr.1', muc: 'NÊN', loai: 'khac', moTa: 'Câu dài' }];
+  vd.ganVanDe(plan, rows, { buoc: 6, tu: 'an', chuDe: 'thu', chuFileFn: f => vd.chuFile(steps, f, 5), macDinh: { agentId: 'mai', step: 1 } });
+  assert.deepEqual(plan.issues.map(x => [x.id, x.owner, x.ownerStep]), [['VD-1', 'mai', 1], ['VD-2', 'lam', 3]]);
+  vd.ganVanDe(plan, [{ ...rows[0], moTa: 'Khác' }], { buoc: 6, tu: 'an', chuDe: 'thu', chuFileFn: () => null });
+  assert.equal(plan.issues[2].owner, null);
+});

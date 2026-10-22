@@ -1598,7 +1598,9 @@ function handleReview(plan, idx, text, banGhi = '') {
   if (soVanDe) {
     if (s.round) capNhatTuDuyetLai(plan.issues || [], docDuyetLai(banGhi), (plan.issues || []).filter(x => s.from.includes(x.fixStep)).map(x => x.id), n);
     const rows = docVanDe(banGhi);
-    if (rows) ganVanDe(plan, rows, { buoc: n, tu: s.agentId, chuDe: planTopic(plan), chuFileFn: f => chuFile(plan.steps, f, idx) });
+    const lam = s.checks && plan.steps[s.checks - 1];
+    if (rows) ganVanDe(plan, rows, { buoc: n, tu: s.agentId, chuDe: planTopic(plan), chuFileFn: f => chuFile(plan.steps, f, idx),
+      macDinh: lam ? { agentId: lam.agentId, step: s.checks } : null });
     else if (!s.round) plan.log.push(`Bước ${n}: không thấy bảng "Danh sách vấn đề" của ${name(s.agentId)}`);
     const moBB = (plan.issues || []).filter(x => x.status === 'mo' && x.level === 'BẮT BUỘC' && x.lastStep === n);
     if (s.verdict === 'pass' && moBB.length) plan.log.push(`Bước ${n}: kết luận ĐẠT nhưng còn ${moBB.length} vấn đề BẮT BUỘC mở`);

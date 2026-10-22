@@ -233,3 +233,13 @@ test('docBangTriThuc: mã giữ chỗ "(chưa kiểm)" không gộp các nguồn
   assert.equal(menhDe[0].ma, 'tap-luyen-la-dieu-tri-cot-loi');
   assert.equal(menhDe[0].nguon, 'nice-ng226');
 });
+
+test('docBangTriThuc: bỏ dòng giữ chỗ ở bảng ý, giữ ý thật bắt đầu bằng "Không"', () => {
+  const t = ['## Danh sách đã duyệt', '| Mã | Ý | Mức bằng chứng | Nguồn | Câu trích | Ghi chú |', '|---|---|---|---|---|---|',
+    '| (chưa có) | Chưa duyệt ý nào | — | — | — | Chờ file nguồn của Mai |',
+    '| khong-tap-khi-sung | Không tập khi gối sưng nóng | Ý kiến | — | — | |',
+    '| y-co-nguon | Tập sức cơ được khuyến cáo | Mạnh | acr | — | |'].join('\n');
+  const r = tt.docBangTriThuc(t).menhDe;
+  assert.deepEqual(r.map(x => x.ma), ['khong-tap-khi-sung', 'y-co-nguon']);
+  assert.equal(r[1].trich, '');
+});

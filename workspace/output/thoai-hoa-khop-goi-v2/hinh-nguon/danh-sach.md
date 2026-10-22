@@ -8,3 +8,7 @@ Máy chủ tải từ bảng "Hình & sơ đồ trong nguồn" của agents/mai/
 | co-dui-truoc-gray1238.png | https://commons.wikimedia.org/wiki/File:Gray1238.png | Henry Vandyke Carter | Public domain | Cơ tứ đầu là khối lớn mặt trước đùi (dự phòng; có nhãn số) | KHÔNG tải được: HTTP 429 |
 | quadriceps-3d.gif.jpg | https://commons.wikimedia.org/wiki/File:Quadriceps_3D.gif | BodyParts3D/Anatomography | CC BY-SA 2.1 jp | 4 cơ khác màu (gif động; chỉ lấy khung đầu — chưa chắc dùng được trên Canva) | KHÔNG tải được: HTTP 429 |
 | khop-goi-gan-tu-dau.png | https://commons.wikimedia.org/wiki/File:Knee_diagram.svg | Mysid | Public domain | Gân tứ đầu nối xương bánh chè (đã có trong hinh-nguon/; chỉ phụ) | đã có |
+| khop-goi-lanh-giai-phau.png | https://commons.wikimedia.org/wiki/File:Knee_diagram.svg | Mysid | Public domain | Sơ đồ khớp gối lành (xương, sụn, dây chằng), ít chữ, nhãn tiếng Anh dễ che | đã tải |
+| khop-goi-giai-phau-blausen.png | https://commons.wikimedia.org/wiki/File:Blausen_0597_KneeAnatomy_Side.png | BruceBlaus (Blausen.com staff) | CC BY 3.0 (ghi tác giả) | Giải phẫu khớp gối nhìn ngang, bản dự phòng cho hình lành | đã tải |
+| khop-goi-thoai-hoa-minh-hoa.jpg | https://commons.wikimedia.org/wiki/File:Osteoarthritis_of_the_knee.jpg | Injurymap | CC BY 4.0 (ghi tác giả) | Minh hoạ khớp gối thoái hoá (sụn mòn, gai xương) | đã tải |
+| khop-goi-thoai-hoa-vector.png | https://commons.wikimedia.org/wiki/File:Knee_Osteoarthritis.svg | InjuryMap | CC BY-SA 4.0 | Minh hoạ vector thoái hoá khớp gối, bản dự phòng (CC BY-SA: ghi tác giả, chia sẻ tương tự) | đã tải |

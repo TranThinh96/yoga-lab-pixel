@@ -104,3 +104,16 @@ Gửi những thứ đó cho người triển khai, hoặc ghi vào mục "Phát
 5. Trang Báo cáo → khối **Trí não**: so các chỉ số với mục tiêu.
 6. `"consultTool": true` (cần `"labTools": true`): khi agent gọi `hoi_dong_nghiep`, nhật ký dự án có dòng "Hỏi nhanh: A hỏi B".
    Mở lượt của người được hỏi ở trang Báo cáo: chỉ có thao tác Đọc/Tìm, không có Ghi hay Sửa. Thấy lượt đó ghi được file thì tắt ngay và báo người phát triển.
+
+---
+
+## Sau Đợt 5: lấp chỗ hở
+
+1. **Vấn đề NÊN.** Ở dự án sau, khi người duyệt kết luận CẦN SỬA và nêu vấn đề NÊN trong file của người khác (vd Hạ duyệt thiết kế, thấy `slides.md` lệch), máy chủ phải chèn cả bước sửa cho chủ file đó. Xem `du-an/<mã>/van-de.md`: không còn vấn đề NÊN nào "Mở" tới nghiệm thu chỉ vì không ai được giao.
+2. **Đếm chữ thiết kế.** Giao việc lẻ cho **Vy**, nguyên văn:
+   `Gọi công cụ soat_loi cho output/thoai-hoa-khop-goi/thiet-ke.md rồi chép nguyên kết quả vào mục "Đã làm" của bàn giao. Không sửa file nào khác.`
+   Bàn giao phải có dòng `Số chữ trên slide theo thiết kế (ước lượng…): Trang 1: 12 · Trang 2: 45 · … · Trang 4: 88 · …`.
+3. **Vòng sửa sau nghiệm thu.** Khi nghiệm thu giao việc sửa, ghi chú dự án hiện "Chờ hồi cứu xong rồi giao vòng sửa" vài giây tới tối đa 2 phút. Bấm nút **Bối cảnh** của bước sửa: bài học vừa lên checklist ở dự án này phải có trong đó.
+4. **Bối cảnh.** Bấm vào một thẻ bất kỳ trong dự án → nút **Bối cảnh** cạnh "Bàn giao": mở được file `du-an/<mã>/boi-canh/…` có quy tắc của bạn, quyết định, bài học, checklist.
+5. **Trí não.** Trang Báo cáo → khối Trí não có thêm cột "Câu hỏi trùng", "An mở lại", "Ảnh ngoài thư mục" và thẻ "`index.md`: n dòng". Dự án suy giáp v6 phải hiện 6 câu hỏi trùng và 2 ảnh ngoài thư mục.
+6. **BH-48.** Mở `tri-thuc/bai-hoc/BH-48.md`: `loai_loi` là `anh-sai-tu-the`, `trang_thai` là `moi`. Không đồng ý thì sửa lại trong Obsidian.

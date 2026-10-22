@@ -18,6 +18,8 @@ test('soat_loi', async () => {
   assert.match(r.text, /dòng lỗi giả/);
   assert.match(r.text, /Trang 4 · lech-dao-cu/);
   assert.match(r.text, /Số chữ trên slide/);
+  const t = await goi('soat_loi', { file: 'output/t/thiet-ke.md' }, ctx, ['soat_loi']);
+  assert.match(t.text, /Số chữ trên slide theo thiết kế \(ước lượng/);
   const k = await goi('soat_loi', { file: 'output/t/slides.md' }, ctx, []);
   assert.equal(k.isError, true);
   const x = await goi('soat_loi', { file: 'output/t/khong-co.md' }, ctx, ['soat_loi']);
@@ -57,4 +59,34 @@ test('tai_hinh', async () => {
   assert.equal((await g()).text, 'Đã có sẵn output/t/hinh-nguon/a.jpg, không tải lại. Muốn bản khác thì đặt tên khác.');
   assert.equal((await g()).text, 'Đã tải output/t/hinh-nguon/a.jpg (120 KB) · CC BY 4.0');
   assert.equal((await goi('tai_hinh', { link: 'https://x.vn/a.jpg' }, ctx, ['tai_hinh'])).isError, true);
+});
+
+test('tra_cuu: định dạng dòng và khi không thấy gì', async () => {
+  const ns = [
+    { path: 'tri-thuc/menh-de/x.md', loai: 'menh-de', title: 'Ý x', data: { trang_thai: 'bac-bo', muc_bang_chung: 'vua' } },
+    { path: 'tri-thuc/nguon/nhs.md', loai: 'nguon', title: 'T', data: { truy_cap: 'ok', to_chuc: 'NHS', tieu_de: 'Levo' } },
+    { path: 'tri-thuc/tu-the/b.md', loai: 'tu-the', title: 'B', data: { ten_viet: 'Em bé', ten_phan: 'Balasana' } },
+    { path: 'tri-thuc/hinh/h.md', loai: 'hinh', title: 'H', data: { giay_phep: 'CC BY 4.0', file: 'output/a/hinh-nguon/h.jpg' } }
+  ];
+  const r = await goi('tra_cuu', { tu_khoa: 'gì đó' }, { timTriThuc: () => ns }, ['tra_cuu']);
+  assert.equal(r.text, [
+    '- tri-thuc/menh-de/x.md · ý · BÁC BỎ, không dùng · vua · Ý x',
+    '- tri-thuc/nguon/nhs.md · nguồn · truy cập: ok · NHS · Levo',
+    '- tri-thuc/tu-the/b.md · tư thế · Em bé (Balasana)',
+    '- tri-thuc/hinh/h.md · hình · CC BY 4.0 · output/a/hinh-nguon/h.jpg'].join('\n'));
+  const r2 = await goi('tra_cuu', { tu_khoa: 'abc' }, { timTriThuc: () => [] }, ['tra_cuu']);
+  assert.equal(r2.text, 'Không thấy gì trong bộ não cho "abc". Đây là phần cần tìm mới.');
+});
+
+test('hoi_dong_nghiep', async () => {
+  const hoi = [];
+  const ctxHoi = { hoiDongNghiep: async a => { hoi.push(a); return a.ai === 'an' ? { text: 'Ý đó đã duyệt.' } : { loi: 'Không có ai mã "x".' }; } };
+  const r = await goi('hoi_dong_nghiep', { ai: 'an', cau_hoi: 'Ý M-3 đã duyệt chưa?' }, ctxHoi, ['hoi_dong_nghiep']);
+  assert.ok(!r.isError);
+  assert.equal(r.text, 'Ý đó đã duyệt.');
+  assert.deepEqual(hoi[0], { ai: 'an', cauHoi: 'Ý M-3 đã duyệt chưa?' });
+  assert.equal((await goi('hoi_dong_nghiep', { ai: 'x', cau_hoi: 'a' }, ctxHoi, ['hoi_dong_nghiep'])).isError, true);
+  assert.equal((await goi('hoi_dong_nghiep', { ai: 'an' }, ctxHoi, ['hoi_dong_nghiep'])).isError, true);
+  assert.equal(hoi.length, 2); // thiếu câu hỏi thì không gọi máy chủ
+  assert.deepEqual(danhSach(['hoi_dong_nghiep'])[0].inputSchema.required, ['ai', 'cau_hoi']);
 });

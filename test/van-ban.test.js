@@ -67,3 +67,10 @@ test('laCauHoiMoiTruong', () => {
   assert.equal(vb.laCauHoiMoiTruong('Vui lòng cấp quyền Chrome để tôi chạy Gemini Deep Research theo hướng dẫn.'), true);
   for (const pair of [...TL.cau_hoi.giong, ...TL.cau_hoi.khac]) for (const q of pair) assert.equal(vb.laCauHoiMoiTruong(q), false, q);
 });
+
+test('chuDeTiepNoi: bỏ đuôi -v<n>, lấy số lớn nhất trong output/ + 1', () => {
+  assert.equal(vb.chuDeTiepNoi('suy-giap-v7', ['suy-giap', 'suy-giap-v6', 'suy-giap-v7', 'suy-giap-v7-cu', 'tang-huyet-ap-v9']), 'suy-giap-v8');
+  assert.equal(vb.chuDeTiepNoi('suy-giap-v7', ['suy-giap-v9']), 'suy-giap-v10');
+  assert.equal(vb.chuDeTiepNoi('mat-ngu', ['mat-ngu']), 'mat-ngu-v2');
+  assert.equal(vb.chuDeTiepNoi('mat-ngu', ['mat-ngu', 'mat-ngu-v3']), 'mat-ngu-v4');
+});

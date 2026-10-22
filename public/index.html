@@ -236,6 +236,8 @@ textarea{resize:vertical; min-height:96px}
 .plan-head .meta{font-size:12.5px; color:var(--muted)}
 .plan-note{margin:0 0 12px; padding:8px 10px; border:2px solid var(--line); background:var(--paper-2); font-size:13.5px}
 .plan-note.err{border-color:var(--err)}
+.plan-note .dx{margin-top:8px; padding-top:8px; border-top:1px dashed var(--line)}
+.plan-note .dx p{margin:0 0 6px}
 .flow{display:flex; flex-direction:column}
 .node{display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:2px 10px; align-items:start; padding:9px 10px; background:var(--paper-2); border:2px solid var(--line)}
 .node.coord{border-style:dashed}
@@ -491,6 +493,8 @@ dialog.reader[open]{display:grid; grid-template-rows:auto minmax(0,1fr) auto}
 .utable tbody tr{cursor:pointer}
 .utable tbody tr:hover{background:var(--paper-2)}
 .utable tfoot td{font-weight:700; border-top:2px solid var(--line); border-bottom:0}
+.utable .dat,.tile .v.dat{color:var(--ok)}
+.u-muctieu{font-size:12.5px; color:var(--muted); padding:8px 14px 0}
 .utable .bar{display:inline-block; height:6px; background:var(--s3); border-radius:3px; vertical-align:middle; margin-right:6px}
 .u-more{padding:10px 14px}
 .rd-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:8px; margin-bottom:12px}
@@ -765,7 +769,7 @@ main{display:block; max-width:none; margin:0; padding:0}
   <nav class="dock" aria-label="Các cửa sổ">
     <button type="button" data-dock="team" title="Đội ngũ"><span class="ico" aria-hidden="true">👥</span>Đội ngũ<span class="n" id="dockBusy"></span></button>
     <button type="button" data-dock="board" title="Bảng việc: ai đang làm gì, sản phẩm nào đang duyệt"><span class="ico" aria-hidden="true">📋</span>Bảng việc<span class="n" id="dockFix"></span></button>
-    <button type="button" data-dock="plan" title="Giao dự án cho cả nhóm, duyệt kế hoạch, xem sơ đồ tổ chức"><span class="ico" aria-hidden="true">🗺️</span>Dự án</button>
+    <button type="button" data-dock="plan" title="Giao dự án cho cả nhóm, duyệt kế hoạch, xem sơ đồ tổ chức"><span class="ico" aria-hidden="true">🗺️</span>Dự án<span class="n" id="dockDx"></span></button>
     <button type="button" data-dock="output" title="Sản phẩm"><span class="ico" aria-hidden="true">📦</span>Sản phẩm</button>
     <button type="button" data-dock="log" title="Lịch sử các lượt làm việc và bàn giao"><span class="ico" aria-hidden="true">📓</span>Lịch sử</button>
   </nav>
@@ -909,7 +913,8 @@ const S = {
   handoffs: [], outputs: [], outDir: 'output', selected: store.get('yl-sel', null),
   attach: new Set(), draft: {}, fresh: new Set(), cli: null,
   timeMode: store.get('yl-time', 'auto'), tab: 'plan',
-  plans: [], coordinatorId: '', planView: null, sub: 'plan', planEdit: null, goalDraft: '', maxPlanSteps: 6
+  plans: [], coordinatorId: '', planView: null, sub: 'plan', planEdit: null, goalDraft: '', maxPlanSteps: 6,
+  deXuat: [] // đề xuất cải tiến từ hồi cứu, chờ bạn duyệt
 };
 const PLAN_ACTIVE = ['planning', 'draft', 'running', 'replanning', 'reviewing', 'paused', 'asking'];
 const activePlan = () => S.plans.find(p => PLAN_ACTIVE.includes(p.status));
@@ -964,6 +969,7 @@ const live = {
   planRetry: id => http('POST', '/api/plan/retry', { id }),
   planStop: id => http('POST', '/api/plan/stop', { id }),
   planAnswer: (id, answers, skip) => http('POST', '/api/plan/answer', { id, answers, skip }),
+  deXuat: (id, hanhDong, moi) => http('POST', '/api/de-xuat', { id, hanhDong, moi }),
   limitsRefresh: () => http('POST', '/api/limits/refresh', {})
 };
 
@@ -1112,6 +1118,7 @@ const demo = {
   async outputs(){ return { files: [...demoFiles].filter(([k]) => k.startsWith('output/')).map(([k, v]) => ({ path: k, name: k.split('/').pop(), size: v.content.length, mtime: v.mtime, origin: v.origin || null })).sort((a, b) => b.mtime - a.mtime) }; },
   async search(q){ q = q.toLowerCase(); const hits = []; for (const [k, v] of demoFiles){ if (!k.startsWith('output/')) continue; const i = v.content.toLowerCase().indexOf(q); if (i >= 0) hits.push({ path: k, snippet: v.content.slice(Math.max(0, i - 60), i + q.length + 80).replace(/\s+/g, ' ') }); } return { q, hits }; },
   async check(){ return null; },
+  async deXuat(){ throw new Error('Chế độ xem thử không có đề xuất cải tiến'); },
   async plan(b){
     if (activePlan()) throw new Error('Đang có một kế hoạch chưa xong. Hãy chạy tiếp hoặc huỷ nó trước.');
     const coord = agentById(b.coordinatorId); if (!coord) throw new Error('Chọn điều phối viên');
@@ -1264,6 +1271,11 @@ function handleEvent(e){
     case 'handoff':
       courier(e.from, e.to);
       break;
+    case 'de-xuat':
+      S.deXuat = e.list || []; S._planKey = null;
+      if (S.tab === 'plan') renderBook();
+      syncWins();
+      break;
     case 'limits':
       S.limits = e.limits; renderLimits(); renderPanel(); S._planKey = null; if (S.tab === 'plan') renderBook();
       break;
@@ -1278,6 +1290,7 @@ function connectSSE(){
 }
 function applyState(st){
   S.workspace = st.workspace; S.agents = st.agents || [];
+  S.obsidianVault = st.obsidianVault || '';
   if (st.runs) S.runs = st.runs;
   if (st.typical) S.typical = st.typical;
   for (const [id, acts] of Object.entries(st.liveActs || {})){
@@ -1285,6 +1298,7 @@ function applyState(st){
     if (acts && acts.length) S.acts[id] = acts.map(x => ({ t: t0 + x.t, kind: x.kind, text: x.text, file: x.file }));
   }
   if (st.plans) S.plans = st.plans;
+  if (st.deXuat) S.deXuat = st.deXuat;
   if (st.limits) S.limits = st.limits;
   S.coordinatorId = st.coordinatorId || '';
   if (st.config && st.config.maxPlanSteps) S.maxPlanSteps = st.config.maxPlanSteps;
@@ -2759,6 +2773,7 @@ function syncWins(){
   const busy = S.agents.filter(a => statusOf(a.id) === 'working').length;
   $('#dockBusy').textContent = busy || '';
   const ap = activePlan(); $('#dockFix').textContent = ap && ['draft', 'asking', 'paused'].includes(ap.status) ? '!' : '';
+  $('#dockDx').textContent = S.deXuat.some(d => d.trang_thai === 'cho') ? '!' : '';
 }
 function openWin(w){ S.win = w; store.set('yl-win', w || ''); if (w && cramped()) S.panelOpen = false; syncWins(); }
 $('.dock').addEventListener('click', e => {
@@ -2882,6 +2897,28 @@ function askBox(p){
     ${(p.questions || []).map((x, i) => `<label class="lbl" for="ans${i}" style="margin-top:8px">${x.step ? 'Bước ' + x.step : 'Điều phối'} · ${esc(name(x.from))}: ${esc(x.q)}</label>${x.goiY ? `<p class="hint" style="margin:4px 0">Lần trước (${esc(x.goiY.planId)}, ${esc(String(x.goiY.at || '').slice(0, 10))}) ${x.goiY.tuQuyet ? 'nhóm tự quyết' : 'bạn trả lời'}: ${esc(x.goiY.a)}</p>` : ''}<textarea id="ans${i}" data-ans="${i}" rows="2" style="width:100%" placeholder="Trả lời (để trống = đồng ý phương án đề xuất)">${x.goiY && !x.goiY.tuQuyet ? esc(x.goiY.a) : ''}</textarea>`).join('')}
     <div class="row" style="margin-top:8px;gap:6px"><button class="btn primary sm" data-plan-answer>Gửi trả lời</button><button class="btn sm" data-plan-skip>Để nhóm tự quyết</button></div></div>`;
 }
+// Đề xuất cải tiến (sửa hướng dẫn vai, lên bậc bài học…): chỉ áp dụng khi bạn bấm Duyệt; đã duyệt trong 7 ngày thì hoàn tác được
+const DX_LOAI = { 'sua-huong-dan': 'Sửa hướng dẫn vai', 'len-bac': 'Bài học cần luật máy soát', 'quy-trinh': 'Đổi quy trình', 'tu-tranh': 'Thêm từ cần tránh' };
+function dxBox(){
+  const cho = S.deXuat.filter(d => d.trang_thai === 'cho');
+  const moiDuyet = S.deXuat.filter(d => d.trang_thai === 'duyet' && d.loai === 'sua-huong-dan' && Date.now() - new Date(d.duyetLuc || d.at).getTime() < 7 * 864e5);
+  if (!cho.length && !moiDuyet.length) return '';
+  const name = id => (agentById(id) || {}).name || id || 'cả nhóm';
+  const sua = d => d.loai === 'sua-huong-dan';
+  return `<div class="plan-note"><b>Đề xuất cải tiến (${cho.length})</b>
+    ${cho.map(d => `<div class="dx">
+      <p><b>${esc(d.id)}</b> · ${esc(DX_LOAI[d.loai] || d.loai)} · ${esc(name(d.agent))}${d.ly_do ? ' · ' + esc(d.ly_do) : ''}</p>
+      ${sua(d) ? `<p class="muted">Cũ: ${d.cu ? esc(d.cu) : '(thêm vào cuối hướng dẫn)'}</p><p>Mới: <textarea data-dx-moi="${esc(d.id)}" rows="2" style="width:100%">${esc(d.moi)}</textarea></p>`
+        : d.loai === 'tu-tranh' ? `<p>Từ: <b>${esc(d.tu)}</b></p>` : ''}
+      <div class="row" style="gap:6px">
+        <button class="btn sm primary" data-dx="duyet:${esc(d.id)}">${sua(d) || d.loai === 'tu-tranh' ? 'Duyệt' : 'Đã xem'}</button>
+        ${sua(d) ? `<button class="btn sm" data-dx="sua:${esc(d.id)}">Sửa rồi duyệt</button>` : ''}
+        <button class="btn sm" data-dx="bo:${esc(d.id)}">Bỏ</button>
+      </div></div>`).join('')}
+    ${moiDuyet.map(d => `<div class="dx"><p class="muted"><b>${esc(d.id)}</b> · đã duyệt ${esc(String(d.duyetLuc || '').slice(0, 10))} · ${esc(name(d.agent))}: ${esc(d.moi)}</p>
+      <button class="btn sm" data-dx="hoan-tac:${esc(d.id)}">Hoàn tác</button></div>`).join('')}
+  </div>`;
+}
 const planDot = s => ({ planning:'working', replanning:'working', reviewing:'working', running:'working', done:'done', error:'error', paused:'error', stopped:'error', asking:'error' })[s] || '';
 function avatar(a){
   const look = lookOf(a && a.look);
@@ -2891,7 +2928,7 @@ function avatar(a){
 function shownPlan(){ return (S.planView && S.plans.find(p => p.id === S.planView)) || activePlan() || (S.planView === '__new' ? null : S.plans[0]) || null; }
 function renderPlan(el){
   const p = shownPlan();
-  const key = JSON.stringify([S.sub, p, S.agents, S.planView, S.sub === 'org' ? S.agents.map(a => statusOf(a.id)) : 0]);
+  const key = JSON.stringify([S.sub, p, S.agents, S.planView, S.sub === 'org' ? S.agents.map(a => statusOf(a.id)) : 0, S.deXuat]);
   // Đang gõ trong ô của tab này thì đừng vẽ lại (mất chỗ con trỏ)
   const typing = el.contains(document.activeElement) && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
   if (typing && key === S._planKey) return;
@@ -2902,7 +2939,7 @@ function renderPlan(el){
     <button class="sw-txt" data-sub="plan" aria-pressed="${S.sub === 'plan'}">Dự án${act ? ` · ${PLAN_TXT[act.status]}` : ''}</button>
     <button class="sw-txt" data-sub="org" aria-pressed="${S.sub === 'org'}">Sơ đồ tổ chức</button>
   </div>`;
-  el.innerHTML = sw + (S.sub === 'org' ? orgView() : p ? planView(p) : planForm());
+  el.innerHTML = sw + (S.sub === 'org' ? orgView() : dxBox() + (p ? planView(p) : planForm()));
   if (S.sub === 'org') el.querySelectorAll('canvas.ocv').forEach(c => { const a = agentById(c.dataset.id); if (a) drawPortrait(c, a.look, statusOf(a.id), 0, 'think'); });
   const g = $('#goal'); if (g) g.value = S.goalDraft;
   const c = $('#coord'); if (c) renderTeamNote();
@@ -2933,6 +2970,7 @@ function renderTeamNote(){
 function planForm(){
   const coordId = agentById(S.coordinatorId) ? S.coordinatorId : ([...S.agents].sort((a, b) => subsOf(b.id).length - subsOf(a.id).length)[0] || {}).id;
   const past = S.plans.filter(p => !PLAN_ACTIVE.includes(p.status)).slice(0, 5);
+  const xong = S.plans.filter(p => p.status === 'done');
   return `<div class="plan-form">
     <ol class="steps-mini">
       <li><b>Bạn viết mục tiêu</b>, càng cụ thể càng tốt (cho ai, bao lâu, cần ra gì).</li>
@@ -2946,6 +2984,9 @@ function planForm(){
       <label>Điều phối viên <select id="coord">${S.agents.map(a => `<option value="${esc(a.id)}" ${a.id === coordId ? 'selected' : ''}>${esc(a.name)} · ${esc(a.role)}</option>`).join('')}</select></label>
       <span class="muted" id="teamNote" style="font-size:13px; align-self:center"></span>
     </div>
+    ${xong.length ? `<div class="opts">
+      <label title="Bản mới bắt đầu từ sản phẩm, brief và câu trả lời của dự án cũ; chỉ làm phần còn thiếu và phần đổi">Tiếp nối từ dự án… <select id="tiepNoi"><option value="">Không</option>${xong.map(x => `<option value="${esc(x.id)}">${esc(x.goal.length > 60 ? x.goal.slice(0, 57) + '…' : x.goal)}${x.topic ? ' · ' + esc(x.topic) : ''}</option>`).join('')}</select></label>
+    </div>` : ''}
     <div class="opts">
       <label><input type="checkbox" id="autoStart"> Chạy luôn, không cần tôi xem kế hoạch</label>
       <label><input type="checkbox" id="review" checked> Nghiệm thu ở cuối</label>
@@ -3051,7 +3092,7 @@ $('#book').addEventListener('click', async e => {
     const goal = $('#goal').value.trim(); if (!goal){ toast('Viết mục tiêu trước đã.'); return $('#goal').focus(); }
     b.disabled = true;
     return planAction(async () => {
-      await api.plan({ goal, coordinatorId: $('#coord').value, autoStart: $('#autoStart').checked, review: $('#review').checked });
+      await api.plan({ goal, coordinatorId: $('#coord').value, autoStart: $('#autoStart').checked, review: $('#review').checked, ...($('#tiepNoi') && $('#tiepNoi').value ? { tiepNoiTu: $('#tiepNoi').value } : {}) });
       S.goalDraft = ''; S.planView = null; S.sub = 'plan'; S._planKey = null; renderBook();
     }).finally(() => { b.disabled = false; });
   }
@@ -3074,6 +3115,14 @@ $('#book').addEventListener('click', async e => {
     const answers = [...document.querySelectorAll('[data-ans]')].map(t => t.value.trim());
     b.disabled = true;
     return planAction(() => api.planAnswer(p.id, answers, skip), skip ? 'Nhóm sẽ tự quyết theo phương án đề xuất.' : 'Đã gửi trả lời.').finally(() => { b.disabled = false; });
+  }
+  if (b.dataset.dx){
+    const [hd, id] = [b.dataset.dx.slice(0, b.dataset.dx.indexOf(':')), b.dataset.dx.slice(b.dataset.dx.indexOf(':') + 1)];
+    const t = document.querySelector(`[data-dx-moi="${CSS.escape(id)}"]`);
+    if (hd === 'hoan-tac' && !confirm('Hoàn tác đề xuất này? Hướng dẫn vai trở lại đoạn cũ.')) return;
+    b.disabled = true;
+    return planAction(() => api.deXuat(id, hd, hd === 'sua' && t ? t.value.trim() : undefined),
+      { duyet: 'Đã duyệt đề xuất.', sua: 'Đã sửa và duyệt đề xuất.', bo: 'Đã bỏ đề xuất.', 'hoan-tac': 'Đã hoàn tác.' }[hd]).finally(() => { b.disabled = false; });
   }
   if (b.hasAttribute('data-plan-back')){ S.planView = activePlan() && activePlan() !== p ? null : '__new'; S._planKey = null; return renderBook(); }
   if (b.dataset.presult) return openProject(b.dataset.presult);
@@ -3260,7 +3309,7 @@ function renderDrawer(cards, p){
         <details data-k="t${x.n}" ${open.has('t' + x.n) ? 'open' : ''}><summary>Việc được giao</summary><div class="task">${esc(taskText(x.task))}</div></details>
         ${x.status === 'error' ? (canResume(p) ? `<div class="r"><button class="btn sm primary" type="button" data-bd-resume="${esc(p.id)}">▶ Chạy tiếp dự án từ bước này</button></div>`
           : p && PLAN_ACTIVE.includes(p.status) && p.status !== 'paused' ? '<p class="s">Máy chủ đang tự xử lý: chạy lại bước này một lần, nếu vẫn lỗi thì điều phối viên lập lại kế hoạch.</p>' : '') : ''}
-        <div class="r">${x.handoff ? `<button class="btn sm" type="button" data-view="${esc(x.handoff)}">Bàn giao</button>` : ''}${fileBtns(x.files || [])}
+        <div class="r">${x.handoff ? `<button class="btn sm" type="button" data-view="${esc(x.handoff)}">Bàn giao</button>` : ''}${x.boiCanh ? `<button class="btn sm" type="button" data-view="${esc(x.boiCanh)}">Bối cảnh</button>` : ''}${fileBtns(x.files || [])}
           ${run ? `<button class="btn sm" type="button" data-sel="${esc(x.agentId)}">Theo dõi ${esc(name(x.agentId))}</button>` : ''}</div>
       </li>`; }).join('')}</ol>`;
     // Vấn đề trong sổ thuộc thẻ này (mọi trạng thái)
@@ -3276,7 +3325,7 @@ function renderDrawer(cards, p){
       ${txt ? `<p class="s" style="white-space:pre-wrap;font-size:13px">${esc(txt)}</p>` : ''}
       ${live ? `<p class="s"><span data-kel-d data-kt0="${new Date(r.startedAt).getTime()}"></span> · ${PHASES[phaseOf(S.acts[r.agentId] || [])]}</p>${liveList(r.agentId, r)}` : ''}
       <details data-k="task" ${open.has('task') || !txt ? 'open' : ''}><summary>Việc được giao</summary><div class="task">${esc(taskText(r.task))}</div></details>
-      <div class="r" style="display:flex;flex-wrap:wrap;gap:6px">${r.handoff ? `<button class="btn sm" type="button" data-view="${esc(r.handoff)}">Bàn giao</button>` : ''}${fileBtns(r.files || [])}
+      <div class="r" style="display:flex;flex-wrap:wrap;gap:6px">${r.handoff ? `<button class="btn sm" type="button" data-view="${esc(r.handoff)}">Bàn giao</button>` : ''}${r.boiCanh ? `<button class="btn sm" type="button" data-view="${esc(r.boiCanh)}">Bối cảnh</button>` : ''}${fileBtns(r.files || [])}
         <button class="btn sm${live ? '' : ' primary'}" type="button" data-sel="${esc(r.agentId)}">${live ? 'Theo dõi' : 'Giao việc tiếp cho'} ${esc(r.agentName || name(r.agentId))}</button></div>`;
   }
   d.hidden = false;
@@ -3521,7 +3570,8 @@ async function viewFile(path){
     const author = o && agentById(o.agentId);
     const others = S.agents.filter(x => !author || x.id !== author.id);
     const opts = others.map(x => `<option value="${esc(x.id)}">${esc(x.name)} · ${esc(x.role)}</option>`).join('');
-    $('#fileFoot').innerHTML = `<span class="path">${esc(path)}</span>` + (S.agents.length ? `
+    $('#fileFoot').innerHTML = `<span class="path">${esc(path)}</span>` +
+      (S.obsidianVault && !S.demo ? `<a class="btn sm" href="obsidian://open?vault=${encodeURIComponent(S.obsidianVault)}&file=${encodeURIComponent(path.replace(/\.md$/, ''))}">🔗 Mở trong Obsidian</a>` : '') + (S.agents.length ? `
       ${!isH && author ? `<button class="btn sm" data-fedit="${esc(author.id)}" title="Mở bảng giao việc cho ${esc(author.name)}, đính kèm sẵn file này">✎ Nhờ ${esc(author.name)} sửa</button>` : ''}
       <span class="pass-to"><label class="muted" for="dlgPass">Giao tiếp cho</label><select id="dlgPass">${opts}</select>
       <button class="btn sm primary" data-dlgpass>Tiếp tục →</button></span>` : '');
@@ -3632,7 +3682,7 @@ function openProject(id){
       <h4>${esc(nm(x.agentId))}</h4><p class="meta">${esc(meta)}</p>
       <p class="task clamp" title="${esc(taskText(x.task))}">${esc(gist(x.task))}</p>
       ${x.summary ? `<p class="sum">${esc(plain(x.summary))}</p>` : ''}${x.error ? `<p class="sum" style="border-color:var(--err)">${esc(x.error)}</p>` : ''}
-      <div class="row">${x.handoff ? `<button class="btn sm" data-view="${esc(x.handoff)}">Bàn giao</button>` : ''}${stepFiles.map(f => `<button class="btn sm" data-view="${esc(f.path)}">📝 ${esc(f.name)}</button>`).join('')}</div>
+      <div class="row">${x.handoff ? `<button class="btn sm" data-view="${esc(x.handoff)}">Bàn giao</button>` : ''}${x.boiCanh ? `<button class="btn sm" data-view="${esc(x.boiCanh)}">Bối cảnh</button>` : ''}${stepFiles.map(f => `<button class="btn sm" data-view="${esc(f.path)}">📝 ${esc(f.name)}</button>`).join('')}</div>
     </div></div>`;
   }).join('');
   $('#projBody').innerHTML = html;
@@ -3874,6 +3924,7 @@ const RUN_ST = { done: 'Xong', error: 'Lỗi', stopped: 'Đã dừng', working: 
 async function loadUsage(){
   try { U.data = S.demo ? demoUsage(U.days) : await http('GET', '/api/usage?days=' + U.days); }
   catch (e) { U.data = { runs: [], plans: [], agents: S.agents, error: e.message }; }
+  U.triNao = S.demo ? null : await http('GET', '/api/tri-nao?days=' + U.days).catch(() => null);
   renderUsage();
 }
 let usageTimer;
@@ -3930,6 +3981,7 @@ function renderUsage(){
     <p class="u-cols"><label class="att"><input type="checkbox" id="uDetail" ${U.detail ? 'checked' : ''}><span>Hiện cột chi tiết token (cache, đầu vào, đầu ra, model…)</span></label></p>
     <section class="box u-card"><h3>Theo agent <small>bấm một dòng để lọc theo agent đó</small></h3>${agentTable(list)}</section>
     ${projectTable()}
+    ${triNaoBlock()}
     <section class="box u-card"><h3>Từng lượt chạy (session) <small>${list.length} lượt · bấm để xem chi tiết</small></h3>${runTable(list)}</section>`;
 }
 const tile = (k, v, sub) => `<div class="box tile"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${sub}</div></div>`;
@@ -4000,6 +4052,54 @@ function projectTable(){
     ${plans.map(p => { const rs = runs.filter(r => r.planId === p.id), s = sumRuns(rs), c = sumRuns(rs.filter(r => !r.step));
       return `<tr data-uplan="${esc(p.id)}"><td class="wrap"><span class="clamp2" title="${esc(p.goal)}">${esc(p.goal)}</span></td><td>${PLAN_TXT[p.status] || p.status}</td><td>${esc(uAgentName(p.coordinatorId))}</td><td class="num">${p.steps.length}</td><td class="num">${s.n}</td><td class="num">${s.err || ''}</td><td class="num">${fmtTok(s.total)}</td><td class="num dt">${fmtTok(c.total)} <small class="muted">${pct(c.total, s.total)}</small></td><td class="num">${s.hasCost ? fmtUsd(s.cost) : '—'}</td><td>${fmtTime(p.createdAt)}</td></tr>`; }).join('')}
   </tbody></table></div></section>`;
+}
+// ── Trí não: chỉ số so với mục tiêu ở mục 5 của docs/ke-hoach-tri-nao.md (ghi cứng ở đây) ──
+const MUC_TIEU = {
+  bash: { txt: 'dưới 5%', dat: v => v < 5 },
+  vong: { txt: 'dưới 0,6', dat: v => v < 0.6 },
+  diem: { txt: 'từ 85', dat: v => v >= 85 },
+  taiPham: { txt: '0', dat: v => v === 0 },
+  khongChu: { txt: '0', dat: v => v === 0 },
+  nguon: { txt: 'dưới 0,8 triệu', dat: v => v < 800000 },
+  cauHoi: { txt: '0', dat: v => v === 0 },
+  link: { txt: 'dưới 10%', dat: v => v < 10 },
+  index: { txt: 'dưới 30 dòng', dat: v => v < 30 },
+  anh: { txt: '0', dat: v => v === 0 }
+};
+const datCls = (k, v) => v != null && MUC_TIEU[k].dat(v) ? 'dat' : '';
+const LOAI_TOKEN = [['work', 'làm'], ['review', 'duyệt'], ['rereview', 'duyệt lại'], ['fix', 'sửa'], ['dieu-phoi', 'điều phối']];
+function triNaoBlock(){
+  const k = U.triNao; if (!k) return '';
+  const so = n => String(n).replace('.', ',');
+  const dongTT = obj => Object.entries(obj || {}).map(([t, n]) => `${esc(t)} ${n}`).join(' · ') || '—';
+  const y = k.boNao.y, ng = k.boNao.nguon, tongNguon = Object.values(ng).reduce((a, b) => a + b, 0);
+  const tiles = `<div class="tiles" style="padding:12px 14px 0">
+      ${`<div class="box tile"><div class="k">Lần chạy gọi Bash</div><div class="v ${datCls('bash', k.tong.tiLeBash)}">${k.tong.tiLeBash == null ? '—' : so(k.tong.tiLeBash) + '%'}</div><div class="s">${k.tong.luotBash}/${k.tong.luot} lượt · mục tiêu ${MUC_TIEU.bash.txt}</div></div>`}
+      ${`<div class="box tile"><div class="k">Bài học tái phạm</div><div class="v ${datCls('taiPham', k.baiHoc.taiPham30)}">${k.baiHoc.taiPham30}</div><div class="s">30 ngày qua · mục tiêu ${MUC_TIEU.taiPham.txt}</div></div>`}
+      ${`<div class="box tile"><div class="k">index.md</div><div class="v ${datCls('index', k.tong.indexDong)}">${k.tong.indexDong == null ? '—' : k.tong.indexDong + ' dòng'}</div><div class="s">mục tiêu ${MUC_TIEU.index.txt}</div></div>`}
+      ${tile('Ý đã duyệt', y['da-duyet'] || 0, `nháp ${y.nhap || 0} · cần xem lại ${y['can-xem-lai'] || 0}`)}
+      ${tile('Nguồn bị chặn', k.boNao.nguonBiChan, `trên ${tongNguon} nguồn · ${dongTT(ng)}`)}
+    </div>`;
+  const duAn = k.duAn.length ? `<div class="tscroll"><table class="utable"><thead><tr><th>Dự án</th>${LOAI_TOKEN.map(([, l]) => `<th class="num">Token ${l}</th>`).join('')}<th class="num" title="Số vòng duyệt lại ÷ số bước làm">Vòng duyệt–sửa / bước làm</th><th class="num">BẮT BUỘC</th><th class="num" title="Vấn đề không rõ ai phụ trách file">Không rõ người sửa</th><th class="num">Giao ban</th><th class="num">Điểm lần đầu</th><th class="num" title="Token quy đổi bước làm của người nghiên cứu, chỉ ở dự án tiếp nối">Bước nguồn (tiếp nối)</th><th class="num" title="Câu hỏi gửi tới bạn giống một câu đã hỏi trước đó trong cùng dự án">Câu hỏi trùng</th><th class="num" title="Trang người kiểm chứng mở mà người khác đã mở trước đó trong dự án">An mở lại</th><th class="num" title="Ảnh ghi ra ngoài output/&lt;chủ đề&gt;/">Ảnh ngoài thư mục</th></tr></thead><tbody>
+      ${k.duAn.map(d => `<tr data-uplan="${esc(d.id)}"><td class="wrap"><span class="clamp2" title="${esc(d.goal)}">${esc(d.goal)}</span></td>
+        ${LOAI_TOKEN.map(([t]) => `<td class="num">${d.token[t] ? fmtTok(d.token[t]) : '—'}</td>`).join('')}
+        <td class="num ${datCls('vong', d.tiLeVong)}">${d.tiLeVong == null ? '—' : so(d.tiLeVong)} <small class="muted">${d.vongSua}/${d.buocLam}</small></td>
+        <td class="num" title="${esc('Theo loại: ' + dongTT(d.batBuoc.theoLoai) + '\nTheo gốc: ' + dongTT(d.batBuoc.theoGoc))}">${d.batBuoc.tong}</td>
+        <td class="num ${datCls('khongChu', d.khongChu)}">${d.khongChu}</td><td class="num">${d.giaoBan}</td>
+        <td class="num ${datCls('diem', d.diemDau)}">${d.diemDau == null ? '—' : d.diemDau}</td>
+        <td class="num ${datCls('nguon', d.tokenNguon)}">${d.tokenNguon == null ? '—' : fmtTok(d.tokenNguon)}</td>
+        <td class="num ${datCls('cauHoi', d.cauHoiTrung)}">${d.cauHoiTrung == null ? '—' : d.cauHoiTrung}</td>
+        <td class="num ${datCls('link', d.linkMoLai && d.linkMoLai.tiLe)}">${d.linkMoLai && d.linkMoLai.tiLe != null ? so(d.linkMoLai.tiLe) + '%' : '—'}${d.linkMoLai && d.linkMoLai.mo ? ` <small class="muted">${d.linkMoLai.lai}/${d.linkMoLai.mo}</small>` : ''}</td>
+        <td class="num ${datCls('anh', d.anhNgoai)}">${d.anhNgoai == null ? '—' : d.anhNgoai}</td></tr>`).join('')}
+    </tbody></table></div>` : '<p class="u-more muted">Không có dự án nào trong khoảng này.</p>';
+  const agent = k.agent.length ? `<div class="tscroll"><table class="utable"><thead><tr><th>Agent</th><th class="num">Lượt</th><th class="num">Có gọi Bash</th><th class="num">tra_cuu</th><th class="num">soat_loi</th><th class="num">kiem_link</th></tr></thead><tbody>
+      ${k.agent.map(a => `<tr data-uagent="${esc(a.id)}"><td><b>${esc(uAgentName(a.id))}</b></td><td class="num">${a.luot}</td><td class="num ${a.luotBash ? '' : 'dat'}">${a.luotBash || 0}</td><td class="num">${a.tra_cuu || ''}</td><td class="num">${a.soat_loi || ''}</td><td class="num">${a.kiem_link || ''}</td></tr>`).join('')}
+    </tbody></table></div>` : '';
+  return `<section class="box u-card"><h3>Trí não <small>chữ xanh là đã đạt mục tiêu</small></h3>
+    <p class="u-muctieu">Mục tiêu: lần chạy gọi Bash ${MUC_TIEU.bash.txt} · vòng duyệt–sửa ${MUC_TIEU.vong.txt} lần mỗi bước làm · điểm nghiệm thu lần đầu ${MUC_TIEU.diem.txt} · bài học tái phạm ${MUC_TIEU.taiPham.txt} · vấn đề không rõ người sửa ${MUC_TIEU.khongChu.txt} · token bước nguồn khi tiếp nối ${MUC_TIEU.nguon.txt} · câu hỏi trùng ${MUC_TIEU.cauHoi.txt} · An mở lại link ${MUC_TIEU.link.txt} · index.md ${MUC_TIEU.index.txt} · ảnh ngoài thư mục chủ đề ${MUC_TIEU.anh.txt}.</p>
+    ${tiles}${duAn}${agent}
+    <p class="u-muctieu" style="padding-bottom:10px">Bài học: ${k.baiHoc.tong} (${dongTT(k.baiHoc.theoTrangThai)}). Dự án gần nhất dùng ${k.boNao.noteDung} note của bộ não.</p>
+  </section>`;
 }
 function runTable(list){
   if (!list.length) return '<p class="u-more muted">Không có lượt chạy nào.</p>';

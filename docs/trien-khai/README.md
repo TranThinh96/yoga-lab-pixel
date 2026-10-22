@@ -10,12 +10,13 @@
 | [dot-2.md](dot-2.md) | Đợt 2 · bộ não `tri-thuc/` trong vault Obsidian riêng |
 | [dot-3.md](dot-3.md) | Đợt 3 · tự học |
 | [dot-4.md](dot-4.md) | Đợt 4 · tối ưu |
+| [dot-5.md](dot-5.md) | Đợt 5 · lấp chỗ hở (lỗ hổng hệ thống, chỉ số còn thiếu) |
 | [thu-tren-may.md](thu-tren-may.md) | Việc chủ dự án tự chạy trên máy Windows sau mỗi đợt |
 | [fixtures/](fixtures/) | Dữ liệu mẫu cho kiểm thử, lấy từ dữ liệu thật |
 
 ## Thứ tự
 
-Đợt 0 → 1 → 2 → 3 → 4. Không nhảy đợt.
+Đợt 0 → 1 → 2 → 3 → 4 → 5. Không nhảy đợt.
 Trong một đợt, làm đúng thứ tự mục: mục sau có thể dùng hàm của mục trước. **Mỗi mục là một commit.**
 Hết một đợt thì dừng lại. Chủ dự án chạy phần của đợt đó trong `thu-tren-may.md` rồi mới sang đợt sau.
 

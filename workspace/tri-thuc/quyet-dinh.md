@@ -2,6 +2,11 @@
 
 > Máy chủ tự sinh từ .yogalab/quyet-dinh.json. Sửa câu trả lời trong giao diện Yoga Lab, không sửa ở đây.
 
+## thoai-hoa-khop-goi
+- **QD-27** (plan-20261021-195355, 2026-10-21) *nhóm tự quyết*
+  - Hỏi: Có trợ giảng cho phần xuống/lên thảm không? Đề xuất: có 1–2 người; nếu không, cả nhóm làm bản ngồi ghế tr.7–8. (làm tiếp sau khi trả lời không cần)
+  - Trả lời: (Chủ dự án để nhóm tự quyết theo phương án đề xuất)
+
 ## mat-ngu-v1
 - **QD-20** (plan-20261020-220605, 2026-10-20) bạn trả lời
   - Hỏi: Báo cáo Gemini chưa ra sau hơn 60 phút. Đề xuất: chạy lại bước 1 sau vài phút để Mai lấy toàn văn từ link chat trên (không chạy lại Deep Research). Nếu vẫn không ra, cho phép Mai mở từng nguồn bằng WebFetch.

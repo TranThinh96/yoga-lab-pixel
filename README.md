@@ -67,7 +67,7 @@ Khi việc lớn cần nhiều người, bạn không phải tự chuyển tay t
    Họ **chỉ được giao việc cho người trực thuộc mình** (trực tiếp hoặc gián tiếp). Thiếu thông tin quan trọng thì họ hỏi bạn trước.
 3. Kế hoạch hiện ra để bạn duyệt. Bạn có thể đổi người làm, sửa nội dung, đổi thứ tự, thêm hoặc xoá bước. Xong thì bấm **Chạy kế hoạch**.
 4. Máy chủ tự chạy từng bước. Mỗi người nhận brief, **bảng dự án** `du-an/<mã>/bang.md` (tiến độ, kết luận duyệt, câu trả lời của bạn) và bàn giao cần đọc.
-   Mỗi người tự kiểm sản phẩm theo tiêu chí trong brief trước khi bàn giao, và đọc `agents/<tên>/kinh-nghiem.md` của mình.
+   Mỗi người tự kiểm sản phẩm theo tiêu chí trong brief trước khi bàn giao, và áp dụng những bài học máy chủ chọn sẵn cho bước đó (xem "Nhóm tự học thế nào").
 5. **Vòng duyệt:** người duyệt kết thúc bàn giao bằng `KẾT LUẬN: ĐẠT` hoặc `KẾT LUẬN: CẦN SỬA`. Cần sửa thì máy chủ tự chèn bước sửa và duyệt lại (người duyệt), tối đa `maxReviewRounds` vòng.
    **Sổ vấn đề** (`issueLedger`): người duyệt ghi lỗi thành bảng "Danh sách vấn đề" (mã, file, vị trí, mức, loại, vấn đề, đề xuất). Máy chủ ghi vào `du-an/<mã>/van-de.md` và giao sửa cho **người phụ trách file có lỗi**, nên một vòng sửa có thể gồm nhiều người.
    Người sửa báo lại từng mã trong bảng "Đã xử lý". Báo "Đã sửa" mà file không đổi thì vấn đề vẫn mở. Bước duyệt lại chỉ kiểm các vấn đề còn mở.
@@ -75,7 +75,8 @@ Khi việc lớn cần nhiều người, bạn không phải tự chuyển tay t
    Trước mỗi bước duyệt, **máy chủ tự soát lỗi máy móc** (không tốn token): dấu câu đôi, dấu cách trước dấu câu, lặp từ, từ cần tránh (`lintBanned`), cách gọi lẫn lộn (`lintVariants`), trang slide quá `lintMaxWords` chữ. Kết quả được đưa vào việc của người duyệt, nên họ không phải tự dò. Bước duyệt chỉ kiểm, không tự đi tìm nguồn mới. Bước duyệt lại và bước sửa chạy ở mức suy nghĩ thấp hơn (`stepEffort`).
 6. **Hỏi chủ dự án:** bàn giao có mục "Câu hỏi cho chủ dự án" thì dự án dừng ở trạng thái **Chờ bạn trả lời**. Bạn trả lời từng câu hoặc bấm **Để nhóm tự quyết**; câu trả lời được ghi vào bảng dự án cho mọi người làm theo. Câu hỏi giống câu đã trả lời trong cùng dự án thì nhóm không hỏi lại. Câu giống câu bạn đã trả lời ở dự án trước thì ô trả lời được điền sẵn câu cũ. Mọi quyết định được ghi vào `workspace/tri-thuc/quyet-dinh.md`.
 7. Nếu một bước lỗi, điều phối viên được gọi lại **một lần** để lập lại phần còn lại. Nếu vẫn lỗi, kế hoạch **tạm dừng** để bạn bấm **Chạy tiếp**.
-8. **Nghiệm thu:** điều phối viên mở sản phẩm thật, chấm từng tiêu chí trong brief (điểm 0–100) vào `du-an/<mã>/nghiem-thu.md`, rồi trả bài học cho từng người trong khối JSON; **máy chủ tự ghi** vào `kinh-nghiem.md` (bỏ bài trùng, giữ `maxLessons` bài gần nhất).
+8. **Nghiệm thu:** điều phối viên mở sản phẩm thật, chấm từng tiêu chí trong brief (điểm 0–100) vào `du-an/<mã>/nghiem-thu.md`, rồi **rút kinh nghiệm** từ số liệu máy chủ tổng hợp (xem "Nhóm tự học thế nào"). Máy chủ tự ghi kết quả; điều phối viên không sửa file bài học.
+   Khi tắt bộ não (`brain: false`): bài học vào cuối `kinh-nghiem.md` như trước (bỏ bài trùng, giữ `maxLessons` bài gần nhất).
    Điểm dưới `passScore` (mặc định 85) thì giao thêm một vòng sửa (`maxFixRounds`) rồi nghiệm thu lại.
    Điểm đạt nhưng còn lỗi nhỏ thì giao **vòng sửa nhanh** (`polishAfterPass`): không nghiệm thu lại, máy chủ soát lỗi lần cuối và ghi phần còn lại vào bảng dự án.
    Câu hỏi của điều phối viên lúc nghiệm thu cũng được đưa lên cho bạn trả lời, trước khi vòng sửa chạy.
@@ -84,6 +85,10 @@ Khi việc lớn cần nhiều người, bạn không phải tự chuyển tay t
 10. **Ngân sách:** mỗi dự án có `planTokenBudget` token quy đổi (mặc định 4 triệu). Token đọc lại từ cache chỉ tính 1/10, vì giá chỉ khoảng 1/10. Chạm ngân sách thì dự án tạm dừng, bấm **Chạy tiếp** để cho thêm 50%. Thẻ dự án hiện tổng token, token quy đổi và chi phí tham khảo.
 
 **Nhắn đồng đội:** bàn giao được thêm mục "Gửi đồng đội" (mỗi dòng `@<mã người>: …`) và "Cho cả nhóm biết". Máy chủ chuyển tin tới bước kế tiếp của người nhận và ghi cả hai vào bảng dự án.
+
+**Tiếp nối:** làm lại một chủ đề đã có (vd suy giáp bản 8) thì ở ô tạo dự án chọn **Tiếp nối từ dự án…** (danh sách dự án đã xong).
+Máy chủ chép sản phẩm của dự án cũ sang thư mục chủ đề mới (`<chủ đề>-v<số tiếp theo>`): các file `.md`, ảnh trong `hinh/` và `hinh-nguon/` (bỏ `cac-ban/`), cùng brief và câu trả lời của bạn.
+Điều phối viên nhận "Phần còn thiếu" trong nghiệm thu cũ và các vấn đề còn mở, rồi chỉ lập kế hoạch cho phần chênh.
 
 **Giao ban:** khi có tín hiệu (vấn đề không rõ ai sửa, hình tải hỏng, tin gửi điều phối viên), máy chủ gọi điều phối viên một lượt ngắn để chèn tối đa 2 bước. Tối đa `maxCheckins` lần mỗi dự án.
 
@@ -119,6 +124,8 @@ Chỉnh trong form **Sửa agent → Chrome & Gemini**, hoặc trong `config.jso
 
 Agent Deep Research không dùng WebSearch của Claude (trừ khi bạn tự đặt `tools`), và mặc định có 150 lượt (chat: 60, tạo ảnh: 150).
 
+**Deep Research hai pha** (`deepResearchTwoPhase: true` trong `config.json`): ở bước làm của dự án, agent chỉ khởi chạy Deep Research, ghi link cuộc chat vào `agents/<id>/<chu-de>-deep-research.md` với dòng "Trạng thái: đang chạy" rồi kết thúc lượt. Máy chủ chờ (bằng nửa `maxWaitMinutes`, ít nhất 10 phút; không tốn token), rồi gọi agent một lượt nữa để lấy báo cáo. Gemini chưa xong thì máy chủ chờ thêm 10 phút, tối đa 3 lần kiểm. Trong lúc chờ, bảng dự án ghi "Chờ Gemini Deep Research tới <giờ>".
+
 **Tạo ảnh (`image`)**: agent đọc "Danh sách hình" trong `output/<chủ đề>/thiet-ke.md`, tạo từng ảnh trong một cuộc chat Gemini, tự xem lại rồi bấm tải ảnh kích thước đầy đủ. Chrome lưu ảnh vào thư mục Downloads (đổi bằng `downloadsDir` trong `config.json`). Mỗi lần tải, agent ghi tên dự kiến vào `agents/<id>/anh-gemini.txt`. Xong lượt, máy chủ ghép các file `Gemini_*` tải về trong lượt đó (theo thứ tự thời gian) với danh sách tên này, rồi chép vào `output/<chủ đề>/hinh/`, giống ảnh của agy: bản cũ chuyển vào `cac-ban/`, ảnh AI cho hình y khoa bị để riêng, không dùng. Trước khi chạy: trong Chrome, tắt "Hỏi nơi lưu từng tệp" và cho gemini.google.com tải nhiều file.
 3. Mai xong → ở "Lần gần nhất", chọn **An** → **Chuyển tiếp**. Bàn giao được đính kèm sẵn.
 4. Cứ thế chuyển cho **Lam** (soạn bài), rồi **Hạ** (biên tập, duyệt chữ và trải nghiệm người học).
@@ -152,11 +159,57 @@ workspace/
 ├── templates/        ← mẫu kịch bản slide, quy tắc thiết kế (agent chỉ đọc)
 ├── handoff/          ← bàn giao giữa các agent
 ├── agents/<tên>/     ← nháp riêng của từng người
-└── output/           ← sản phẩm cuối
+├── output/           ← sản phẩm cuối
+└── tri-thuc/         ← bộ não chung (xem mục dưới)
 ```
 
 Muốn dùng folder khác (ví dụ vault Obsidian), sửa `"workspace"` trong `config.json`
 thành đường dẫn đầy đủ, ví dụ `"/Users/ban/Obsidian/YogaLab"` hoặc `"D:\\YogaLab"`.
+
+## Bộ não chung (Obsidian)
+
+Những gì cả nhóm đã kiểm chứng (ý, nguồn, tư thế, hình) được giữ lại trong `workspace/tri-thuc/`, để dự án sau dùng lại thay vì tìm lại từ đầu.
+
+**Cách mở**: trong Obsidian chọn **Open folder as vault** → chọn thư mục `workspace/`. Tên vault mặc định là tên thư mục
+(ở đây là "workspace"); đổi tên vault thì đặt `obsidianVault` trong `config.json` cho khớp. Khi xem file trong văn phòng,
+nút **🔗 Mở trong Obsidian** mở đúng note đó.
+
+**Bên trong có gì**:
+- `tri-thuc/00-ban-do.md`: bản đồ, gồm các chủ đề, ý cần bạn xem (quá hạn, thiếu câu trích), nguồn đang bị chặn;
+- `chu-de/`: mỗi chủ đề một trang tổng hợp (ý đã kiểm chứng, ý nháp, tư thế, hình, nguồn, dự án đã dùng);
+- `menh-de/`: ý đã kiểm chứng, mỗi ý một note (mức bằng chứng, nguồn, câu trích, hạn xem lại);
+- `nguon/`: nguồn và tình trạng truy cập (máy chủ tự mở thử link);
+- `tu-the/`: tư thế (đạo cụ, chống chỉ định, prompt ảnh đã đạt, lỗi AI hay vẽ sai), `hinh/`: hình có giấy phép đã tải;
+- `quyet-dinh.md`: sổ quyết định; `thuat-ngu.md`: từ cần tránh và cách gọi thống nhất, máy soát lỗi đọc hai bảng này;
+- `bai-hoc/`: bài học của nhóm, mỗi bài một note `BH-…`; `mau-tot/`: đoạn sản phẩm đạt chuẩn làm ví dụ;
+- `he-thong/lo-hong.md`: lỗi không phải của agent, việc của người phát triển (xem mục dưới);
+- `quy-tac-cua-toi.md` và `ghi-chu-chuyen-mon/`: **bạn viết**, máy chủ không bao giờ sửa.
+
+Agent chỉ viết bảng trong file của mình (An: "Danh sách đã duyệt", "Tư thế"; Mai: "Danh sách nguồn"). Sau mỗi lượt,
+máy chủ chép bảng thành note. Chỉ người trong `brainApprovers` (mặc định An) mới đưa được ý lên "đã duyệt".
+
+**Bạn làm được gì**:
+- ý sai: đánh `trang_thai: bac-bo` trong note, máy chủ không đổi ý đó nữa và agent thấy nhãn "BÁC BỎ, không dùng";
+- thêm `khoa: true` vào note nào thì máy chủ không sửa note đó;
+- thêm quy tắc vào `quy-tac-cua-toi.md` (mỗi dòng một quy tắc), ghi nhận xét của bác sĩ, giảng viên vào `ghi-chu-chuyen-mon/`;
+- lọc bằng Bases (plugin lõi) hoặc Dataview theo `trang_thai`, `muc_bang_chung`, `truy_cap`.
+
+**Agent dùng thế nào**: mỗi lượt, máy chủ soạn sẵn phần "BỐI CẢNH TỪ BỘ NÃO CHUNG" (quy tắc của bạn, quyết định đã chốt,
+vấn đề đang mở của người đó, các note có thể liên quan). Agent gọi công cụ `tra_cuu` trước khi tìm web và chỉ tìm phần còn thiếu
+(công cụ chỉ có khi bật `labTools`). Phần BỐI CẢNH của mỗi bước dự án được chép vào `du-an/<mã>/boi-canh/`; bấm nút **Bối cảnh** cạnh "Bàn giao" để xem bước đó đã nhận bài học, checklist nào.
+
+## Nhóm tự học thế nào
+
+1. Mỗi lỗi trong sổ vấn đề có **loại** (vd `lech-hai-file`) và **gốc**: `agent` (người làm sai), `quy-trinh` (thiếu bước, giao sai người), `cong-cu` (máy chủ, công cụ lỗi), `moi-truong` (trang web, tài khoản), `tri-thuc` (thiếu một sự thật).
+   Chỉ lỗi gốc `agent` mới thành bài học. Gốc khác đi vào **lỗ hổng hệ thống** `tri-thuc/he-thong/lo-hong.md`, vào bộ não (ý nháp chờ kiểm), hoặc thành **đề xuất sửa quy trình** chờ bạn duyệt.
+2. Bài học nằm trong `tri-thuc/bai-hoc/`, mỗi bài một note `BH-…` có phạm vi (cả nhóm, một người, một chủ đề), lúc áp dụng (`ap_dung_khi`: loại bước, loại file), bậc và trạng thái.
+   Agent **chỉ thấy bài hợp với bước đang làm**, trong phần BỐI CẢNH của việc được giao (tối đa 12 bài). Bài đã được hệ thống chữa (`da-thang-cap`) hay đã huỷ thì không hiện nữa.
+   Sau mỗi dự án, máy chủ đếm: bài có từ trước mà người đó vẫn mắc đúng loại lỗi thì tính **tái phạm** và bài lên **checklist bắt buộc** (bậc 2): agent phải ghi mã `[BH-…]` kèm "đã kiểm" vào mục Tự kiểm của bàn giao. Checklist vẫn tái phạm thì máy chủ ghi vào lỗ hổng hệ thống là cần một luật máy soát. Bài đã áp dụng ở hai dự án mà chưa tái phạm lần nào thì được đánh dấu `hieu-qua`.
+3. Lúc nghiệm thu, máy chủ đưa điều phối viên **số liệu để rút kinh nghiệm**: lỗi BẮT BUỘC theo người và loại, theo gốc, bài học tái phạm, số lần agent thử chạy lệnh bị chặn, checklist chưa ghi, và những câu bạn trả lời khác phương án nhóm đề xuất. Điều phối viên trả lại bài học mới, bài cần gộp, lỗ hổng, đề xuất sửa hướng dẫn vai, và tối đa 2 **mẫu tốt** (chỉ khi đạt `passScore`). Mẫu tốt hiện làm "Ví dụ đạt chuẩn" ở bước cùng loại sau này.
+4. **Đề xuất sửa hướng dẫn vai** hiện ở đầu cửa sổ **Dự án** (nút Dự án có dấu `!` khi có đề xuất chờ). Hướng dẫn chỉ đổi khi bạn bấm **Duyệt** hoặc **Sửa rồi duyệt**; bấm **Bỏ** để bỏ qua. Trong 7 ngày sau khi duyệt, bấm **Hoàn tác** để trả lại đoạn cũ. Trước mỗi lần đổi, máy chủ giữ bản `config.json` cũ trong `workspace/.yogalab/config-cu/`.
+5. `agents/<id>/kinh-nghiem.md` giờ là **bản xem** do máy chủ sinh từ `tri-thuc/bai-hoc/`. Sửa bài học trong Obsidian (đổi `goc`, `trang_thai`, `bac`, nội dung, hoặc thêm `khoa: true`), không sửa ở `kinh-nghiem.md`.
+
+Nâng cấp từ bản trước Đợt 3: chạy một lần `node scripts/chuyen-bai-hoc.js workspace` để chuyển bài học cũ trong `kinh-nghiem.md` thành note. Bảng phân loại nằm ở `tri-thuc/he-thong/chuyen-bai-hoc.md`; bài nào xếp sai thì sửa note `BH-…` tương ứng.
 
 ## config.json
 
@@ -173,10 +226,17 @@ thành đường dẫn đầy đủ, ví dụ `"/Users/ban/Obsidian/YogaLab"` ho
 | `coordinatorId` | Điều phối viên mặc định (tự lưu khi bạn chọn trong mục Dự án) |
 | `maxPlanSteps` | Kế hoạch dài nhất bao nhiêu bước (mặc định 6) |
 | `maxReplans` | Bước lỗi thì điều phối viên được lập lại kế hoạch mấy lần (mặc định 1) |
-| `labTools` | Cho agent Claude gọi công cụ của máy chủ qua MCP nội bộ (soát lỗi, kiểm link, tải hình). Mặc định tắt; bật sau khi thử trên máy |
+| `labTools` | Cho agent Claude gọi công cụ của máy chủ qua MCP nội bộ (soát lỗi, kiểm link, tải hình, tra bộ não). Với `thiet-ke.md`, số chữ từng trang của `soat_loi` là ước lượng từ dòng Bố cục. Mặc định tắt; bật sau khi thử trên máy |
 | `issueLedger` | Sổ vấn đề: người duyệt ghi bảng lỗi, máy chủ giao sửa cho người phụ trách file có lỗi. `false` = vòng duyệt như trước. Mặc định bật |
 | `maxCheckins` | Số lần tối đa điều phối viên được gọi giữa chừng (giao ban) khi có tín hiệu. `0` = tắt. Mặc định 3 |
 | `chromePreflight` | Trước khi giao việc cho agent dùng Chrome, máy chủ thử kết nối bằng một lượt rất ngắn; hỏng thì tạm dừng dự án và báo cách sửa. Mặc định bật |
+| `brain` | Bộ não chung `tri-thuc/`: máy chủ chép bảng của agent thành note, soạn bối cảnh cho mỗi lượt, công cụ `tra_cuu`. `false` = tắt. Mặc định bật |
+| `brainApprovers` | Ai được đưa ý lên "đã duyệt" và ghi note tư thế (mặc định `["an"]`) |
+| `obsidianVault` | Tên vault Obsidian của folder làm việc, cho nút "Mở trong Obsidian". Để trống = tên thư mục workspace |
+| `stepModel` | Model riêng theo loại bước (`work`, `review`, `rereview`, `fix`), vd `{"rereview": "haiku"}`. Không áp dụng cho agent dùng Chrome. Gợi ý: sau khi sổ vấn đề đã chạy ổn, đặt `{"rereview": "haiku"}`, vì duyệt lại chỉ còn kiểm danh sách vấn đề. Mặc định `{}` |
+| `maxParallel` | Số bước của dự án được chạy cùng lúc. `1` = tuần tự như trước (mặc định). Từ `2`: các bước độc lập chạy song song, vd sau một lần duyệt có lỗi của nhiều người thì những người đó sửa cùng lúc; bước cần bản cuối của sản phẩm vẫn chờ đủ vòng duyệt lại. Chỉ rút ngắn thời gian, không bớt token |
+| `consultTool` | Thử nghiệm, cần bật `labTools`: agent trong dự án được gọi `hoi_dong_nghiep(ai, cau_hoi)` để hỏi nhanh một đồng nghiệp dùng Claude. Máy chủ chạy một lượt rất ngắn của người được hỏi (chỉ đọc file, tối đa 4 lượt, chờ tối đa 3 phút) và trả câu trả lời. Mỗi dự án tối đa 3 lần; token tính vào dự án. Mặc định tắt |
+| `deepResearchTwoPhase` | Deep Research hai lượt ngắn: lượt 1 chỉ khởi chạy trên Gemini, máy chủ chờ (không tốn token), lượt 2 lấy báo cáo. Mặc định tắt |
 
 Model chọn trong ô **Model** khi thêm hoặc sửa agent:
 - **Claude**: `haiku` (nhẹ, rẻ), `sonnet` (cân bằng), `opus` (mạnh), `fable` (mạnh nhất, tốn nhất).
@@ -235,6 +295,10 @@ Bấm **📊 Báo cáo** ở đầu trang (hoặc mở `http://127.0.0.1:4321/#u
 - **Bảng theo agent**: lượt, lỗi, từng loại token, tỉ lệ trúng cache, trung bình mỗi lượt, công cụ dùng nhiều.
   Bấm một dòng để lọc theo agent đó.
 - **Bảng theo dự án**: token cả dự án và phần điều phối viên dùng.
+- **Trí não**: các chỉ số so với mục tiêu của kế hoạch nâng cấp (chữ xanh là đã đạt):
+  - thẻ số: tỉ lệ lần chạy có gọi Bash (mục tiêu dưới 5%), bài học tái phạm trong 30 ngày (0), số dòng `index.md` (dưới 30), số ý đã duyệt, số nguồn bị chặn;
+  - theo dự án: token quy đổi theo loại bước (làm, duyệt, duyệt lại, sửa, điều phối), vòng duyệt–sửa so với bước làm (dưới 0,6), số vấn đề BẮT BUỘC (rê chuột để xem theo loại và theo gốc), vấn đề không rõ người sửa (0), số lần giao ban, điểm nghiệm thu lần đầu (từ 85), token bước nguồn ở dự án tiếp nối (dưới 0,8 triệu), câu hỏi trùng (0), tỉ lệ trang An mở lại mà người khác đã mở trước (dưới 10%), ảnh ghi ra ngoài `output/<chủ đề>/` (0);
+  - theo agent: số lượt có gọi Bash, số lần dùng `tra_cuu`, `soat_loi`, `kiem_link`.
 - **Từng lượt chạy (session)**: bấm vào để xem nhiệm vụ, đính kèm, kết quả hoặc lỗi, model thực tế,
   công cụ đã gọi và **diễn biến** từng bước kèm thời điểm.
 - **Tải CSV** theo đúng bộ lọc đang chọn để mở bằng Excel hoặc Google Sheets.

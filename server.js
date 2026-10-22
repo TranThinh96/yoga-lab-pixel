@@ -28,7 +28,7 @@ const { chuDeTriThuc, docBangTriThuc, hopNhatMenhDe, hopNhatNguon, capNhatTruyCa
 const { docGhiChu } = require('./lib/ghi-chu');
 const { chonBuocChay } = require('./lib/lich');
 const { chiSoTriNao } = require('./lib/chi-so');
-const { soMa, docBaiHoc, noiDungBaiHoc, suaBaiHoc, banXemKinhNghiem, nhanBuoc, chonBaiHoc, maTrong, danhGiaBaiHoc, themLoHong, demLoHongMo, thongKeHoc, hocTuJson, apDungHoc, apDungSuaHuongDan, hoanTacSuaHuongDan, themTuTranh } = require('./lib/bai-hoc');
+const { soMa, docBaiHoc, noiDungBaiHoc, suaBaiHoc, banXemKinhNghiem, nhanBuoc, chonBaiHoc, maTrong, bangChungBaiHoc, daNhanTheoBuocCua, danhGiaBaiHoc, themLoHong, demLoHongMo, thongKeHoc, hocTuJson, apDungHoc, apDungSuaHuongDan, hoanTacSuaHuongDan, themTuTranh } = require('./lib/bai-hoc');
 
 const ROOT = __dirname;
 const CONFIG_PATH = path.join(ROOT, 'config.json');
@@ -619,9 +619,9 @@ async function startRun(agent, task, attachments = [], opts = {}) {
     } catch (e) { running.delete(agent.id); throw e; }
   }
   const handoffRel = `handoff/${stamp(startedAt)}-${agent.id}.md`;
-  let goi = '', checklist = [];
+  let goi = '', checklist = [], daNhan = [];
   if (!opts.prompt && config.brain !== false) {
-    try { ({ text: goi, checklist } = goiChoLuot(agent, task, { ...opts, files: [...attachments, ...(opts.files || [])] })); }
+    try { ({ text: goi, checklist, baiHoc: daNhan } = goiChoLuot(agent, task, { ...opts, files: [...attachments, ...(opts.files || [])] })); }
     catch (e) { console.error('Bộ não: không soạn được gói ngữ cảnh:', e.message); }
   }
   const prompt = opts.prompt || buildPrompt(agent, task, handoffRel, attachments, opts.kind, lab, goi, opts.pha, opts.drFile);
@@ -637,6 +637,7 @@ async function startRun(agent, task, attachments = [], opts = {}) {
     effort: agent.engine !== 'gemini' ? agent.effort || '' : '', models: [], toolCalls: 0, tools: {}, acts: [], files: [],
     ...(opts.planId ? { planId: opts.planId, step: opts.step || 0 } : {}),
     ...(checklist.length ? { checklist } : {}), // mã bài học bậc 2 đã giao: máy chủ kiểm mục Tự kiểm của bàn giao
+    ...(goi && opts.planId ? { baiHocDaNhan: daNhan } : {}), // mọi bài học đã gửi: bằng chứng bài học có tác dụng không
     ...(goi && opts.planId ? { boiCanh: `du-an/${opts.planId}/boi-canh/${stamp(startedAt)}-${agent.id}.md` } : {}) // bản chép phần BỐI CẢNH để xem lại
   };
 
@@ -1150,7 +1151,7 @@ function goiChoLuot(agent, task, opts = {}) {
   const ck = chon.filter(b => Number(b.data.bac) === 2);
   const mau = chonMauTot(notes, nhan);
   return { text: goiNguCanh({ quyTac, quyetDinh: qd, vanDe, lienQuan, checklist: ck.map(dongBH), baiHoc: chon.filter(b => !ck.includes(b)).map(dongBH),
-    viDu: mau ? { plan: mau.data.plan, text: mau.noiDung } : null, coBanDo: wsExists('tri-thuc/00-ban-do.md') }), checklist: ck.map(b => b.ma) };
+    viDu: mau ? { plan: mau.data.plan, text: mau.noiDung } : null, coBanDo: wsExists('tri-thuc/00-ban-do.md') }), checklist: ck.map(b => b.ma), baiHoc: chon.map(b => b.ma) };
 }
 
 // ── Tự học: đề xuất cải tiến chờ bạn duyệt, lỗ hổng hệ thống cho người phát triển ──
@@ -1229,18 +1230,28 @@ async function ghiMauTot(plan, list) {
   return n;
 }
 
+// Nhãn một bước đã làm (khớp ap_dung_khi của bài học)
+function nhanCuaBuoc(plan, s) {
+  const agent = config.agents.find(a => a.id === s.agentId) || { id: s.agentId };
+  return nhanBuoc({ kind: stepKind(s), task: s.task, files: s.files || [], agent });
+}
+// Bằng chứng của mọi bài học từ các dự án máy chủ còn giữ (30 dự án gần nhất)
+function bangChungMoiBai(ds) {
+  const ctx = { nhanCua: nhanCuaBuoc, chuDeCua: p => chuDeTriThuc(planTopic(p)) };
+  return Object.fromEntries(ds.map(b => [b.ma, bangChungBaiHoc(b, plans, ctx)]));
+}
+
 // Sau nghiệm thu: bài học cũ có tái phạm không, có hiệu quả không; lên bậc; ghi lại note và bản xem kinh-nghiem.md
 async function danhGiaSauDuAn(plan) {
   if (config.brain === false) return;
   const ds = docBaiHoc(docKhoTriThuc());
   if (!ds.length) return;
   const nhanTheoNguoi = {};
-  for (const s of plan.steps.filter(s => s.status === 'done')) {
-    const agent = config.agents.find(a => a.id === s.agentId) || { id: s.agentId };
-    nhanTheoNguoi[s.agentId] = [...new Set([...(nhanTheoNguoi[s.agentId] || []), ...nhanBuoc({ kind: stepKind(s), task: s.task, files: s.files || [], agent })])];
-  }
+  for (const s of plan.steps.filter(s => s.status === 'done'))
+    nhanTheoNguoi[s.agentId] = [...new Set([...(nhanTheoNguoi[s.agentId] || []), ...nhanCuaBuoc(plan, s)])];
   const kq = danhGiaBaiHoc(ds, (plan.issues || []).filter(v => v.level === 'BẮT BUỘC'),
-    { batDau: String(plan.createdAt || '').slice(0, 10), nguoiThamGia: Object.keys(nhanTheoNguoi), nhanTheoNguoi });
+    { batDau: String(plan.createdAt || '').slice(0, 10), nguoiThamGia: Object.keys(nhanTheoNguoi), nhanTheoNguoi,
+      daNhanTheoBuoc: daNhanTheoBuocCua(plan), bangChung: bangChungMoiBai(ds) });
   const theoMa = new Map(ds.map(b => [b.ma, b]));
   for (const r of kq) {
     const w = await capNhatNote(theoMa.get(r.ma).path, cu => suaBaiHoc(cu, r.sua));
@@ -1251,7 +1262,7 @@ async function danhGiaSauDuAn(plan) {
   plan.baiHocTaiPham = taiPham; // cho chỉ số "bài học tái phạm" ở trang Báo cáo
   await ghiLoHong(plan, kq.filter(r => r.loHong).map(r => r.loHong));
   themDeXuat(plan, kq.filter(r => r.deXuat).map(r => r.deXuat));
-  if (kq.length) { plan.log.push(`Bài học: ${taiPham.length} tái phạm, ${kq.length - taiPham.length} có hiệu quả ở dự án này`); await vietKinhNghiem(); }
+  if (kq.length) { plan.log.push(`Bài học: ${taiPham.length} tái phạm, ${kq.length - taiPham.length} áp dụng mà không tái phạm ở dự án này`); await vietKinhNghiem(); }
 }
 
 // agents/<id>/kinh-nghiem.md thành bản xem của tri-thuc/bai-hoc/. Chưa có note bài học nào (chưa chuyển bài cũ) thì giữ file cũ
@@ -1742,6 +1753,7 @@ function startStep(plan, idx) {
     onDone: (run, full) => {
       idx = plan.steps.indexOf(s); // chạy song song: bước khác có thể đã chèn bước phía trước bước này
       s.runId = run.id; s.handoff = run.handoff; s.summary = (run.summary || '').slice(0, 1200);
+      if (run.baiHocDaNhan) s.baiHocDaNhan = [...new Set([...(s.baiHocDaNhan || []), ...run.baiHocDaNhan])]; // cộng dồn các lần thử lại
       s.tokens = (s.tokens || 0) + (run.tokens || 0); // cộng dồn cả các lần thử lại
       addUsage(plan, run);
       if (run.status === 'done') {
@@ -2664,7 +2676,7 @@ function finishPlan(plan) {
   const tenAgent = id => (config.agents.find(a => a.id === id) || {}).name || id;
   const tuHoc = config.brain !== false;
   let thongKe = '';
-  if (tuHoc) try { thongKe = thongKeHoc(plan, runs.filter(r => r.planId === plan.id), docBaiHoc(docKhoTriThuc()), tenAgent); }
+  if (tuHoc) try { const bh = docBaiHoc(docKhoTriThuc()); thongKe = thongKeHoc(plan, runs.filter(r => r.planId === plan.id), bh, tenAgent, { bangChung: bangChungMoiBai(bh) }); }
   catch (e) { console.error('Không tổng hợp được số liệu hồi cứu:', e.message); }
   const task = [
     `Nghiệm thu dự án "${plan.goal}"${round ? ` (lần ${round + 1}, sau vòng sửa)` : ''}.`,

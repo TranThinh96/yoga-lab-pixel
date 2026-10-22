@@ -1893,8 +1893,10 @@ function tinHieuGiaoBan(plan, idx, coord, seqTruoc, handoffText) {
     out.push(`Tin gửi bạn từ ${(config.agents.find(a => a.id === m.from) || {}).name || m.from} (bước ${m.step}): ${m.text}`);
     m.delivered = true; // điều phối viên đọc ngay trong giao ban
   }
+  // Máy chủ còn đang hẹn tải lại hình (Commons trả 429): vướng mắc "hình chưa tải" tự hết, gọi giao ban là thừa
+  const choTaiLai = (dangTaiLai.get(plan.id) || new Set()).size > 0;
   for (const l of mucTrong(handoffText, /^#{2,3}\s*Vướng mắc(?![\p{L}\p{N}])/iu))
-    if (/chưa có file|chưa tải|không tải được|chưa (có|thấy) (ảnh|hình)|chờ máy chủ/iu.test(l)) out.push(`Vướng mắc ở bước ${idx + 1}: ${l.replace(/^\s*[-*•]\s*/, '').trim().slice(0, 300)}`);
+    if (/chưa có file|chưa tải|không tải được|chưa (có|thấy) (ảnh|hình)|chờ máy chủ/iu.test(l) && !(choTaiLai && /hình|ảnh|\.(png|jpe?g|webp)|chờ máy chủ/iu.test(l))) out.push(`Vướng mắc ở bước ${idx + 1}: ${l.replace(/^\s*[-*•]\s*/, '').trim().slice(0, 300)}`);
   return out;
 }
 
@@ -2562,15 +2564,18 @@ async function downloadSourceImages(nguonRel, handoffRel, planId = null) {
 }
 
 // Commons trả 429 khi tải dồn: thử lại cả bảng sau 2, 5, 10 phút (file đã tải thì tự bỏ qua)
+const dangTaiLai = new Map(); // id kế hoạch → các danh sách hình máy chủ đang hẹn tải lại
 function henTaiLai(plan, label, fn, lan = 1) {
-  const cho = [2, 5, 10];
-  if (lan > cho.length) return;
+  const cho = [2, 5, 10], ds = dangTaiLai.get(plan.id) || new Set();
+  if (lan > cho.length) { ds.delete(label); return; }
+  dangTaiLai.set(plan.id, ds.add(label));
   setTimeout(async () => {
     const x = await fn().catch(e => ({ fail: [{ name: label, why: e.message }] })) || {};
     const r = { ok: x.ok || [], fail: x.fail || [] }; // downloadSourceImages có thể trả null hoặc { none: true }
     plan.log.push(`Tải lại hình (${label}, lần ${lan}): ${r.ok.length} tải được${r.fail.length ? ', còn ' + r.fail.length + ' lỗi' : ''}`);
     emitPlan(plan);
     if (r.fail.some(x => /429/.test(x.why))) henTaiLai(plan, label, fn, lan + 1);
+    else ds.delete(label);
   }, cho[lan - 1] * 60e3);
 }
 

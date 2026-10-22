@@ -110,7 +110,8 @@
   ],
   "reviewRunId": "20261015-233827-chef",
   "reviewHandoff": "handoff/20261015-233827-chef.md",
-  "summary": "Dự án suy-giap-v2 gần xong: `output/suy-giap-v2/slides.md` có 25 trang, tổng đúng 60 phút, đủ các mục được giao, và `thiet-ke.md` đã sẵn sàng. Tuy vậy, kịch bản chưa dùng được ngay: bàn giao của Hạ ghi là đã sửa hết các mục bắt buộc của An, nhưng khi đối chiếu file thì vẫn còn sót ở tr.6, 9, 10/23 (cách xử lý ý nghĩ tự hại), 21 (gán nhầm bằng chứng, lưu ý cho người mang thai) và 25 (ghi chú nội bộ, nguồn [7] không có trong danh sách). Phần 5 tư thế, hơi thở, thư giãn và chống chỉ định chưa có nghiên cứu làm căn cứ, nên cần giáo viên yoga trị liệu và bác sĩ rà soát trước khi dựng Canva. Chi tiết và các bước tiếp theo nằm trong `output/suy-giap-v2/tong-ket.md` và `handoff/20261015-233827-chef.md`."
+  "summary": "Dự án suy-giap-v2 gần xong: `output/suy-giap-v2/slides.md` có 25 trang, tổng đúng 60 phút, đủ các mục được giao, và `thiet-ke.md` đã sẵn sàng. Tuy vậy, kịch bản chưa dùng được ngay: bàn giao của Hạ ghi là đã sửa hết các mục bắt buộc của An, nhưng khi đối chiếu file thì vẫn còn sót ở tr.6, 9, 10/23 (cách xử lý ý nghĩ tự hại), 21 (gán nhầm bằng chứng, lưu ý cho người mang thai) và 25 (ghi chú nội bộ, nguồn [7] không có trong danh sách). Phần 5 tư thế, hơi thở, thư giãn và chống chỉ định chưa có nghiên cứu làm căn cứ, nên cần giáo viên yoga trị liệu và bác sĩ rà soát trước khi dựng Canva. Chi tiết và các bước tiếp theo nằm trong `output/suy-giap-v2/tong-ket.md` và `handoff/20261015-233827-chef.md`.",
+  "topic": "suy-giap-v2"
  },
  {
   "id": "plan-20261015-234312",
@@ -221,7 +222,8 @@
   ],
   "reviewRunId": null,
   "reviewHandoff": null,
-  "summary": ""
+  "summary": "",
+  "topic": "suy-giap-v2"
  },
  {
   "id": "plan-20261016-170249",
@@ -328,7 +330,8 @@
   "replanRunIds": [],
   "reviewRunId": "20261016-172155-chef",
   "reviewHandoff": "handoff/20261016-172155-chef.md",
-  "summary": "Kịch bản đã xong: `output/suy-giap-v4/slides.md` có đủ 25 trang và 14 phần được giao, tổng đúng 60 phút, các cảnh báo thuốc, dấu hiệu dừng tập và số 115 đều có mặt. Thiết kế (`thiet-ke.md`) mới ở mức mô tả, chưa có ảnh nào được tạo. Trước khi dạy, bác sĩ nội tiết cần duyệt trang 9 và 11–15, giáo viên cần quyết định giữ hay bỏ trang 17–18; ngoài ra còn phải đối chiếu nguồn [8], [9], sửa 2 link lỗi và thay ghi chú nội bộ \"(An, mục C)\" ở dòng nguồn các trang 14–22. Chi tiết và các bước tiếp theo nằm trong `output/suy-giap-v4/tong-ket-chef.md` (bản tóm kết của Hạ vẫn giữ nguyên), bàn giao ở `handoff/20261016-172155-chef.md`, và `index.md` đã có thêm 2 dòng mô tả."
+  "summary": "Kịch bản đã xong: `output/suy-giap-v4/slides.md` có đủ 25 trang và 14 phần được giao, tổng đúng 60 phút, các cảnh báo thuốc, dấu hiệu dừng tập và số 115 đều có mặt. Thiết kế (`thiet-ke.md`) mới ở mức mô tả, chưa có ảnh nào được tạo. Trước khi dạy, bác sĩ nội tiết cần duyệt trang 9 và 11–15, giáo viên cần quyết định giữ hay bỏ trang 17–18; ngoài ra còn phải đối chiếu nguồn [8], [9], sửa 2 link lỗi và thay ghi chú nội bộ \"(An, mục C)\" ở dòng nguồn các trang 14–22. Chi tiết và các bước tiếp theo nằm trong `output/suy-giap-v4/tong-ket-chef.md` (bản tóm kết của Hạ vẫn giữ nguyên), bàn giao ở `handoff/20261016-172155-chef.md`, và `index.md` đã có thêm 2 dòng mô tả.",
+  "topic": "suy-giap-v4"
  },
  {
   "id": "plan-20261016-204112",
@@ -362,7 +365,8 @@
   "replanRunIds": [],
   "reviewRunId": null,
   "reviewHandoff": null,
-  "summary": ""
+  "summary": "",
+  "topic": "suy-giap-v5"
  },
  {
   "id": "plan-20261016-204631",
@@ -682,7 +686,8 @@
   "resumeAt": null,
   "askRounds": 1,
   "budgetX": 1.5017865,
-  "reviewDone": true
+  "reviewDone": true,
+  "topic": "suy-giap-v5"
  },
  {
   "id": "plan-20261017-163339",
@@ -837,7 +842,8 @@
   "replanRunIds": [],
   "reviewRunId": null,
   "reviewHandoff": null,
-  "summary": ""
+  "summary": "",
+  "topic": "suy-giap-v6"
  },
  {
   "id": "plan-20261017-164115",
@@ -994,7 +1000,8 @@
   "reviewRunId": null,
   "reviewHandoff": null,
   "summary": "",
-  "retryOf": "plan-20261017-163339"
+  "retryOf": "plan-20261017-163339",
+  "topic": "suy-giap-v6"
  },
  {
   "id": "plan-20261017-164516",
@@ -1150,7 +1157,8 @@
   "reviewRunId": null,
   "reviewHandoff": null,
   "summary": "",
-  "retryOf": "plan-20261017-164115"
+  "retryOf": "plan-20261017-164115",
+  "topic": "suy-giap-v6"
  },
  {
   "id": "plan-20261017-165013",
@@ -5416,7 +5424,9 @@
    "Bài học BH-58 tái phạm (anh-sai-tu-the ×1) → lên checklist bắt buộc",
    "Bài học: 5 tái phạm, 14 áp dụng mà không tái phạm ở dự án này",
    "Chủ dự án đã trả lời 2 câu hỏi",
-   "Máy soát sau vòng sửa nhanh: không còn lỗi máy móc"
+   "Máy soát sau vòng sửa nhanh: không còn lỗi máy móc",
+   "Tải lại hình output/thoai-hoa-khop-goi-v2/hinh-nguon/quadriceps-4-co-tu-dau.png (lần 3): HTTP 429",
+   "Tải lại hình output/thoai-hoa-khop-goi-v2/hinh-nguon/quadriceps-4-co-tu-dau.png (lần 3): HTTP 429"
   ],
   "note": "",
   "waiting": null,

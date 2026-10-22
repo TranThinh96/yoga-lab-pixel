@@ -106,3 +106,5 @@ Brief: du-an/plan-20261022-203403/brief.md
 - Bài học: 5 tái phạm, 14 áp dụng mà không tái phạm ở dự án này
 - Chủ dự án đã trả lời 2 câu hỏi
 - Máy soát sau vòng sửa nhanh: không còn lỗi máy móc
+- Tải lại hình output/thoai-hoa-khop-goi-v2/hinh-nguon/quadriceps-4-co-tu-dau.png (lần 3): HTTP 429
+- Tải lại hình output/thoai-hoa-khop-goi-v2/hinh-nguon/quadriceps-4-co-tu-dau.png (lần 3): HTTP 429

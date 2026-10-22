@@ -26,7 +26,7 @@ const { LOAI_LOI, mucTrong, docVanDe, docDaXuLy, docDuyetLai, docTinNhan, chuFil
 const { docCauHoi: parseQuestions, laCauHoiMoiTruong, locBaiHocMoi, phanLoaiCauHoi, chonChuDe, chuDeTu, chuDeTiepNoi } = require('./lib/van-ban');
 const { chuDeTriThuc, docBangTriThuc, hopNhatMenhDe, hopNhatNguon, capNhatTruyCap, hopNhatTuThe, maHinh, hopNhatHinh, cacChuDe, vietMocChuDe, vietBanDoTriThuc, docThuatNgu, dienThuatNgu, timTriThuc, goiNguCanh, slug, KIEU_MAU, trichMauTot, taoMauTot, chonMauTot } = require('./lib/tri-thuc');
 const { docGhiChu } = require('./lib/ghi-chu');
-const { chonBuocChay } = require('./lib/lich');
+const { chonBuocChay, choBuocChen } = require('./lib/lich');
 const { chiSoTriNao } = require('./lib/chi-so');
 const { soMa, docBaiHoc, noiDungBaiHoc, suaBaiHoc, banXemKinhNghiem, nhanBuoc, chonBaiHoc, maTrong, bangChungBaiHoc, daNhanTheoBuocCua, danhGiaBaiHoc, themLoHong, demLoHongMo, thongKeHoc, hocTuJson, apDungHoc, apDungSuaHuongDan, hoanTacSuaHuongDan, themTuTranh } = require('./lib/bai-hoc');
 
@@ -1915,7 +1915,7 @@ function runCheckin(plan, idx, tinHieu) {
       const j = jsonBlocks(full || run.summary).find(x => x && Array.isArray(x.chen)) || { chen: [] };
       let them = [];
       try { them = cleanSteps(j.chen.slice(0, 2), idx + 1, teamOf(plan), true); } catch (e) { plan.log.push('Giao ban: bước chèn không hợp lệ: ' + e.message); }
-      if (them.length && plan.steps.length + them.length <= cfgNum('maxTotalSteps', 20)) insertSteps(plan, idx + 1, them);
+      if (them.length && plan.steps.length + them.length <= cfgNum('maxTotalSteps', 20)) { insertSteps(plan, idx + 1, them); choBuocChen(plan.steps, idx + 1, them.length); }
       else them = [];
       plan.log.push(`Giao ban: ${them.length ? 'chèn ' + them.length + ' bước' : 'không chèn bước'}${j.ghi_chu ? ' · ' + String(j.ghi_chu).slice(0, 200) : ''}`);
       emitPlan(plan); pumpPlan(plan);

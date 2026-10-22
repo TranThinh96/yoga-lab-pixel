@@ -68,9 +68,9 @@ const DEFAULT_CONFIG = {
   stepEffort: { rereview: 'medium', fix: 'medium' }, // hạ mức suy nghĩ cho bước duyệt lại / sửa (chỉ hạ, không nâng)
   lintBanned: ['chữa khỏi', 'thải độc', 'giảm liều', 'chắc chắn khỏi', 'kích thích tuyến giáp'], // máy soát: từ cấm trong output/
   lintVariants: [['giáo viên', 'giảng viên']], // máy soát: cặp cách gọi không được lẫn trong cùng file
-  lintMaxWords: 40,
+  lintMaxWords: 40, // máy soát: số chữ tối đa trên một trang slide (Ý chính + Câu chốt)
   downloadsDir: '',    // nơi Chrome lưu file tải về (ảnh Gemini); để trống = ~/Downloads
-  agyBrainDir: '',     // nơi agy lưu ảnh nó tạo; để trống = ~/.gemini/antigravity-cli/brain   // máy soát: số chữ tối đa trên một trang slide (Ý chính + Câu chốt)
+  agyBrainDir: '',     // nơi agy lưu ảnh nó tạo; để trống = ~/.gemini/antigravity-cli/brain
   stepRetries: 1,     // bước lỗi (không phải do hết hạn mức) được tự chạy lại mấy lần trước khi lập lại kế hoạch
   autoResumeOnLimit: true, // hết hạn mức mà đọc được giờ làm mới thì tự chạy tiếp lúc đó
   maxAskRounds: 3,    // dự án dừng hỏi chủ dự án tối đa mấy lần; sau đó nhóm tự quyết theo phương án đề xuất
@@ -439,7 +439,7 @@ function buildPrompt(agent, task, handoffPath, attachments, kind, lab = [], goi 
     `QUY TẮC TIẾT KIỆM (bắt buộc):`,
     `1. Đọc index.md trước. Chỉ mở những file thật sự cần cho việc này, không quét cả folder.`,
     `2. sources/ là tài liệu gốc, templates/ là mẫu chung — chỉ đọc. Nháp của bạn để trong agents/${agent.id}/. Sản phẩm cuối để trong output/.`,
-    `3. Không sửa file nháp của agent khác (trừ khi nhiệm vụ yêu cầu rõ, ví dụ ghi bài học vào kinh-nghiem.md khi nghiệm thu).`,
+    `3. Không sửa file nháp của agent khác (trừ khi nhiệm vụ yêu cầu rõ).`,
     `4. Khi xong, ghi bản bàn giao (tối đa ~350 chữ) vào đúng file: ${handoffPath}`,
     `   Đúng 7 mục: "## Đã làm", "## File tạo ra", "## Tự kiểm theo brief" (từng tiêu chí: đạt / chưa + lý do), "## Quyết định & giả định",`,
     `   "## Vướng mắc", "## Câu hỏi cho chủ dự án" (ghi "Không" nếu không có), "## Gợi ý bước sau".`,

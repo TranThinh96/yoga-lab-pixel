@@ -2723,8 +2723,12 @@ function finishPlan(plan) {
         } else plan.log.push(`Điểm ${plan.score} < ${pass} → giao ${fixes.length} việc sửa, xong sẽ nghiệm thu lại`);
         plan.status = 'running';
         if (qs.length) return askOwner(plan, qs, 'running');
-        emitPlan(plan);
-        return pumpPlan(plan);
+        if (!tuHoc) { emitPlan(plan); return pumpPlan(plan); }
+        // Hồi cứu đang chạy nền: chờ xong (tối đa 2 phút) để bước sửa nhận checklist vừa lên bậc
+        const cho = 'Chờ hồi cứu xong rồi giao vòng sửa';
+        plan.note = cho; emitPlan(plan);
+        return Promise.race([lessonsDone, new Promise(r => setTimeout(r, 120000))])
+          .then(() => { if (plan.note === cho) { plan.note = ''; emitPlan(plan); } pumpPlan(plan); });
       }
       if (qs.length) { // không còn việc sửa: hỏi xong là kết thúc (câu trả lời nằm trong bảng dự án cho lần làm tiếp)
         plan.review = false; plan.reviewDone = true;

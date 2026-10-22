@@ -5,6 +5,7 @@
 ## Ý đã kiểm chứng
 | Ý | Mức | Nguồn | Hạn xem lại |
 |---|---|---|---|
+| [[menh-de/chua-duyet-y-nao\|Chưa duyệt ý nào]] | y-kien |  | 2027-10-22 |
 | [[menh-de/dvt-sung-dau-bap-chan-mot-ben\|Đau, sưng một chân (thường bắp chân hay đùi) có thể là DVT;]] | manh | [[nhs-dvt]] | 2027-10-21 |
 | [[menh-de/goi-115-dau-hieu-nguy-hiem\|Gọi 115: đau ngực nặng kéo dài, thở bất thường, tím môi hoặc đầu chi, ngất, m…]] | vua | [[vinmec-dau-hieu-goi-115]], [[bachmai-so-cuu-dot-quy]], [[cap-cuu-115-hcm]] | 2027-10-21 |
 | [[menh-de/koa-150-phut-tuan\|Hướng dẫn chung cho người lớn: ít nhất 150 phút hoạt động nhịp điệu vừa mỗi t…]] | manh | [[nhs-thoai-hoa-khop]] | 2027-10-21 |
@@ -33,33 +34,39 @@
 - [[tu-the/savasana-co-do|Thư giãn có đỡ (Savasana)]] (Savasana) · CCĐ: Chóng mặt, huyết áp thay đổi, khó nằm: bản ngồi ghế, cổ trung tính
 
 ## Hình
+- [[hinh/khop-goi-gan-tu-dau|Gân tứ đầu nối xương bánh chè (đã có trong hinh-nguon/; chỉ phụ)]] · Public domain
 - [[hinh/khop-goi-giai-phau-blausen|Giải phẫu khớp gối nhìn ngang, bản dự phòng cho hình lành]] · CC BY 3.0 (ghi tác giả)
 - [[hinh/khop-goi-lanh-giai-phau|Sơ đồ khớp gối lành (xương, sụn, dây chằng), ít chữ, nhãn tiếng Anh dễ che]] · Public domain
 - [[hinh/khop-goi-thoai-hoa-minh-hoa|Minh hoạ khớp gối thoái hoá (sụn mòn, gai xương)]] · CC BY 4.0 (ghi tác giả)
 - [[hinh/khop-goi-thoai-hoa-vector|Minh hoạ vector thoái hoá khớp gối, bản dự phòng (CC BY-SA: ghi tác giả, chia sẻ tương tự)]] · CC BY-SA 4.0
 
 ## Nguồn
-- [[nguon/acr-af-2019|2019 Guideline for the Management of OA of the Hand, Hip, and Knee]] · ACR/Arthritis Foundation · truy cập: ok
-- [[nguon/af-quy-tac-2-gio|How Hard Should You Work Out? (Two-Hour Pain Rule)]] · Arthritis Foundation · truy cập: ok
+- [[nguon/acr-af-2019|2019 Guideline OA hand, hip, knee]] · ACR/AF · truy cập: ok
+- [[nguon/af-quy-tac-2-gio|How Hard Should You Work Out?]] · Arthritis Foundation · truy cập: ok
 - [[nguon/af-thoai-hoa-khop|Osteoarthritis]] · Arthritis Foundation · truy cập: ok
 - [[nguon/bachmai-so-cuu-dot-quy|Sơ cứu đột quỵ tại nhà: những thao tác "sống còn"]] · Bệnh viện Bạch Mai · truy cập: ok
 - [[nguon/bv-thong-nhat-thoai-hoa-goi|Tìm hiểu về thoái hóa khớp gối và các phương pháp điều trị]] · BV Đa khoa Thống Nhất – Đồng Nai · truy cập: ok
 - [[nguon/cap-cuu-115-hcm|Trang chủ]] · TT Cấp cứu 115 TP.HCM · truy cập: ok
+- [[nguon/cdc-nguoi-lon-tuoi|Physical Activity Recommendations for Adults 65+]] · CDC · truy cập: chan
 - [[nguon/hunter-felson-bmj-osteoarthritis|Osteoarthritis]] · Hunter & Felson (BMJ) · truy cập: chua-kiem
 - [[nguon/lauche-2019-yoga-oa|Yoga for Osteoarthritis: a Systematic Review and Meta-analysis]] · Lauche R et al. · truy cập: ok
 - [[nguon/mayo-clinic-knee-pain-leg-swelling|Knee pain; Leg swelling]] · Mayo Clinic · truy cập: chua-kiem
 - [[nguon/nhs-dau-goi|Knee pain]] · NHS · truy cập: ok
 - [[nguon/nhs-dvt|DVT (deep vein thrombosis)]] · NHS · truy cập: ok
 - [[nguon/nhs-ibuprofen|Ibuprofen for adults]] · NHS · truy cập: ok
-- [[nguon/nhs-thoai-hoa-khop-dieu-tri|Osteoarthritis – Treatment and support]] · NHS · truy cập: ok
+- [[nguon/nhs-thoai-hoa-khop-dieu-tri|Osteoarthritis – Treatment]] · NHS · truy cập: ok
 - [[nguon/nhs-thoai-hoa-khop|Osteoarthritis]] · NHS · truy cập: ok
 - [[nguon/niams-thoai-hoa-khop|Osteoarthritis]] · NIH/NIAMS · truy cập: ok
-- [[nguon/nice-ng226|Osteoarthritis in over 16s: diagnosis and management (NG226)]] · NICE · truy cập: chan
-- [[nguon/oarsi-2019|OARSI guidelines for non-surgical management of knee, hip, polyarticular OA]] · OARSI · truy cập: ok
+- [[nguon/nice-ng226|Osteoarthritis in over 16s (NG226)]] · NICE · truy cập: chan
+- [[nguon/oarsi-2019|OARSI guidelines for the non-surgical management of knee, hip, and polyarticular OA (2019)]] · OARSI · truy cập: ok
+- [[nguon/oreilly-1998-quad|Quadriceps weakness in knee osteoarthritis: the effect on pain and disability]] · Ann Rheum Dis · truy cập: chan
 - [[nguon/plos-2024-yoga-koa|The impact of Yoga on patients with knee osteoarthritis: SR and meta-analysis of RCTs]] · PLOS ONE · truy cập: ok
+- [[nguon/quad-weakness-oa-1998|Quadriceps weakness in osteoarthritis]] · Curr Opin Rheumatol · truy cập: ok
+- [[nguon/roh-nhs-bai-tap-goi|Exercises for osteoarthritis of the knee]] · Royal Orthopaedic Hospital NHS · truy cập: ok
 - [[nguon/silbernagel-thomee-pain-monitoring-model-gan-achilles|Pain-monitoring model (gân Achilles)]] · Silbernagel/Thomeé · truy cập: chua-kiem
 - [[nguon/vinmec-dau-hieu-goi-115|10 dấu hiệu nhận biết nguy hiểm cho sức khoẻ]] · Vinmec · truy cập: ok
 - [[nguon/yoga-vs-strengthening-rct-n-117-researchgate-bi-chan|ResearchGate (bị chặn)]] · Yoga vs strengthening RCT N=117 · truy cập: chua-kiem
 
 ## Dự án đã dùng
+- [[du-an/plan-20261022-203403/brief|plan-20261022-203403]]
 - [[du-an/plan-20261021-195355/brief|plan-20261021-195355]]

@@ -4,7 +4,7 @@
 
 ## Chủ đề
 - [[chu-de/suy-giap|suy-giap]] · 55 ý đã duyệt · 26 nguồn · 5 tư thế · 0 hình
-- [[chu-de/thoai-hoa-khop-goi|thoai-hoa-khop-goi]] · 14 ý đã duyệt · 21 nguồn · 7 tư thế · 4 hình
+- [[chu-de/thoai-hoa-khop-goi|thoai-hoa-khop-goi]] · 15 ý đã duyệt · 25 nguồn · 7 tư thế · 5 hình
 
 ## Cần bạn xem
 | Ý | Chủ đề | Lý do |
@@ -19,9 +19,11 @@
 ## Nguồn đang bị chặn
 - [[nguon/ata-2014-dieu-tri|Guidelines for the Treatment of Hypothyroidism]] · chan (2026-10-21)
 - [[nguon/baishya-metri-2024|Tổng quan yoga và suy giáp (PMC10966165)]] · chan (2026-10-21)
+- [[nguon/cdc-nguoi-lon-tuoi|Physical Activity Recommendations for Adults 65+]] · chan (2026-10-22)
 - [[nguon/lemieux-2021-thai-ky|Trích hướng dẫn ATA 2017 về thai kỳ]] · chan (2026-10-21)
-- [[nguon/nice-ng226|Osteoarthritis in over 16s: diagnosis and management (NG226)]] · chan (2026-10-21)
+- [[nguon/nice-ng226|Osteoarthritis in over 16s (NG226)]] · chan (2026-10-22)
 - [[nguon/nilkantham-2025|Yoga và suy giáp (PMC12246764)]] · chan (2026-10-21)
+- [[nguon/oreilly-1998-quad|Quadriceps weakness in knee osteoarthritis: the effect on pain and disability]] · chan (2026-10-22)
 - [[nguon/qin-2023-hashimoto|Bài tổng quan về Hashimoto/suy giáp (PMC9968792)]] · chan (2026-10-21)
 - [[nguon/sharma-2024-yoga|Yoga và suy giáp (PMC11495305)]] · chan (2026-10-21)
 - [[nguon/statpearls-suy-giap-tien-lam-sang|Subclinical Hypothyroidism (NBK536970)]] · captcha (2026-10-21)

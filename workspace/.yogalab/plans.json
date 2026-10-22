@@ -4865,5 +4865,978 @@
   "polish": false,
   "mauTotDaGhi": 2,
   "lint": []
+ },
+ {
+  "id": "plan-20261022-203403",
+  "goal": "Bản tiếp nối của workshop thoái hoá khớp gối: thêm 2 trang mới về bài tập tăng sức mạnh cơ đùi trước (cơ tứ đầu) an toàn cho người 50–70 tuổi thoái hoá khớp gối. Cần nguồn mới cho riêng phần này (Mai nghiên cứu bằng Deep Research, An kiểm chứng), rồi cập nhật kịch bản slides.md và thiết kế thiet-ke.md cho 2 trang đó; các trang cũ giữ nguyên. Lam và Vy được dùng công cụ hoi_dong_nghiep để hỏi nhanh An khi cần. Giữ dự án nhỏ: không quá 6 bước.",
+  "coordinatorId": "chef",
+  "team": [
+   "mai",
+   "an",
+   "lam",
+   "vy",
+   "ha",
+   "nhi"
+  ],
+  "autoStart": false,
+  "review": true,
+  "status": "paused",
+  "steps": [
+   {
+    "agentId": "mai",
+    "task": "Đọc brief du-an/plan-20261022-203403/brief.md. Một lượt Deep Research gộp cho 2 trang mới về tăng sức cơ đùi trước (tr.5–6): cơ yếu ↔ đau gối, khuyến cáo, liều tập, 3–5 bài trên ghế/vịn ghế, quy tắc đau, hình giải phẫu cơ tứ đầu có giấy phép. Đầu ra: agents/mai/thoai-hoa-khop-goi-v2-nguon.md, nguồn đánh số từ [18], mỗi ý có link + mức bằng chứng + câu trích nguyên văn; có bảng '## Hình & sơ đồ trong nguồn' (File: + Special:FilePath + tác giả + giấy phép). Chú ý tiêu chí 3, 5, 10.",
+    "from": [],
+    "status": "done",
+    "runId": "20261022-203641-mai",
+    "handoff": "handoff/20261022-203641-mai.md",
+    "summary": "Deep Research chưa bắt đầu chạy. Gemini kẹt ở bước \"Tôi đang tạo kế hoạch nghiên cứu\", nên chưa có nút \"Bắt đầu nghiên cứu\".\n\n- **Lần 1:** Gemini báo lỗi, bấm thử lại vẫn lỗi.\n- **Lần 2:** gửi prompt rút gọn trong chat mới (có link bên dưới). Chờ hơn 4 phút, tải lại trang 2 lần mà kế hoạch vẫn không hiện.\n\nĐã ghi link chat và trạng thái \"chưa chạy\" vào `agents/mai/thoai-hoa-khop-goi-v2-deep-research.md`, và bàn giao ở `handoff/20261022-203641-mai.md`. File nguồn `agents/mai/thoai-hoa-khop-goi-v2-nguon.md` chưa làm được vì chưa có báo cáo.\n\nLink chat: https://gemini.google.com/app/cfbedf83caab2c64. Lượt sau mở lại link này, hoặc gửi lại ở chat mới nếu vẫn kẹt. Cũng có thể cho phép Mai mở trực tiếp NICE, OARSI, ACR, NHS, Versus Arthritis và Wikimedia Commons bằng WebFetch.",
+    "error": "",
+    "tokens": 2838696,
+    "boiCanh": "du-an/plan-20261022-203403/boi-canh/20261022-203641-mai.md",
+    "prevFiles": null,
+    "files": [
+     "agents/mai/thoai-hoa-khop-goi-v2-deep-research.md"
+    ],
+    "images": [],
+    "drFile": "agents/mai/thoai-hoa-khop-goi-v2-deep-research.md",
+    "latest": 3
+   },
+   {
+    "agentId": "an",
+    "task": "Đọc brief du-an/plan-20261022-203403/brief.md. Duyệt agents/mai/thoai-hoa-khop-goi-v2-nguon.md: mở từng link, đối chiếu câu trích, ghi Đúng/Sửa/Bỏ và mức bằng chứng; kiểm giấy phép hình cơ tứ đầu; đề xuất 2 bài tập cơ đùi trước an toàn nhất có nguồn (không trùng 'Ngồi ghế duỗi gối') kèm liều và chống chỉ định. Đầu ra: agents/an/thoai-hoa-khop-goi-v2-kiem-nguon.md, kết luận ĐẠT/CẦN SỬA.",
+    "from": [
+     1
+    ],
+    "checks": 1,
+    "status": "done",
+    "runId": "20261022-204724-an",
+    "handoff": "handoff/20261022-204724-an.md",
+    "summary": "Kết luận: CẦN SỬA. Tôi không duyệt được gì, vì file nguồn của Mai (`agents/mai/thoai-hoa-khop-goi-v2-nguon.md`) chưa tồn tại: Deep Research chưa chạy (Gemini kẹt ở bước tạo kế hoạch). Vì vậy chưa có link, câu trích hay hình cơ tứ đầu có giấy phép để kiểm, và tôi cũng chưa chốt được 2 bài tập có nguồn.\n\nTôi ghi 3 vấn đề BẮT BUỘC (V1–V3), cùng gợi ý tạm hai bài chưa có nguồn: siết cơ đùi giữ tĩnh, và đứng lên–ngồi xuống ghế có vịn. Đề xuất bước sau: Mai lấy báo cáo từ link chat Gemini hoặc mở từng nguồn bằng WebFetch.\n\nFiles are in `agents/an/thoai-hoa-khop-goi-v2-kiem-nguon.md` and `handoff/20261022-204724-an.md`.",
+    "error": "",
+    "tokens": 327673,
+    "boiCanh": "du-an/plan-20261022-203403/boi-canh/20261022-204724-an.md",
+    "prevFiles": null,
+    "files": [
+     "agents/an/thoai-hoa-khop-goi-v2-kiem-nguon.md"
+    ],
+    "images": [],
+    "verdict": "fix",
+    "latest": 4
+   },
+   {
+    "agentId": "mai",
+    "from": [
+     1,
+     2
+    ],
+    "fixOf": 1,
+    "round": 1,
+    "kind": "fix",
+    "issueIds": [],
+    "status": "done",
+    "runId": "20261022-204812-mai",
+    "handoff": "handoff/20261022-204812-mai.md",
+    "summary": "Tôi đã viết xong file nguồn `agents/mai/thoai-hoa-khop-goi-v2-nguon.md` (soát lỗi máy móc: không lỗi). Nó đủ mục (a)–(f), nguồn đánh số tiếp từ [18], có câu trích nguyên văn và bảng 4 hình cơ tứ đầu có giấy phép (kèm link `Special:FilePath`). Tôi không chạy Deep Research mà mở nguồn trực tiếp. Cả 3 vấn đề An nêu (file chưa có, thiếu mục (a)–(e), thiếu bảng hình) đã xử lý.\n\nCòn thiếu hoặc chưa kiểm:\n- **NICE NG226:** bị chặn (403), nên chỉ có một câu qua kết quả tìm kiếm, ghi \"chưa kiểm\" và không dùng trên slide.\n- **Versus Arthritis, EULAR:** không mở được, ghi vào Khoảng trống.\n- **Liều tập:** chỉ có số lần (10 lần, giữ 5–10 giây) và tối thiểu 2 ngày/tuần, không có số hiệp. Ý \"sau bao lâu thấy khác\" cũng chưa có câu trích.\n\nBàn giao nằm ở `handoff/20261022-204812-mai.md`.",
+    "error": "",
+    "tokens": 1158182,
+    "task": "Sửa sản phẩm của bước 1 theo nhận xét của An (bàn giao bước 2 và file nhận xét được nêu trong đó). Mỗi nhận xét BẮT BUỘC: sửa, hoặc giải thích rõ vì sao không sửa. Nhận xét NÊN: sửa nếu hợp lý. Sửa thẳng vào file sản phẩm, và trong bàn giao liệt kê từng nhận xét → đã xử lý thế nào.",
+    "fileSua": [
+     "agents/mai/thoai-hoa-khop-goi-v2-deep-research.md"
+    ],
+    "boiCanh": "du-an/plan-20261022-203403/boi-canh/20261022-204812-mai.md",
+    "prevFiles": null,
+    "files": [
+     "agents/mai/thoai-hoa-khop-goi-v2-nguon.md"
+    ],
+    "images": [],
+    "noChange": true,
+    "latest": 8
+   },
+   {
+    "agentId": "an",
+    "from": [
+     2,
+     3
+    ],
+    "checks": 3,
+    "round": 1,
+    "status": "done",
+    "runId": "20261022-205133-an",
+    "handoff": "handoff/20261022-205133-an.md",
+    "summary": "Duyệt lại hoàn tất. File nguồn của Mai đã khắc phục cả 3 vấn đề BẮT BUỘC từ lần duyệt trước: file có thật, mục (a)–(e) đủ với câu trích hoặc ghi Khoảng trống rõ ràng, 4 hình có link + giấy phép. Bàn giao chuyển Lam viết slides tr.5–6 với 2 bài ưu tiên (Inner Range Quad, Sit to Stand) và bỏ ý \"sau bao lâu thấy khác\" vì không có nguồn.",
+    "error": "",
+    "tokens": 415665,
+    "task": "Duyệt lại sau khi sửa (vòng 1): kiểm các vấn đề trong danh sách kèm theo; chỉ nêu lỗi còn lại hoặc lỗi mới phát sinh.",
+    "boiCanh": "du-an/plan-20261022-203403/boi-canh/20261022-205133-an.md",
+    "prevFiles": null,
+    "files": [
+     "agents/an/thoai-hoa-khop-goi-v2-kiem-nguon-v2.md"
+    ],
+    "images": [],
+    "verdict": "pass"
+   },
+   {
+    "agentId": "lam",
+    "task": "Đọc brief du-an/plan-20261022-203403/brief.md và bàn giao bước 1–2. Sửa output/thoai-hoa-khop-goi-v2/slides.md: chèn tr.5 (lý thuyết cơ đùi trước, ≤90 chữ) và tr.6 (2 bài, chỉ nhãn + ảnh) theo templates/kich-ban-slide.md; trang cũ 5–10 thành 7–12, chỉ đổi số trang và tham chiếu số trang; cập nhật bảng mục tiêu, bảng phút (tổng 37), Nguồn [18]…, Việc còn mở. Được hỏi An qua hoi_dong_nghiep. Chú ý tiêu chí 1–8.",
+    "from": [
+     1,
+     2
+    ],
+    "status": "done",
+    "runId": "20261022-205334-lam",
+    "handoff": "handoff/20261022-205334-lam.md",
+    "summary": "Tôi đã chèn tr.5 (cơ đùi trước, 70 chữ) và tr.6 (2 bài, chỉ nhãn và ảnh) vào `slides.md`, và đổi trang cũ 5–10 thành 7–12, chỉ sửa số trang và các chỗ tham chiếu số trang. Bảng mục tiêu, bảng phút (tổng 37), Nguồn [18]–[21] và Việc còn mở đã cập nhật; bàn giao ở `handoff/20261022-205334-lam.md`.\n\n- **Hình tr.5:** `Quadriceps.png` chưa có trong `hinh-nguon/` vì Commons đang giới hạn lượt tải (429). Máy chủ nói sẽ tự tải sau vài phút, nên `soat_loi` còn báo thiếu file này.\n- **Lệch với `thiet-ke.md`:** `soat_loi` báo lệch từng trang vì Vy chưa đánh số lại thiết kế; đó là việc của bước 7.\n- **Chọn bài:** tr.6 là Siết cơ đùi khăn cuộn và Đứng lên – ngồi xuống ghế, theo đề xuất của An.\n- **Cải biên Yoga Lab:** chân gác ghế thứ hai, tay chống đùi, ghế cao có đệm, và liều trong buổi (3 lần mỗi chân, 5 lần đứng–ngồi) đều ghi là hướng dẫn thực hành của Yoga Lab, không gán cho nguồn [20] vốn chỉ có \"10 lần\".\n- **Câu hỏi cho chủ dự án:** bài (1) vẫn gần \"Ngồi ghế duỗi gối\" ở tr.7; tôi đề xuất giữ, hoặc thay bằng Mini Squat vịn ghế ≤45° nếu muốn khác hẳn.",
+    "error": "",
+    "tokens": 1030133,
+    "boiCanh": "du-an/plan-20261022-203403/boi-canh/20261022-205334-lam.md",
+    "prevFiles": null,
+    "files": [
+     "output/thoai-hoa-khop-goi-v2/slides.md"
+    ],
+    "images": [],
+    "latest": 7
+   },
+   {
+    "agentId": "an",
+    "task": "Đọc brief du-an/plan-20261022-203403/brief.md. Duyệt output/thoai-hoa-khop-goi-v2/slides.md: kiểm từng ý y khoa tr.5–6 đối chiếu câu trích trong agents/mai/thoai-hoa-khop-goi-v2-nguon.md; ma trận 2 bài × chống chỉ định; liều tập vừa phút trang; xác nhận trang cũ không đổi chữ ngoài số trang; tổng phút đúng. Đầu ra: agents/an/thoai-hoa-khop-goi-v2-kiem-slides.md, danh sách sửa BẮT BUỘC/NÊN, ĐẠT/CẦN SỬA.",
+    "from": [
+     5
+    ],
+    "checks": 5,
+    "status": "done",
+    "runId": "20261022-205728-an",
+    "handoff": "handoff/20261022-205728-an.md",
+    "summary": "Kết luận: CẦN SỬA. Còn 1 lỗi BẮT BUỘC (V1) và 8 điểm NÊN (V2–V9).\n\n- **V1 (BẮT BUỘC):** tiêu đề mục hình trong file nguồn của Mai là \"(f) Hình & sơ đồ trong nguồn\". Máy chủ không đọc được bảng nên không tải hình, và `hinh-nguon/` chưa có hình cơ tứ đầu cho tr.5.\n- **Hai ý Lam nhờ kiểm:** \"10 lần, giữ 5–10 giây\" [20] và \"≥2 ngày/tuần\" [21] khớp câu trích. [21] là khuyến nghị cho người từ 65 tuổi, slide chưa nói rõ (V3).\n- **Phần đạt:**\n  - Tổng 37 phút, thực hành 24,5.\n  - Trang cũ chỉ đổi số trang và tham chiếu số trang.\n  - Mọi ý y khoa ở tr.5–6 khớp câu trích hoặc được ghi là hướng dẫn thực hành của Yoga Lab.\n- **Điểm NÊN đáng chú ý:**\n  - Bài đứng–ngồi đi qua gối gập khoảng 90°, vượt mốc 45–60° của brief (V4).\n  - Cách đặt hai ghế ở bài (1) chưa khả thi trong phòng chung (V6).\n  - Ma trận chống chỉ định còn thiếu vài ô (V5).\n- **Câu hỏi cho chủ dự án (2 câu):**\n  1. Tr.1 còn \"30 phút\" trong khi buổi nay 37: có đổi con số không?\n  2. Giữ bài đứng–ngồi hay thay bằng Mini Squat ≤45°?\n\nFile đã tạo:\n- `agents/an/thoai-hoa-khop-goi-v2-kiem-slides.md`\n- `handoff/20261022-205728-an.md`",
+    "error": "",
+    "tokens": 919538,
+    "boiCanh": "du-an/plan-20261022-203403/boi-canh/20261022-205728-an.md",
+    "prevFiles": null,
+    "files": [
+     "agents/an/thoai-hoa-khop-goi-v2-kiem-slides.md"
+    ],
+    "images": [],
+    "verdict": "fix",
+    "latest": 9
+   },
+   {
+    "agentId": "lam",
+    "from": [
+     5,
+     6
+    ],
+    "fixOf": 5,
+    "round": 1,
+    "kind": "fix",
+    "issueIds": [
+     "VD-5",
+     "VD-6",
+     "VD-7",
+     "VD-8",
+     "VD-9",
+     "VD-10",
+     "VD-11",
+     "VD-12"
+    ],
+    "status": "done",
+    "runId": "20261022-210203-lam",
+    "handoff": "handoff/20261022-210203-lam.md",
+    "summary": "Tôi đã sửa cả 8 vấn đề VD-5 đến VD-12 trực tiếp trong `slides.md`. Chưa dựng ảnh nào: `thiet-ke.md` còn bản cũ và hình cơ tứ đầu ở trang 5 chưa có file.\n\n- **Bài (2) trang 6:** theo quyết định của chủ dự án, tôi đổi từ \"Đứng lên – ngồi xuống\" sang Mini Squat vịn ghế, gối gập tối đa 45° [20]. Việc này làm mâu thuẫn gập ~90° ở VD-7 không còn.\n- **Các nhận xét còn lại:** VD-5, VD-6, VD-8, VD-9, VD-10 và VD-11 đều đã sửa theo đề xuất của An. Trang 1 giờ ghi \"37 phút\".\n- **Nguồn [18]:** tôi bỏ nó khỏi danh sách nguồn và khỏi trang 12, và sửa lại câu Quy ước nguồn, nên số 18 để trống.\n- **Công cụ soát lỗi:** `soat_loi` báo `thiet-ke.md` lệch `slides.md` từ trang 5 đến 12, và `slides.md` nhắc ảnh `quadriceps-4-co-tu-dau.png` nhưng chưa có file. Tôi chưa xử lý, đã ghi vào bàn giao cho Vy cập nhật `thiet-ke.md` và nhờ An duyệt lại trang 6.\n\nBản bàn giao nằm ở `handoff/20261022-210203-lam.md`.",
+    "error": "",
+    "tokens": 430816,
+    "task": "Sửa các vấn đề An giao cho bạn: VD-5, VD-6, VD-7, VD-8, VD-9, VD-10, VD-11, VD-12 (danh sách chi tiết kèm theo).",
+    "fileSua": [
+     "output/thoai-hoa-khop-goi-v2/slides.md"
+    ],
+    "boiCanh": "du-an/plan-20261022-203403/boi-canh/20261022-210203-lam.md",
+    "prevFiles": null,
+    "files": [
+     "output/thoai-hoa-khop-goi-v2/slides.md"
+    ],
+    "images": [],
+    "latest": 13
+   },
+   {
+    "agentId": "mai",
+    "from": [
+     3,
+     6
+    ],
+    "fixOf": 3,
+    "round": 1,
+    "kind": "fix",
+    "issueIds": [
+     "VD-4"
+    ],
+    "status": "done",
+    "runId": "20261022-210203-mai",
+    "handoff": "handoff/20261022-210203-mai.md",
+    "summary": "Mình đã sửa VD-4 trong `agents/mai/thoai-hoa-khop-goi-v2-nguon.md`. Tiêu đề mục hình giờ đúng là \"## Hình & sơ đồ trong nguồn\". Tên file hình tr.5 đổi thành `quadriceps-4-co-tu-dau.png`, khớp với slides; bảng, link tải và giấy phép giữ nguyên. `soat_loi` không thấy lỗi.\n\nMục lục đầu file vẫn ghi \"(f) hình\". Mình để nguyên vì chỉ là nhãn, không ảnh hưởng việc máy chủ đọc bảng. Mình chưa mở ảnh để kiểm độ rộng ≥ 800px; đã ghi trong file là nhờ Vy hoặc Hạ xác nhận.\n\nBàn giao nằm ở `handoff/20261022-210203-mai.md`, có bảng \"Đã xử lý\" ghi VD-4 là \"Đã sửa\".",
+    "error": "",
+    "tokens": 197470,
+    "task": "Sửa các vấn đề An giao cho bạn: VD-4 (danh sách chi tiết kèm theo).",
+    "fileSua": [
+     "agents/mai/thoai-hoa-khop-goi-v2-nguon.md"
+    ],
+    "boiCanh": "du-an/plan-20261022-203403/boi-canh/20261022-210203-mai.md",
+    "prevFiles": null,
+    "files": [
+     "agents/mai/thoai-hoa-khop-goi-v2-nguon.md"
+    ],
+    "images": []
+   },
+   {
+    "agentId": "an",
+    "from": [
+     6,
+     7,
+     8
+    ],
+    "checks": 7,
+    "round": 1,
+    "status": "done",
+    "runId": "20261022-210331-an",
+    "handoff": "handoff/20261022-210331-an.md",
+    "summary": "Đã hoàn thành duyệt lại bước 7 (Lam). Tất cả vấn đề VD-4–12 đã sửa đúng: Lam sửa VD-5–12 trong slides.md, Mai sửa VD-4 (tiêu đề hình). Không phát hiện lỗi mới. **Kết luận: ĐẠT**, chuyển sang Vy cập nhật thiet-ke.md.",
+    "error": "",
+    "tokens": 395855,
+    "task": "Duyệt lại sau khi sửa (vòng 1): kiểm các vấn đề trong danh sách kèm theo; chỉ nêu lỗi còn lại hoặc lỗi mới phát sinh.",
+    "boiCanh": "du-an/plan-20261022-203403/boi-canh/20261022-210331-an.md",
+    "prevFiles": null,
+    "files": [
+     "agents/an/thoai-hoa-khop-goi-v2-duyet-lai.md"
+    ],
+    "images": [],
+    "verdict": "pass"
+   },
+   {
+    "agentId": "vy",
+    "task": "Đọc brief du-an/plan-20261022-203403/brief.md và slides.md đã duyệt. Sửa output/thoai-hoa-khop-goi-v2/thiet-ke.md: thêm tr.5 (theo kiểu mẫu tr.18, hình C cơ tứ đầu có giấy phép, nhãn Việt) và tr.6 (kiểu mẫu tr.22, 2 prompt B dùng y nguyên người mẫu cũ); đánh số lại trang cũ; cập nhật Danh sách hình và Kiểm tra cả bộ. Kiểm file hình C có thật trong hinh-nguon/, nếu không có ghi link tải tay. Được hỏi An qua hoi_dong_nghiep. Chú ý tiêu chí 9–12.",
+    "from": [
+     5,
+     6
+    ],
+    "status": "done",
+    "runId": "20261022-210526-vy",
+    "handoff": "handoff/20261022-210526-vy.md",
+    "summary": "Mình đã thêm trang 5 và 6 vào `output/thoai-hoa-khop-goi-v2/thiet-ke.md`, nhưng tiêu chí 10 chưa đạt vì file hình cơ tứ đầu chưa có trong `hinh-nguon/`.\n\n- **Hình cơ tứ đầu:** Wikimedia Commons trả lỗi 429 khi tải `quadriceps-4-co-tu-dau.png`, nên mình chưa mở xem được. Chưa ghi toạ độ cắt hay vùng chữ tiếng Anh cần che, và nhãn Việt cũng chưa chốt. Máy chủ sẽ tự tải lại; nếu không được thì tải tay từ `https://commons.wikimedia.org/wiki/Special:FilePath/Quadriceps.png`, rồi Hạ ghi toạ độ cắt vào thân trang 5. Dự phòng là `Gray1238.png`.\n- **Trang 5:** theo kiểu mẫu tr.18, hình loại C (không AI), khoảng 78–85 chữ.\n- **Trang 6:** theo kiểu mẫu tr.22, hai prompt B dùng nguyên người mẫu cũ. Ảnh (1) là Siết cơ đùi khăn cuộn, ghế thứ hai đặt đối diện. Ảnh (2) là Mini Squat vịn lưng ghế, gối gập ≤45°. Ảnh (1) có thêm phương án ảnh chụp thật dự phòng nếu AI dựng sai.\n- **Phần còn lại:** trang cũ 5–10 đã đánh số lại thành 7–12, Danh sách hình và Kiểm tra cả bộ đã cập nhật.\n\n`soat_loi` còn một cảnh báo: slides.md nhắc file hình tr.5 mà file chưa có. Bàn giao nằm ở `handoff/20261022-210526-vy.md`.",
+    "error": "",
+    "tokens": 772979,
+    "boiCanh": "du-an/plan-20261022-203403/boi-canh/20261022-210526-vy.md",
+    "prevFiles": null,
+    "files": [
+     "output/thoai-hoa-khop-goi-v2/thiet-ke.md"
+    ],
+    "images": [],
+    "latest": 12
+   },
+   {
+    "agentId": "ha",
+    "task": "Đọc brief du-an/plan-20261022-203403/brief.md. Duyệt output/thoai-hoa-khop-goi-v2/thiet-ke.md tr.5–6 đặt cạnh ảnh mẫu tr.18 và tr.22: mở file hình C trong hinh-nguon/ xác nhận đúng cơ tứ đầu và giấy phép; prompt B khớp kịch bản; chữ, chính tả, cỡ chữ; dòng Hình slides.md khớp thiet-ke.md; số trang hai file khớp; xác nhận VD-17 đã khớp. Lỗi ở slides.md ghi số trang. Đầu ra: agents/ha/thoai-hoa-khop-goi-v2-duyet-thiet-ke.md, ĐẠT/CẦN SỬA.",
+    "from": [
+     10
+    ],
+    "checks": 10,
+    "status": "done",
+    "runId": "20261022-210808-ha",
+    "handoff": "handoff/20261022-210808-ha.md",
+    "summary": "Kết luận duyệt: **CẦN SỬA**. Hình giải phẫu tr.5 chưa mở xem được vì file chưa tải về (Commons báo 429). Hai trang Commons còn mở được, giấy phép Public domain.\n\nCó 5 lỗi BẮT BUỘC:\n- Hình tr.5 chưa kiểm được nội dung, chưa có toạ độ cắt hay chỗ che chữ Anh.\n- Prompt B bài (1) tr.6 tự mâu thuẫn: \"gót đặt trên ghế\" rồi \"bàn chân nhấc khỏi ghế\".\n- `thiet-ke.md` tr.9 còn hai chỗ ghi số trang cũ.\n- Mục Trang 7 nằm trước Trang 5 và 6.\n\nMục \"Khởi động\" trong Lời giảng tr.6 của `slides.md` (V7) và số chữ tr.5 trong `thiet-ke.md` (V6) là mục NÊN. Mình đã xác nhận VD-17 đã khớp.\n\nBiên bản: `agents/ha/thoai-hoa-khop-goi-v2-duyet-thiet-ke.md`. Bàn giao: `handoff/20261022-210808-ha.md`.",
+    "error": "",
+    "tokens": 662030,
+    "boiCanh": "du-an/plan-20261022-203403/boi-canh/20261022-210808-ha.md",
+    "prevFiles": null,
+    "files": [
+     "agents/ha/thoai-hoa-khop-goi-v2-duyet-thiet-ke.md"
+    ],
+    "images": [],
+    "verdict": "fix",
+    "latest": 16
+   },
+   {
+    "agentId": "vy",
+    "from": [
+     10,
+     11
+    ],
+    "fixOf": 10,
+    "round": 1,
+    "kind": "fix",
+    "issueIds": [
+     "VD-13",
+     "VD-14",
+     "VD-15",
+     "VD-16",
+     "VD-17",
+     "VD-18"
+    ],
+    "status": "done",
+    "runId": "20261022-210922-vy",
+    "handoff": "handoff/20261022-210922-vy.md",
+    "summary": "Cả 6 vấn đề (VD-13 đến VD-18) đã sửa trong `thiet-ke.md`, nhưng riêng trang 5 tôi phải đổi hình vì file Quadriceps.png vẫn chưa về.\n\n- **VD-13:** Commons vẫn báo HTTP 429, nên tôi chuyển hình chính trang 5 sang `khop-goi-gan-tu-dau.png`, file đã có và đã mở xem. Đã ghi toạ độ cắt x 540–1400, y 0–620, vùng chấm đỏ và đường dẫn cần che, và vị trí 3 nhãn Việt. Quadriceps.png thành nâng cấp tuỳ chọn nếu máy chủ tải được sau.\n- **VD-14 đến VD-18:** prompt ảnh Gác chân trang 6 hết mâu thuẫn (cẳng chân duỗi dọc mặt ghế B, khăn cuộn dưới khoeo). Hai chỗ số trang cũ ở trang 9 đã đổi, khối Trang 7 nằm đúng thứ tự, số chữ trang 5 ghi ~78 theo `soat_loi`.\n- **Còn lại:** `soat_loi` chỉ cảnh báo `slides.md` vẫn nhắc file Quadriceps. Tôi đã nhắn Lam đổi sang file mới.\n\nBản bàn giao nằm ở `handoff/20261022-210922-vy.md`.",
+    "error": "",
+    "tokens": 767424,
+    "task": "Sửa các vấn đề Hạ giao cho bạn: VD-13, VD-14, VD-15, VD-16, VD-17, VD-18 (danh sách chi tiết kèm theo).",
+    "fileSua": [
+     "output/thoai-hoa-khop-goi-v2/thiet-ke.md"
+    ],
+    "boiCanh": "du-an/plan-20261022-203403/boi-canh/20261022-210922-vy.md",
+    "prevFiles": null,
+    "files": [
+     "output/thoai-hoa-khop-goi-v2/thiet-ke.md"
+    ],
+    "images": []
+   },
+   {
+    "agentId": "lam",
+    "from": [
+     7,
+     11
+    ],
+    "fixOf": 7,
+    "round": 1,
+    "kind": "fix",
+    "issueIds": [
+     "VD-19"
+    ],
+    "status": "done",
+    "runId": "20261022-210922-lam",
+    "handoff": "handoff/20261022-210922-lam.md",
+    "summary": "Đã sửa VD-19 trong `slides.md`, trang 6, mục Khởi động. Giờ ghi là giảng viên cho cả nhóm đi tại chỗ nhẹ 1 phút ngay trước khi tập, tính trong 5 phút của trang. Dòng tóm lược cuối file cũng đã sửa cho khớp.\n\n`soat_loi` chỉ còn một cảnh báo không liên quan: `slides.md` nhắc `hinh-nguon/quadriceps-4-co-tu-dau.png` nhưng chưa có file hình, tôi không xử lý cảnh báo này. Bàn giao ở `handoff/20261022-210922-lam.md`.",
+    "error": "",
+    "tokens": 143095,
+    "task": "Sửa các vấn đề Hạ giao cho bạn: VD-19 (danh sách chi tiết kèm theo).",
+    "fileSua": [
+     "output/thoai-hoa-khop-goi-v2/slides.md"
+    ],
+    "boiCanh": "du-an/plan-20261022-203403/boi-canh/20261022-210922-lam.md",
+    "prevFiles": null,
+    "files": [
+     "output/thoai-hoa-khop-goi-v2/slides.md"
+    ],
+    "images": []
+   },
+   {
+    "agentId": "mai",
+    "task": "Tải hình giải phẫu cơ tứ đầu có giấy phép (đúng nguồn đã ghi ở mục '## Hình & sơ đồ trong nguồn' của agents/mai/thoai-hoa-khop-goi-v2-nguon.md) bằng công cụ tai_hinh, lưu thành output/thoai-hoa-khop-goi-v2/hinh-nguon/quadriceps-4-co-tu-dau.png; cập nhật hinh-nguon/danh-sach.md (link, giấy phép, ghi công). Nếu không tải được thì ghi rõ lý do và nêu hình thay thế có giấy phép.",
+    "from": [],
+    "status": "error",
+    "runId": "20261022-211008-mai",
+    "handoff": "handoff/20261022-211008-mai.md",
+    "summary": "Hình `quadriceps-4-co-tu-dau.png` chưa tải được. Commons trả lỗi HTTP 429 (giới hạn lượt tải), và máy chủ báo sẽ tự tải lại sau vài phút. File chưa có trong `hinh-nguon/`.\n\n`danh-sach.md` đã có dòng cho hình này (link `File:Quadriceps.png`, Public domain, colorized by Michael Gasperl, nguồn Gray). Trạng thái đang ghi \"KHÔNG tải được: HTTP 429\".\n\nNếu vẫn không tải được, hình thay thế có giấy phép trong cùng danh sách là `Gray1238.png` (Public domain), hoặc `Quadriceps_3D.gif` (CC BY-SA 2.1 jp, phải ghi tác giả). Bàn giao ở `handoff/20261022-211008-mai.md`.",
+    "error": "Không tạo được sản phẩm nào (xem Vướng mắc trong handoff/20261022-211008-mai.md). Hình `quadriceps-4-co-tu-dau.png` chưa tải được. Commons trả lỗi HTTP 429 (giới hạn lượt tải), và máy chủ báo sẽ tự tải lại sau vài phút. File chưa có trong `hinh-nguon/`.\n\n`danh-sach.md` đã có dòng cho hình này (link `File:Quadriceps.png`, Public domain, colorized by Michael Gasperl, nguồn Gray). T",
+    "tokens": 198706,
+    "boiCanh": "du-an/plan-20261022-203403/boi-canh/20261022-211008-mai.md",
+    "lastError": "Không tạo được sản phẩm nào (xem Vướng mắc trong handoff/20261022-211008-mai.md). Hình `quadriceps-4-co-tu-dau.png` chưa tải được. Commons trả lỗi HTTP 429 (giới hạn lượt tải), và máy chủ báo sẽ tự tải lại sau vài phút. File chưa có trong `hinh-nguon/`.\n\n`danh-sach.md` đã có dòng cho hình này (link `File:Quadriceps.png`, Public domain, colorized by Michael Gasperl, nguồn Gray). T"
+   },
+   {
+    "agentId": "vy",
+    "task": "Mở hình quadriceps-4-co-tu-dau.png vừa tải, rồi sửa output/thoai-hoa-khop-goi-v2/thiet-ke.md cho VD-13 (toạ độ cắt, vùng chữ Anh cần che ở tr.5), VD-14 (prompt tr.6 (1): gót gác trên ghế B, khăn cuộn kê dưới khoeo trên mặt ghế, chỉ nhấc gót khỏi khăn), VD-15/16 (sửa số trang cũ ở tr.9), VD-17 (xếp mục theo thứ tự 1→12 như slides.md), VD-18 (đếm lại số chữ tr.5, rút gọn ghi chú nguồn tr.12).",
+    "from": [],
+    "status": "pending",
+    "runId": null,
+    "handoff": null,
+    "summary": "",
+    "error": "",
+    "tokens": 0
+   },
+   {
+    "agentId": "ha",
+    "from": [
+     11,
+     12,
+     13
+    ],
+    "checks": 12,
+    "round": 1,
+    "status": "pending",
+    "runId": null,
+    "handoff": null,
+    "summary": "",
+    "error": "",
+    "tokens": 0,
+    "task": "Duyệt lại sau khi sửa (vòng 1): kiểm các vấn đề trong danh sách kèm theo; chỉ nêu lỗi còn lại hoặc lỗi mới phát sinh."
+   }
+  ],
+  "replans": 0,
+  "log": [
+   "Tiếp nối từ plan-20261021-195355: chép sản phẩm output/thoai-hoa-khop-goi/ → output/thoai-hoa-khop-goi-v2/",
+   "Bộ não: 1 ý, 0 nguồn, 0 tư thế",
+   "Bước 2: 3 vấn đề không rõ ai phụ trách file (VD-1, VD-2, VD-3)",
+   "Bước 2: An kết luận CẦN SỬA → Mai sửa (bước 3), duyệt lại ở bước 4",
+   "Máy chủ không thấy bảng \"Hình & sơ đồ trong nguồn\" trong agents/an/thoai-hoa-khop-goi-v2-kiem-nguon.md: chưa tải hình y khoa nào",
+   "Giao ban sau bước 2: 1 tín hiệu",
+   "Giao ban: không chèn bước · Cả 3 vấn đề VD-1..3 nằm ở file agents/mai/thoai-hoa-khop-goi-v2-nguon.md, tức là của Mai. Bước 3 (Mai sửa theo nhận xét của An) và bước 4 (An duyệt lại) đã có sẵn trên bảng để xử lý, nên không cần chè",
+   "Bộ não: 0 ý, 9 nguồn, 0 tư thế",
+   "Bước 3: Mai sửa nhưng không ghi vào agents/mai/thoai-hoa-khop-goi-v2-deep-research.md",
+   "Máy chủ không thấy bảng \"Hình & sơ đồ trong nguồn\" trong agents/mai/thoai-hoa-khop-goi-v2-nguon.md: chưa tải hình y khoa nào",
+   "Hỏi nhanh: Lam hỏi An",
+   "Hỏi chủ dự án 1 câu (bước 5)",
+   "Chủ dự án đã trả lời 1 câu hỏi",
+   "Bước 6: An kết luận CẦN SỬA → Lam, Mai sửa (bước 7–8), duyệt lại ở bước 9",
+   "Hỏi chủ dự án 2 câu (bước 6)",
+   "Chủ dự án đã trả lời 2 câu hỏi",
+   "Giao ban sau bước 7: 1 tín hiệu",
+   "Giao ban: không chèn bước · thiet-ke.md lệch slides ở tr.5–12 là đúng dự kiến, vì bước 10 của Vy là cập nhật thiet-ke.md theo slides.md sau khi An duyệt lại ở bước 9. Hình Quadriceps chưa tải có lẽ do Commons giới hạn lượt tải (",
+   "Máy chủ tải hình y khoa từ nguồn (agents/mai/thoai-hoa-khop-goi-v2-nguon.md → output/thoai-hoa-khop-goi-v2/hinh-nguon): 1 mới, 0 đã có, 3 không tải được (quadriceps-4-co-tu-dau.png: HTTP 429; co-dui-truoc-gray1238.png: HTTP 429; quadriceps-3…)",
+   "Bước 11: Hạ kết luận CẦN SỬA → Vy, Lam sửa (bước 12–13), duyệt lại ở bước 14",
+   "Giao ban sau bước 13: 1 tín hiệu",
+   "Tải lại hình (agents/mai/thoai-hoa-khop-goi-v2-nguon.md, lần 1): 0 tải được, còn 3 lỗi",
+   "Giao ban: chèn 2 bước · Bước 13 vướng vì chưa có file hình cơ tứ đầu: Mai tải hình trước, sau đó Vy làm hết các lỗi BẮT BUỘC còn mở trong thiet-ke.md. VD-1 đến VD-3 vẫn ở trạng thái Mở, nhưng có vẻ chỉ là lỗi cũ sổ chưa cập ",
+   "Bước 14: hết hạn mức → tạm dừng"
+  ],
+  "note": "Bước 14 dừng vì hết hạn mức tài khoản: Không tạo được sản phẩm nào (xem Vướng mắc trong handoff/20261022-211008-mai.md). Hình …. Đợi hạn mức được làm mới rồi bấm \"Chạy tiếp\".",
+  "waiting": null,
+  "tokens": 10887071,
+  "questions": [],
+  "answers": [
+   {
+    "q": "Có trợ giảng cho phần xuống/lên thảm không? Đề xuất: có 1–2 người; nếu không, cả nhóm làm bản ngồi ghế tr.7–8. (làm tiếp sau khi trả lời không cần)",
+    "from": "lam",
+    "step": 4,
+    "lamTiep": true,
+    "a": "(Chủ dự án để nhóm tự quyết theo phương án đề xuất)"
+   },
+   {
+    "q": "Bài (1) tr.6 vẫn gần \"Ngồi ghế duỗi gối\" tr.7. Đề xuất: giữ (đã nêu điểm khác); nếu muốn khác hẳn thì thay bằng Mini Squat vịn ghế ≤45° [20].",
+    "from": "lam",
+    "step": 5,
+    "a": "(Chủ dự án để nhóm tự quyết theo phương án đề xuất)"
+   },
+   {
+    "q": "Tr.1 còn \"30 phút\", buổi nay 37. Đề xuất: chỉ đổi con số.",
+    "from": "an",
+    "step": 6,
+    "a": "(Chủ dự án để nhóm tự quyết theo phương án đề xuất)"
+   },
+   {
+    "q": "Đứng–ngồi qua gối ~90° ở ghế thường, vượt mốc 45–60° của brief. Đề xuất: giữ, ghi cần vật lý trị liệu xem lại; hoặc thay bằng Mini Squat ≤45° [20].",
+    "from": "an",
+    "step": 6,
+    "a": "Thay bằng Mini Squat vịn ghế ≤45° [20] để đúng mốc gập nông của brief."
+   }
+  ],
+  "afterAnswer": null,
+  "askRounds": 2,
+  "fixRounds": 0,
+  "wtokens": 2087211,
+  "costUsd": 8.32,
+  "score": null,
+  "acceptFile": null,
+  "reviewDone": false,
+  "resumeAt": null,
+  "budgetX": 1,
+  "createdAt": "2026-10-22T13:34:03.983Z",
+  "endedAt": null,
+  "planRunId": "20261022-203404-chef",
+  "replanRunIds": [],
+  "reviewRunId": null,
+  "reviewHandoff": null,
+  "summary": "",
+  "topic": "thoai-hoa-khop-goi-v2",
+  "tiepNoiTu": "plan-20261021-195355",
+  "messages": [
+   {
+    "from": "an",
+    "to": "mai",
+    "text": "cần file nguồn đủ mục (a)–(f): mỗi ý có link mở được, mức bằng chứng, câu trích nguyên văn; thêm bảng hình cơ tứ đầu (link File, link Special:FilePath, tác giả, giấy phép).",
+    "step": 2,
+    "delivered": true
+   },
+   {
+    "from": "mai",
+    "to": "an",
+    "text": "mở lại O'Reilly (PMC1752483), ROH, CDC; thử mở NICE bằng cách khác.",
+    "step": 3,
+    "delivered": true
+   },
+   {
+    "from": "mai",
+    "to": "vy",
+    "text": "hình tr.5 ưu tiên Quadriceps.png (PD), dự phòng Gray1238.png.",
+    "step": 3,
+    "delivered": true
+   },
+   {
+    "from": "an",
+    "to": "mai",
+    "text": "duyệt lại ✓ ĐẠT, file sẵn sàng cho Lam.",
+    "step": 4,
+    "delivered": true
+   },
+   {
+    "from": "an",
+    "to": "lam",
+    "text": "bàn giao file nguồn từ An; thêm tài liệu mẫu tr.18 và tr.22 vào; dùng 2 bài ưu tiên (Inner Range Quad, Sit to Stand) cho tr.6.",
+    "step": 4,
+    "delivered": true
+   },
+   {
+    "from": "lam",
+    "to": "vy",
+    "text": "tr.5 hình Quadriceps.png (PD) đặt tên quadriceps-4-co-tu-dau.png; tr.6 ảnh (1) cần 2 ghế đối diện, khăn cuộn dưới gối; ảnh (2) tay chống đùi, gối gập nông.",
+    "step": 5,
+    "delivered": true
+   },
+   {
+    "from": "lam",
+    "to": "an",
+    "text": "kiểm giúp \"10 lần, giữ 5–10 giây\" và \"≥2 ngày/tuần\" khớp câu trích [20][21].",
+    "step": 5,
+    "delivered": true
+   },
+   {
+    "from": "an",
+    "to": "mai",
+    "text": "đổi tiêu đề thành đúng \"## Hình & sơ đồ trong nguồn\" để máy chủ tải Quadriceps.png; đặt tên file là quadriceps-4-co-tu-dau.png.",
+    "step": 6,
+    "delivered": true
+   },
+   {
+    "from": "an",
+    "to": "lam",
+    "text": "sửa V2–V9 trong kiem-slides.md; V5–V6 ảnh hưởng prompt (1) của Vy.",
+    "step": 6,
+    "delivered": true
+   },
+   {
+    "from": "lam",
+    "to": "vy",
+    "text": "ảnh (2) tr.6 không còn ngồi mép ghế mà là đứng sau lưng ghế (mặt ngồi sát tường), gối gập ≤45°; (1) ghế B không áp tường.",
+    "step": 7,
+    "delivered": true
+   },
+   {
+    "from": "lam",
+    "to": "an",
+    "text": "duyệt lại tr.6 sau khi đổi sang Mini Squat.",
+    "step": 7,
+    "delivered": true
+   },
+   {
+    "from": "vy",
+    "to": "ha",
+    "text": "kiểm hình tr.5 sau khi file về; nếu Quadriceps không dùng được thì chuyển Gray1238.png.",
+    "step": 10,
+    "delivered": true
+   },
+   {
+    "from": "vy",
+    "to": "nhi",
+    "text": "prompt B tr.6 dùng được ngay.",
+    "step": 10,
+    "delivered": false
+   },
+   {
+    "from": "ha",
+    "to": "vy",
+    "text": "sửa V2–V5 trong thiet-ke.md; V1 khi file hình về.",
+    "step": 11,
+    "delivered": true
+   },
+   {
+    "from": "ha",
+    "to": "lam",
+    "text": "slides.md tr.6 Lời giảng, mục Khởi động (V7).",
+    "step": 11,
+    "delivered": true
+   }
+  ],
+  "issues": [
+   {
+    "id": "VD-1",
+    "maGoc": "V1",
+    "file": "agents/mai/thoai-hoa-khop-goi-v2-nguon.md",
+    "where": "Toàn file",
+    "level": "BẮT BUỘC",
+    "kind": "file-khong-ton-tai",
+    "text": "File nguồn mới (từ [18]) chưa được tạo vì Deep Research chưa chạy, nên tr.5–6 chưa có ý, link, câu trích nào để kiểm",
+    "fix": "Mai lấy toàn văn báo cáo Gemini từ link chat; nếu vẫn kẹt thì mở từng nguồn bằng WebFetch (đúng quyết định đã chốt) rồi viết file",
+    "goc": "cong-cu",
+    "from": "an",
+    "owner": null,
+    "ownerStep": null,
+    "status": "mo",
+    "note": "",
+    "round": 0,
+    "lastStep": 2,
+    "fixStep": null
+   },
+   {
+    "id": "VD-2",
+    "maGoc": "V2",
+    "file": "agents/mai/thoai-hoa-khop-goi-v2-nguon.md",
+    "where": "Mục (a)–(e) của brief",
+    "level": "BẮT BUỘC",
+    "kind": "thieu-muc-brief",
+    "text": "Chưa phủ cơ tứ đầu yếu liên quan đau gối, khuyến cáo tập sức, liều tập, 3–5 bài trên ghế/đứng/nằm, quy tắc đau",
+    "fix": "Cần nguồn: mỗi ý một link mở được, mức bằng chứng và câu trích nguyên văn",
+    "goc": "agent",
+    "from": "an",
+    "owner": null,
+    "ownerStep": null,
+    "status": "mo",
+    "note": "",
+    "round": 0,
+    "lastStep": 2,
+    "fixStep": null
+   },
+   {
+    "id": "VD-3",
+    "maGoc": "V3",
+    "file": "agents/mai/thoai-hoa-khop-goi-v2-nguon.md",
+    "where": "Mục (f) Hình & sơ đồ",
+    "level": "BẮT BUỘC",
+    "kind": "thieu-muc-brief",
+    "text": "Chưa có hình giải phẫu cơ tứ đầu có giấy phép; hinh-nguon/ chỉ có hình khớp gối",
+    "fix": "Cần nguồn hình: Commons/OpenStax/Servier, ghi link trang File, link Special:FilePath, tác giả, giấy phép (kiểm bằng kiem_link)",
+    "goc": "agent",
+    "from": "an",
+    "owner": null,
+    "ownerStep": null,
+    "status": "mo",
+    "note": "",
+    "round": 0,
+    "lastStep": 2,
+    "fixStep": null
+   },
+   {
+    "id": "VD-4",
+    "maGoc": "V1",
+    "file": "agents/mai/thoai-hoa-khop-goi-v2-nguon.md",
+    "where": "Mục (f) hình",
+    "level": "BẮT BUỘC",
+    "kind": "file-khong-ton-tai",
+    "text": "Tiêu đề là \"## (f) Hình & sơ đồ trong nguồn\" nên máy chủ không đọc bảng, hinh-nguon/ chưa có hình cơ tứ đầu cho tr.5 (tiêu chí 10)",
+    "fix": "Đổi đúng thành \"## Hình & sơ đồ trong nguồn\", giữ bảng, đặt tên file khớp slides (quadriceps-4-co-tu-dau.png)",
+    "goc": "cong-cu",
+    "from": "an",
+    "owner": "mai",
+    "ownerStep": 3,
+    "status": "dong",
+    "note": "Tiêu đề đúng \"## Hình & sơ đồ trong nguồn\"; tên file quadriceps-4-co-tu-dau.png",
+    "round": 1,
+    "lastStep": 6,
+    "fixStep": 8
+   },
+   {
+    "id": "VD-5",
+    "maGoc": "V2",
+    "file": "output/thoai-hoa-khop-goi-v2/slides.md",
+    "where": "Tr.5, Ý chính \"Tập luyện\"",
+    "level": "NÊN",
+    "kind": "phong-dai",
+    "text": "\"Tập luyện: được khuyến cáo mạnh [6]\" trên trang về tập cơ dễ bị hiểu là tập cơ đùi được khuyến cáo mạnh, trong khi ACR/AF nói chưa đủ bằng chứng cho đơn tập cụ thể",
+    "fix": "Viết \"Tập luyện nói chung: khuyến cáo mạnh [6]\" (còn trong ≤90 chữ)",
+    "goc": "agent",
+    "from": "an",
+    "owner": "lam",
+    "ownerStep": 5,
+    "status": "dong",
+    "note": "Tr.5: \"Tập luyện nói chung: khuyến cáo mạnh [6]\".",
+    "round": 1,
+    "lastStep": 6,
+    "fixStep": 7
+   },
+   {
+    "id": "VD-6",
+    "maGoc": "V3",
+    "file": "output/thoai-hoa-khop-goi-v2/slides.md",
+    "where": "Tr.5, Ý chính \"Liều tham khảo\"",
+    "level": "NÊN",
+    "kind": "nguon-khong-khop",
+    "text": "\"≥2 ngày/tuần [21]\" là khuyến nghị của CDC cho người từ 65 tuổi, trang không nói; học viên 50–70",
+    "fix": "Thêm \"(từ 65 tuổi)\" hoặc \"người lớn tuổi\"",
+    "goc": "agent",
+    "from": "an",
+    "owner": "lam",
+    "ownerStep": 5,
+    "status": "dong",
+    "note": "\"từ 65 tuổi: ít nhất 2 ngày mỗi tuần [21]\".",
+    "round": 1,
+    "lastStep": 6,
+    "fixStep": 7
+   },
+   {
+    "id": "VD-7",
+    "maGoc": "V4",
+    "file": "output/thoai-hoa-khop-goi-v2/slides.md",
+    "where": "Tr.6, lời giảng (2)",
+    "level": "NÊN",
+    "kind": "an-toan-thieu-ccd",
+    "text": "Câu \"gối gập sâu quá ~60° thì dùng ghế cao hơn\" mâu thuẫn với Việc còn mở (~90° ở ghế thấp); ngồi ghế thường đã ~90° nên gần như ai cũng phải dùng ghế cao, và đệm mềm có thể trượt",
+    "fix": "Viết một câu nhất quán: ghế chắc, đệm chống trượt; gối đau khi ngồi xuống thì dùng ghế cao hơn/bản nhẹ; xem câu hỏi 2",
+    "goc": "agent",
+    "from": "an",
+    "owner": "lam",
+    "ownerStep": 5,
+    "status": "dong",
+    "note": "Câu \"~60°/ghế cao\" bỏ; bài (2) thành Mini Squat ≤45° theo quyết định chủ dự án, nên mâu thuẫn ~90° không còn.",
+    "round": 1,
+    "lastStep": 6,
+    "fixStep": 7
+   },
+   {
+    "id": "VD-8",
+    "maGoc": "V5",
+    "file": "output/thoai-hoa-khop-goi-v2/slides.md",
+    "where": "Tr.6, mục An toàn",
+    "level": "NÊN",
+    "kind": "an-toan-thieu-ccd",
+    "text": "Bắp chân sưng đau chỉ nằm ở bài (1); bài (2) thiếu \"lưng thẳng, nghiêng từ hông, không gù\" cho người loãng xương; bài (1) thiếu dễ té/chóng mặt khi chuyển chân sang ghế B",
+    "fix": "Đưa bắp chân sưng sang dòng \"Cả hai\"; thêm lưng thẳng vào (2); thêm \"dễ té: để chân trên sàn hoặc trợ giảng đặt chân\" vào (1)",
+    "goc": "agent",
+    "from": "an",
+    "owner": "lam",
+    "ownerStep": 5,
+    "status": "dong",
+    "note": "Bắp chân sưng sang dòng \"Cả hai\"; thêm \"lưng thẳng, nghiêng từ hông, không gù\" cho (2); thêm \"dễ té: để chân trên sàn/trợ giảng đặt chân\" cho (1).",
+    "round": 1,
+    "lastStep": 6,
+    "fixStep": 7
+   },
+   {
+    "id": "VD-9",
+    "maGoc": "V6",
+    "file": "output/thoai-hoa-khop-goi-v2/slides.md",
+    "where": "Đầu file Đạo cụ; tr.6 (1)",
+    "level": "NÊN",
+    "kind": "khac",
+    "text": "Ghế A và ghế B đối diện mà cả hai lưng áp tường là không khả thi trong phòng chung; ghế B không vào danh sách đạo cụ, 20 người cần thêm ghế",
+    "fix": "Ghi ghế B chân chống trượt hoặc trợ giảng giữ; thêm \"ghế thứ hai (1 ghế phụ/người hoặc dùng chung từng cặp)\" vào Đạo cụ cả buổi",
+    "goc": "agent",
+    "from": "an",
+    "owner": "lam",
+    "ownerStep": 5,
+    "status": "dong",
+    "note": "Ghế B: đối diện ghế A, chân chống trượt hoặc trợ giảng giữ, không cần áp tường; Đạo cụ cả buổi thêm ghế thứ hai + khăn cuộn.",
+    "round": 1,
+    "lastStep": 6,
+    "fixStep": 7
+   },
+   {
+    "id": "VD-10",
+    "maGoc": "V7",
+    "file": "output/thoai-hoa-khop-goi-v2/slides.md",
+    "where": "Tr.6, lời giảng \"Khởi động\"",
+    "level": "NÊN",
+    "kind": "khac",
+    "text": "Đi bộ nhẹ 3–4 phút [20] không có trong 5 phút của trang",
+    "fix": "Ghi \"ở nhà; trong buổi đã khởi động ở trang trước, không tính vào 5 phút\"",
+    "goc": "agent",
+    "from": "an",
+    "owner": "lam",
+    "ownerStep": 5,
+    "status": "dong",
+    "note": "Đi bộ nhẹ chỉ cho ở nhà; trong buổi đã khởi động, không tính vào 5 phút.",
+    "round": 1,
+    "lastStep": 6,
+    "fixStep": 7
+   },
+   {
+    "id": "VD-11",
+    "maGoc": "V8",
+    "file": "output/thoai-hoa-khop-goi-v2/slides.md",
+    "where": "Tr.1, lời giảng",
+    "level": "NÊN",
+    "kind": "lech-hai-file",
+    "text": "Còn \"30 phút\" trong khi buổi nay 37 phút",
+    "fix": "Xem câu hỏi 1 (trang cũ, chỉ đổi khi chủ dự án đồng ý)",
+    "goc": "quy-trinh",
+    "from": "an",
+    "owner": "lam",
+    "ownerStep": 5,
+    "status": "dong",
+    "note": "Tr.1 \"37 phút\" (quyết định: chỉ đổi con số).",
+    "round": 1,
+    "lastStep": 6,
+    "fixStep": 7
+   },
+   {
+    "id": "VD-12",
+    "maGoc": "V9",
+    "file": "output/thoai-hoa-khop-goi-v2/slides.md",
+    "where": "Tr.12 và mục Nguồn tham khảo [18]; Quy ước nguồn",
+    "level": "NÊN",
+    "kind": "khac",
+    "text": "[18] ghi \"(chưa dùng trên slide)\" nằm trong danh sách nguồn chiếu lúc hỏi đáp; Quy ước nguồn vẫn nói OARSI chưa có câu trích",
+    "fix": "Bỏ [18] khỏi trang chiếu hoặc dẫn vào tr.5; sửa câu Quy ước nguồn",
+    "goc": "agent",
+    "from": "an",
+    "owner": "lam",
+    "ownerStep": 5,
+    "status": "dong",
+    "note": "Bỏ [18] khỏi danh sách nguồn và tr.12; sửa Quy ước nguồn (số 18 để trống).",
+    "round": 1,
+    "lastStep": 6,
+    "fixStep": 7
+   },
+   {
+    "id": "VD-13",
+    "maGoc": "V1",
+    "file": "output/thoai-hoa-khop-goi-v2/thiet-ke.md",
+    "where": "Trang 5 · Hình, Danh sách hình",
+    "level": "BẮT BUỘC",
+    "kind": "anh-sai-thu-muc",
+    "text": "File hình C cơ tứ đầu chưa có trong hinh-nguon/ nên chưa ai mở xem; chưa có toạ độ cắt và vùng chữ Anh cần che (tiêu chí 10).",
+    "fix": "Khi file về, mở xem rồi ghi toạ độ cắt, nhãn Anh cần che và vị trí 3 nhãn Việt; nếu Quadriceps không dùng được thì chuyển Gray1238.png. Hạ duyệt lại sau đó.",
+    "goc": "cong-cu",
+    "from": "ha",
+    "owner": "vy",
+    "ownerStep": 10,
+    "status": "mo",
+    "note": "",
+    "round": 1,
+    "lastStep": 11,
+    "fixStep": 12
+   },
+   {
+    "id": "VD-14",
+    "maGoc": "V2",
+    "file": "output/thoai-hoa-khop-goi-v2/thiet-ke.md",
+    "where": "Trang 6 · Prompt (1)",
+    "level": "BẮT BUỘC",
+    "kind": "anh-sai-tu-the",
+    "text": "Prompt tự mâu thuẫn: \"heel resting on the seat\" rồi \"foot lifted slightly off the seat\"; kịch bản nói chân gác ghế B rồi nhấc bàn chân khỏi mặt ghế. Khăn cuộn \"under that knee\" cũng chưa nói tựa trên đâu.",
+    "fix": "Viết lại: cẳng chân duỗi dọc mặt ghế B, khăn cuộn nhỏ dưới khoeo trên mặt ghế, gối gần thẳng, bàn chân vừa nhấc cao vài cm; bỏ \"heel resting on the seat\".",
+    "goc": "agent",
+    "from": "ha",
+    "owner": "vy",
+    "ownerStep": 10,
+    "status": "mo",
+    "note": "",
+    "round": 1,
+    "lastStep": 11,
+    "fixStep": 12
+   },
+   {
+    "id": "VD-15",
+    "maGoc": "V3",
+    "file": "output/thoai-hoa-khop-goi-v2/thiet-ke.md",
+    "where": "Trang 9 · Bố cục",
+    "level": "BẮT BUỘC",
+    "kind": "lech-hai-file",
+    "text": "\"Bố cục: như trang 5\" là tham chiếu số trang cũ; trang 5 nay là Cơ đùi trước, trang ghế là tr.7.",
+    "fix": "Đổi thành \"như trang 7\".",
+    "goc": "quy-trinh",
+    "from": "ha",
+    "owner": "vy",
+    "ownerStep": 10,
+    "status": "mo",
+    "note": "",
+    "round": 1,
+    "lastStep": 11,
+    "fixStep": 12
+   },
+   {
+    "id": "VD-16",
+    "maGoc": "V4",
+    "file": "output/thoai-hoa-khop-goi-v2/thiet-ke.md",
+    "where": "Trang 9 · Ghi chú",
+    "level": "BẮT BUỘC",
+    "kind": "lech-hai-file",
+    "text": "\"ảnh tr.7 không đặt chăn (kịch bản tr.7 …)\" vẫn là số cũ; trang Cây cầu nay là tr.9.",
+    "fix": "Đổi cả hai chỗ thành \"tr.9\".",
+    "goc": "quy-trinh",
+    "from": "ha",
+    "owner": "vy",
+    "ownerStep": 10,
+    "status": "mo",
+    "note": "",
+    "round": 1,
+    "lastStep": 11,
+    "fixStep": 12
+   },
+   {
+    "id": "VD-17",
+    "maGoc": "V5",
+    "file": "output/thoai-hoa-khop-goi-v2/thiet-ke.md",
+    "where": "Thứ tự các mục: \"Trang 7\" nằm trước \"Trang 5\" và \"Trang 6\"",
+    "level": "BẮT BUỘC",
+    "kind": "lech-hai-file",
+    "text": "Người dựng đọc từ trên xuống sẽ gặp thứ tự 1,2,3,4,7,5,6,8; trái với slides.md.",
+    "fix": "Chuyển khối Trang 7 xuống sau Trang 6.",
+    "goc": "quy-trinh",
+    "from": "ha",
+    "owner": "vy",
+    "ownerStep": 10,
+    "status": "mo",
+    "note": "",
+    "round": 1,
+    "lastStep": 11,
+    "fixStep": 12
+   },
+   {
+    "id": "VD-18",
+    "maGoc": "V6",
+    "file": "output/thoai-hoa-khop-goi-v2/thiet-ke.md",
+    "where": "Trang 5 · Ghi chú; Kiểm tra cả bộ",
+    "level": "NÊN",
+    "kind": "khac",
+    "text": "Ghi \"~85 chữ\" trong khi đếm thực tế trên slide khoảng 72; trang 12 ghi chú nguồn hơi dài.",
+    "fix": "Sửa con số chữ cho đúng sau khi chốt nhãn hình.",
+    "goc": "agent",
+    "from": "ha",
+    "owner": "vy",
+    "ownerStep": 10,
+    "status": "mo",
+    "note": "",
+    "round": 1,
+    "lastStep": 11,
+    "fixStep": 12
+   },
+   {
+    "id": "VD-19",
+    "maGoc": "V7",
+    "file": "output/thoai-hoa-khop-goi-v2/slides.md",
+    "where": "Trang 6 · Lời giảng, mục Khởi động",
+    "level": "NÊN",
+    "kind": "khac",
+    "text": "Nói \"đã khởi động ở trang trước\", nhưng tr.5 không có phần khởi động.",
+    "fix": "Đổi thành \"giảng viên cho cả nhóm đi tại chỗ nhẹ 1 phút trước khi tập\" hoặc bỏ câu, ghi rõ tính trong 5 phút hay không.",
+    "goc": "agent",
+    "from": "ha",
+    "owner": "lam",
+    "ownerStep": 7,
+    "status": "da-sua",
+    "note": "Tr.6 Lời giảng: đi tại chỗ 1 phút, tính trong 5 phút; sửa cả dòng tóm lược cuối file",
+    "round": 1,
+    "lastStep": 11,
+    "fixStep": 13
+   }
+  ],
+  "issueSeq": 19,
+  "checkins": 3,
+  "consults": 1,
+  "notes": [
+   {
+    "from": "lam",
+    "text": "Commons đang giới hạn lượt tải (429); máy chủ tự thử lại sau vài phút.",
+    "step": 5
+   },
+   {
+    "from": "an",
+    "text": "Bảng hình trong file nguồn chỉ được máy chủ đọc khi tiêu đề đúng là \"## Hình & sơ đồ trong nguồn\" (không thêm \"(f)\").",
+    "step": 6
+   },
+   {
+    "from": "an",
+    "text": "KẾT LUẬN: CẦN SỬA",
+    "step": 6
+   },
+   {
+    "from": "vy",
+    "text": "Commons trả 429 khi tải hình; máy chủ tự tải lại sau vài phút.",
+    "step": 10
+   },
+   {
+    "from": "ha",
+    "text": "kiem_link xác nhận Quadriceps.png (Public domain, Michael Gasperl) và Gray1238.png (Public domain, Henry Vandyke Carter) còn mở được.",
+    "step": 11
+   },
+   {
+    "from": "ha",
+    "text": "KẾT LUẬN: CẦN SỬA",
+    "step": 11
+   }
+  ]
  }
 ]

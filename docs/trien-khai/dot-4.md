@@ -248,4 +248,5 @@ Lựa chọn khi đặc tả chưa nói rõ (chủ dự án xem lại):
     - Lần chạy gọi Bash: đếm theo `run.tools` (Bash, PowerShell, run_command); lượt cũ chưa có `tools` thì đọc diễn biến. Trên dữ liệu thật khớp số đã đo ở Đợt 1 (dự án mất ngủ: 5 lượt).
     - Thêm hai chỉ số có sẵn mục tiêu ở mục 5: vấn đề không rõ người sửa (0) và token bước nguồn ở dự án tiếp nối (dưới 0,8 triệu; "bước nguồn" = bước làm của agent Deep Research).
     - Bỏ qua các chỉ số mục 5 chưa có dữ liệu máy đọc được (câu hỏi trùng, link mở lại, `index.md`, ảnh ngoài thư mục chủ đề).
+      Bốn chỉ số này đã có ở 5.5.
 15. Chưa xem được giao diện bằng trình duyệt trong môi trường viết code (trang giữ kết nối sự kiện nên trình duyệt headless không dừng). Khối "Trí não" đã kiểm bằng cách chạy riêng hàm dựng HTML trên dữ liệu thật.

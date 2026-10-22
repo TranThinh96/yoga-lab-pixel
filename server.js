@@ -3106,7 +3106,10 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'GET' && p === '/api/tri-nao') {
       const days = Math.max(0, Math.min(3650, Number(url.searchParams.get('days')) || 0));
       const nguonIds = config.agents.filter(a => (geminiWebOf(a) || {}).mode === 'deep-research').map(a => a.id);
-      return send(res, 200, chiSoTriNao({ runs: await readAllRuns(), plans, notes: config.brain !== false ? docKhoTriThuc() : [], days, quyDoi: weightOf, nguonIds }));
+      const kiem = config.agents.find(a => a.id === 'an') || config.agents.find(a => /kiểm chứng/iu.test(a.role || ''));
+      const ix = readWs('index.md');
+      return send(res, 200, chiSoTriNao({ runs: await readAllRuns(), plans, notes: config.brain !== false ? docKhoTriThuc() : [], days, quyDoi: weightOf, nguonIds,
+        chuDeCua: planTopic, nguoiKiem: kiem ? kiem.id : null, indexDong: ix ? ix.replace(/\r?\n$/, '').split(/\r?\n/).length : null }));
     }
 
     if (req.method === 'GET' && p === '/api/usage') {

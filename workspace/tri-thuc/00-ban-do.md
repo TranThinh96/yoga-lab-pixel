@@ -28,4 +28,4 @@
 - [[nguon/statpearls-suy-giap|Hypothyroidism (NBK519536)]] · captcha (2026-10-21)
 
 ## Hệ thống
-- [[he-thong/lo-hong|Lỗ hổng hệ thống]] · 2 việc chưa sửa (cho người phát triển)
+- [[he-thong/lo-hong|Lỗ hổng hệ thống]] · 0 việc chưa sửa (cho người phát triển)

@@ -264,3 +264,13 @@ Lựa chọn khi đặc tả chưa nói rõ (chủ dự án xem lại):
 4. **5.4** với một lệnh `claude` giả: dự án một bước của Lam ghi `du-an/<mã>/boi-canh/<mã lượt>.md` có đủ quyết định, bài học, note liên quan; bước có `boiCanh` trỏ đúng file.
 5. **5.5** `GET /api/tri-nao` ra đúng bảng ở bước 4 (v6: 6 câu hỏi trùng, 16/26 = 61,5%, 2 ảnh; `index.md` 24 dòng). Khối Trí não kiểm bằng cách chạy riêng hàm dựng HTML trên kết quả đó.
 6. **5.1, 5.3** chỉ kiểm bằng kiểm thử và đọc code; cần một dự án thật để thấy (xem thu-tren-may.md, Đợt 5).
+
+Thử trên máy (2026-10-22, cùng dự án thử với dot-4.md số 16–23, `plan-20261022-203403`, đang tạm dừng ở bước 14/16):
+
+7. **Đạt 5.1:** Hạ duyệt thiết kế (bước 11) CẦN SỬA; Lam chỉ có VD-19 (NÊN, `slides.md`) và vẫn được giao bước 13, chạy song song với Vy.
+8. **Đạt 5.2:** việc lẻ của Vy gọi `soat_loi` cho `output/thoai-hoa-khop-goi/thiet-ke.md`, bàn giao có đúng dòng `Số chữ trên slide theo thiết kế (ước lượng…): Trang 1: 12 · Trang 2: 45 · Trang 3: 66 · Trang 4: 88 · …`, không gọi Bash.
+9. **Đạt 5.4:** mọi lượt của dự án có file `du-an/plan-20261022-203403/boi-canh/<mã lượt>.md`; nút **Bối cảnh** trong ngăn chi tiết thẻ mở đúng file. Cửa sổ xem file ghi "Chưa rõ agent nào tạo file này" (file do máy chủ sinh), không ảnh hưởng.
+10. **Đạt 5.5, 5.6:** khối Trí não có 3 cột mới và thẻ `index.md`: 24 dòng; v6 ra 6 câu hỏi trùng, 2 ảnh ngoài thư mục, An mở lại 16/26 = 61,5%. `BH-48` có `loai_loi: anh-sai-tu-the`, `trang_thai: moi`.
+11. **Chưa thử 5.3** (vòng sửa sau nghiệm thu chờ hồi cứu): dự án chưa tới nghiệm thu. Bấm "Chạy tiếp" khi hạn mức 5 giờ đã làm mới, rồi xem ghi chú "Chờ hồi cứu xong rồi giao vòng sửa".
+12. **Sổ vấn đề:** VD-1..3 (An nêu ở file nguồn khi file chưa tồn tại, người sửa "chưa rõ") vẫn "Mở" dù Mai đã sửa và An duyệt lại đạt. Vấn đề không rõ chủ không vào danh sách duyệt lại nên không bao giờ được đóng; nếu không ai đóng tay, chúng sẽ còn mở tới nghiệm thu.
+13. **Bộ não nhập dòng giữ chỗ thành ý đã duyệt:** ở bước 2, bảng ý của An chỉ có dòng "Chưa duyệt ý nào" (ghi chú "Chờ file nguồn của Mai"); máy chủ tạo `tri-thuc/menh-de/chua-duyet-y-nao.md` với `trang_thai: da-duyet`. Cần coi dòng kiểu này là trống (giống cách sửa mã giữ chỗ "(chưa kiểm)" ở dot-2.md số 16) và xoá hoặc đặt `bac-bo` cho note đó.

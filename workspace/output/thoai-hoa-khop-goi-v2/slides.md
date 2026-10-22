@@ -100,7 +100,7 @@ Quy ước nguồn: [2]–[17] giữ đúng số trong `agents/mai/thoai-hoa-kho
   - **Liều tham khảo:** giữ 5–10 giây, 10 lần [20]; từ 65 tuổi: ít nhất 2 ngày mỗi tuần [21]
   - **Đau 2 giờ sau tập:** lần sau tập nhẹ lại. [10]
 - Câu chốt: Cơ đùi khoẻ là chỗ dựa cho gối.
-- Hình: C · giải phẫu cơ tứ đầu nhìn trước, tô màu, đặt bên phải; nhãn Việt thêm trong Canva (kiểu mẫu tr.18 + cách đặt nhãn tr.4). Chính: `hinh-nguon/quadriceps-4-co-tu-dau.png` (Quadriceps.png, colorized by Michael Gasperl theo Gray, Public domain; máy chủ sẽ tải, Commons đang giới hạn lượt). Dự phòng: Gray1238.png (Henry Vandyke Carter, PD). Che nhãn tiếng Anh nếu có. Không AI
+- Hình: C · giải phẫu cơ tứ đầu nhìn nghiêng, đặt bên phải; nhãn Việt thêm trong Canva (kiểu mẫu tr.18 + cách đặt nhãn tr.4). Chính: `hinh-nguon/khop-goi-gan-tu-dau.png` (Knee_diagram.svg, Mysid, Public domain; cắt phần trên: cơ tứ đầu, gân, bánh chè; toạ độ cắt xem thiet-ke.md). Nâng cấp tuỳ chọn, không chờ: Quadriceps.png (4 cơ tô màu, Michael Gasperl theo Gray, PD; Commons đang giới hạn lượt) hoặc Gray1238.png (Henry Vandyke Carter, PD). Không AI
 - Nguồn: [3], [6], [10], [19], [20], [21]
 - Lời giảng:
   - Cơ tứ đầu là khối cơ lớn ở mặt trước đùi, hình dung như chiếc trụ chống đỡ cho gối khi đứng lên, ngồi xuống, bước lên cầu thang (ẩn dụ của Yoga Lab, không phải câu trích). Một nghiên cứu cắt ngang cho thấy sức cơ này liên quan chặt với đau và hạn chế vận động ở gối, kể cả khi đã tính đến yếu tố tâm lý [19]; đây là mối liên quan, chưa chứng minh yếu cơ là nguyên nhân.
@@ -251,9 +251,9 @@ Quy ước nguồn: [2]–[17] giữ đúng số trong `agents/mai/thoai-hoa-kho
 - Số 115 ở Việt Nam: [13][14] nói về đột quỵ và dấu hiệu nguy hiểm, chưa có trang Việt Nam riêng về cục máu đông ở chân (dùng [12] cho dấu hiệu).
 - Tr.4: mục "Hỏi bác sĩ trước" và mức "khám sớm" cho bắp chân sưng (DVT) là nguyên tắc dự án; cần bác sĩ xem lại.
 - Đã chốt: có 1–2 trợ giảng cho phần xuống/lên thảm (tr.9–10). Nếu ngày workshop không có người, cả nhóm làm bản ngồi ghế ở tr.9–10.
-- Tr.5–6 (mới): liều "giữ 5–10 giây, 10 lần, 3–4 bài/buổi" [20] là tờ hướng dẫn bệnh viện (mức ý kiến), "≥2 ngày/tuần" [21] là khuyến nghị chung cho người ≥65; chưa có nguồn cho số hiệp và "sau bao lâu thấy khác" (đã bỏ). Liều trong buổi (3 lần mỗi chân, 5 lần đứng–ngồi) là liều khởi đầu của Yoga Lab, cần vật lý trị liệu xem lại.
-- Tr.6: cách dùng ghế thứ hai gác chân, chống tay, ghế cao có đệm và chống chỉ định từng bài là hướng dẫn của Yoga Lab, cần bác sĩ/vật lý trị liệu xem lại; bài (2) đã đổi sang Mini Squat vịn ghế ≤45° [20] theo quyết định của chủ dự án; góc 45° có trong [20], cách vịn lưng ghế và liều trong buổi là của Yoga Lab. Khởi động đi bộ 3–4 phút nhắc cho ở nhà; trong buổi chỉ đi tại chỗ 1 phút, tính trong 5 phút. Cần 1 ghế phụ mỗi người (hoặc dùng chung từng cặp) cho bài (1).
-- Tr.5: hình Quadriceps.png chờ máy chủ tải (Commons giới hạn lượt); Vy/Hạ xác nhận độ nét và nhãn.
+- Tr.5–6 (mới): liều "giữ 5–10 giây, 10 lần, 3–4 bài/buổi" [20] là tờ hướng dẫn bệnh viện (mức ý kiến), "≥2 ngày/tuần" [21] là khuyến nghị chung cho người ≥65; chưa có nguồn cho số hiệp và "sau bao lâu thấy khác" (đã bỏ). Liều trong buổi (3 lần mỗi chân, 5 lần mini squat) là liều khởi đầu của Yoga Lab, cần vật lý trị liệu xem lại.
+- Tr.6: cách dùng ghế thứ hai gác chân và chống chỉ định từng bài là hướng dẫn của Yoga Lab, cần bác sĩ/vật lý trị liệu xem lại; bài (2) đã đổi sang Mini Squat vịn ghế ≤45° [20] theo quyết định của chủ dự án; góc 45° có trong [20], cách vịn lưng ghế và liều trong buổi là của Yoga Lab. Khởi động đi bộ 3–4 phút nhắc cho ở nhà; trong buổi chỉ đi tại chỗ 1 phút, tính trong 5 phút. Cần 1 ghế phụ mỗi người (hoặc dùng chung từng cặp) cho bài (1).
+- Tr.5: dùng hinh-nguon/khop-goi-gan-tu-dau.png (đã có file); Quadriceps.png chỉ là nâng cấp tuỳ chọn khi Commons hết giới hạn lượt.
 - Tr.5: "trụ đỡ của gối" là ẩn dụ của Yoga Lab; bài (1) tr.6 khác tr.7 ở điểm xuất phát gối (hơi co, tựa khăn) nhưng vẫn gần nhau, bài (2) đã là Mini Squat nên hai bài khác nhau rõ.
 - Hình tr.2 dùng Injurymap .jpg (CC BY 4.0, đã có trong hinh-nguon/); Vy/Hạ xác nhận khi dựng, nếu dùng bản vector phải che chữ tiếng Anh.
 - Tr.11: ý "vài lần mỗi tuần" là đề xuất của Yoga Lab; tần suất 150 phút/tuần [2] là cho vận động nói chung, không riêng yoga.

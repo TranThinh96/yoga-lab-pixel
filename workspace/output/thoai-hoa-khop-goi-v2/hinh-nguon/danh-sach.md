@@ -4,7 +4,7 @@ Máy chủ tải từ bảng "Hình & sơ đồ trong nguồn" của agents/mai/
 
 | Tên file | Link gốc | Tác giả | Giấy phép | Thể hiện gì | Trạng thái |
 |---|---|---|---|---|---|
-| quadriceps-4-co-tu-dau.png | https://commons.wikimedia.org/wiki/File:Quadriceps.png | colorized by Michael Gasperl (nguồn Gray) | Public domain | 4 cơ tứ đầu tô màu, nhìn trước; ít chữ, che nhãn Anh rồi thêm nhãn Việt (đề xuất chính) | KHÔNG tải được: HTTP 429 |
+| quadriceps-4-co-tu-dau.png | https://commons.wikimedia.org/wiki/File:Quadriceps.png | colorized by Michael Gasperl (nguồn Gray) | Public domain | 4 cơ tứ đầu tô màu, nhìn trước; ít chữ, che nhãn Anh rồi thêm nhãn Việt (đề xuất chính). Tải thẳng: https://commons.wikimedia.org/wiki/Special:FilePath/Quadriceps.png | Commons giới hạn lượt (HTTP 429) lần 2; máy chủ hẹn tự tải lại sau vài phút. Ghi công: colorized by Michael Gasperl (nguồn Gray), Public domain |
 | co-dui-truoc-gray1238.png | https://commons.wikimedia.org/wiki/File:Gray1238.png | Henry Vandyke Carter | Public domain | Cơ tứ đầu là khối lớn mặt trước đùi (dự phòng; có nhãn số) | KHÔNG tải được: HTTP 429 |
 | quadriceps-3d.gif.jpg | https://commons.wikimedia.org/wiki/File:Quadriceps_3D.gif | BodyParts3D/Anatomography | CC BY-SA 2.1 jp | 4 cơ khác màu (gif động; chỉ lấy khung đầu — chưa chắc dùng được trên Canva) | KHÔNG tải được: HTTP 429 |
 | khop-goi-gan-tu-dau.png | https://commons.wikimedia.org/wiki/File:Knee_diagram.svg | Mysid | Public domain | Gân tứ đầu nối xương bánh chè (đã có trong hinh-nguon/; chỉ phụ) | đã có |

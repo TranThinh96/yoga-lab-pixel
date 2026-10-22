@@ -12,6 +12,12 @@
 - **QD-30** (plan-20261022-203403, 2026-10-22) bạn trả lời
   - Hỏi: Đứng–ngồi qua gối ~90° ở ghế thường, vượt mốc 45–60° của brief. Đề xuất: giữ, ghi cần vật lý trị liệu xem lại; hoặc thay bằng Mini Squat ≤45° [20].
   - Trả lời: Thay bằng Mini Squat vịn ghế ≤45° [20] để đúng mốc gập nông của brief.
+- **QD-31** (plan-20261022-203403, 2026-10-22) bạn trả lời
+  - Hỏi: Tr.11 "Mang về nhà" (trang cũ, giữ nguyên chữ) vẫn nói "chuỗi 6 tư thế", chưa nhắc 2 bài cơ đùi. Đề xuất: cho phép thêm một cụm ngắn "+ 2 bài cơ đùi trước (tr.6)" vào thẻ thứ ba ở dự án sau, hoặc giữ nguyên vì tr.6 đã có phần "Về nhà".
+  - Trả lời: Giữ nguyên tr.11 (các trang cũ giữ nguyên chữ); tr.6 đã có phần Về nhà.
+- **QD-32** (plan-20261022-203403, 2026-10-22) *nhóm tự quyết*
+  - Hỏi: Hình tr.5: chấp nhận Knee_diagram (chỉ thấy phần dưới cơ tứ đầu) hay chờ Quadriceps.png (4 cơ tô màu) trước khi dựng Canva? Đề xuất: dựng bằng Knee_diagram, đổi khi file về.
+  - Trả lời: (Chủ dự án để nhóm tự quyết theo phương án đề xuất)
 
 ## thoai-hoa-khop-goi
 - **QD-27** (plan-20261021-195355, 2026-10-21) *nhóm tự quyết*

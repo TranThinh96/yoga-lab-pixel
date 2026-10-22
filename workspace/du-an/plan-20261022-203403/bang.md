@@ -1,7 +1,7 @@
 # Bảng dự án plan-20261022-203403
 
 Mục tiêu: Bản tiếp nối của workshop thoái hoá khớp gối: thêm 2 trang mới về bài tập tăng sức mạnh cơ đùi trước (cơ tứ đầu) an toàn cho người 50–70 tuổi thoái hoá khớp gối. Cần nguồn mới cho riêng phần này (Mai nghiên cứu bằng Deep Research, An kiểm chứng), rồi cập nhật kịch bản slides.md và thiết kế thiet-ke.md cho 2 trang đó; các trang cũ giữ nguyên. Lam và Vy được dùng công cụ hoi_dong_nghiep để hỏi nhanh An khi cần. Giữ dự án nhỏ: không quá 6 bước.
-Trạng thái: paused
+Trạng thái: done · điểm nghiệm thu gần nhất 85/100
 Brief: du-an/plan-20261022-203403/brief.md
 
 ## Trả lời của chủ dự án (bắt buộc tuân theo)
@@ -13,6 +13,10 @@ Brief: du-an/plan-20261022-203403/brief.md
   → (Chủ dự án để nhóm tự quyết theo phương án đề xuất)
 - (bước 6, An) Đứng–ngồi qua gối ~90° ở ghế thường, vượt mốc 45–60° của brief. Đề xuất: giữ, ghi cần vật lý trị liệu xem lại; hoặc thay bằng Mini Squat ≤45° [20].
   → Thay bằng Mini Squat vịn ghế ≤45° [20] để đúng mốc gập nông của brief.
+- (điều phối, Chef Yoga) Tr.11 "Mang về nhà" (trang cũ, giữ nguyên chữ) vẫn nói "chuỗi 6 tư thế", chưa nhắc 2 bài cơ đùi. Đề xuất: cho phép thêm một cụm ngắn "+ 2 bài cơ đùi trước (tr.6)" vào thẻ thứ ba ở dự án sau, hoặc giữ nguyên vì tr.6 đã có phần "Về nhà".
+  → Giữ nguyên tr.11 (các trang cũ giữ nguyên chữ); tr.6 đã có phần Về nhà.
+- (điều phối, Chef Yoga) Hình tr.5: chấp nhận Knee_diagram (chỉ thấy phần dưới cơ tứ đầu) hay chờ Quadriceps.png (4 cơ tô màu) trước khi dựng Canva? Đề xuất: dựng bằng Knee_diagram, đổi khi file về.
+  → (Chủ dự án để nhóm tự quyết theo phương án đề xuất)
 
 ## Các bước
 | # | Người | Việc | Trạng thái | Kết luận duyệt | Bàn giao |
@@ -30,17 +34,16 @@ Brief: du-an/plan-20261022-203403/brief.md
 | 11 | Hạ | [Duyệt bước 10] Đọc brief du-an/plan-20261022-203403/brief.md. Duyệt output/thoai-hoa-khop-goi-v2/thiet-ke.md tr.5–6 đặt cạnh ảnh mẫu tr.18 và tr.22: mở file hì | done | CẦN SỬA → đã trả về | handoff/20261022-210808-ha.md |
 | 12 | Vy | [Sửa bước 10] Sửa các vấn đề Hạ giao cho bạn: VD-13, VD-14, VD-15, VD-16, VD-17, VD-18 (danh sách chi tiết kèm theo). | done |  | handoff/20261022-210922-vy.md |
 | 13 | Lam | [Sửa bước 7] Sửa các vấn đề Hạ giao cho bạn: VD-19 (danh sách chi tiết kèm theo). | done |  | handoff/20261022-210922-lam.md |
-| 14 | Mai | Tải hình giải phẫu cơ tứ đầu có giấy phép (đúng nguồn đã ghi ở mục '## Hình & sơ đồ trong nguồn' của agents/mai/thoai-hoa-khop-goi-v2-nguon.md) bằng công cụ tai | error |  | handoff/20261022-211008-mai.md |
-| 15 | Vy | Mở hình quadriceps-4-co-tu-dau.png vừa tải, rồi sửa output/thoai-hoa-khop-goi-v2/thiet-ke.md cho VD-13 (toạ độ cắt, vùng chữ Anh cần che ở tr.5), VD-14 (prompt  | pending |  |  |
-| 16 | Hạ | [Duyệt bước 12] Duyệt lại sau khi sửa (vòng 1): kiểm các vấn đề trong danh sách kèm theo; chỉ nêu lỗi còn lại hoặc lỗi mới phát sinh. | pending |  |  |
+| 14 | Mai | Tải hình giải phẫu cơ tứ đầu có giấy phép (đúng nguồn đã ghi ở mục '## Hình & sơ đồ trong nguồn' của agents/mai/thoai-hoa-khop-goi-v2-nguon.md) bằng công cụ tai | done |  | handoff/20261022-220132-mai.md |
+| 15 | Vy | Mở hình quadriceps-4-co-tu-dau.png vừa tải, rồi sửa output/thoai-hoa-khop-goi-v2/thiet-ke.md cho VD-13 (toạ độ cắt, vùng chữ Anh cần che ở tr.5), VD-14 (prompt  | done |  | handoff/20261022-220249-vy.md |
+| 16 | Hạ | [Duyệt bước 12] Duyệt lại sau khi sửa (vòng 1): kiểm các vấn đề trong danh sách kèm theo; chỉ nêu lỗi còn lại hoặc lỗi mới phát sinh. | done | CẦN SỬA (hết vòng sửa) | handoff/20261022-220132-ha.md |
+| 17 | Lam | output/thoai-hoa-khop-goi-v2/slides.md: (a) Trang 5 dòng Hình đổi hình chính thành hinh-nguon/khop-goi-gan-tu-dau.png (Knee_diagram, Mysid, Public domain, nhìn  | done |  | handoff/20261022-220901-lam.md |
+| 18 | Vy | output/thoai-hoa-khop-goi-v2/thiet-ke.md: (a) Trang 6 Prompt (1) bỏ cụm 'the heel resting on that seat,' và dòng trang-06-siet-co-dui-khan-cuon.png trong Danh s | done |  | handoff/20261022-220925-vy.md |
 
 ## Vấn đề
-- Còn mở: 9 (BẮT BUỘC: 8) · Không sửa: 0 · Đóng: 9 · chi tiết: du-an/plan-20261022-203403/van-de.md
+- Còn mở: 4 (BẮT BUỘC: 4) · Không sửa: 0 · Đóng: 16 · chi tiết: du-an/plan-20261022-203403/van-de.md
 
 ## Tin nhắn giữa các bước
-- (bước 2) An → Mai: cần file nguồn đủ mục (a)–(f): mỗi ý có link mở được, mức bằng chứng, câu trích nguyên văn; thêm bảng hình cơ tứ đầu (link File, link Special:FilePath, tác giả, giấy phép).
-- (bước 3) Mai → An: mở lại O'Reilly (PMC1752483), ROH, CDC; thử mở NICE bằng cách khác.
-- (bước 3) Mai → Vy: hình tr.5 ưu tiên Quadriceps.png (PD), dự phòng Gray1238.png.
 - (bước 4) An → Mai: duyệt lại ✓ ĐẠT, file sẵn sàng cho Lam.
 - (bước 4) An → Lam: bàn giao file nguồn từ An; thêm tài liệu mẫu tr.18 và tr.22 vào; dùng 2 bài ưu tiên (Inner Range Quad, Sit to Stand) cho tr.6.
 - (bước 5) Lam → Vy: tr.5 hình Quadriceps.png (PD) đặt tên quadriceps-4-co-tu-dau.png; tr.6 ảnh (1) cần 2 ghế đối diện, khăn cuộn dưới gối; ảnh (2) tay chống đùi, gối gập nông.
@@ -53,6 +56,9 @@ Brief: du-an/plan-20261022-203403/brief.md
 - (bước 10) Vy → Nhi: prompt B tr.6 dùng được ngay.
 - (bước 11) Hạ → Vy: sửa V2–V5 trong thiet-ke.md; V1 khi file hình về.
 - (bước 11) Hạ → Lam: slides.md tr.6 Lời giảng, mục Khởi động (V7).
+- (bước 16) Hạ → Lam: slides.md tr.5 Hình (VD-20) đổi `quadriceps-4-co-tu-dau.png` thành `khop-goi-gan-tu-dau.png` hoặc ghi "nhìn nghiêng" để khớp thiet-ke.md (bàn giao bước 13 đã nêu, chưa làm).
+- (bước 15) Vy → Lam: xem Vướng mắc về dòng Hình tr.5.
+- (bước 18) Vy → Lam: nếu Quadriceps về và đổi hình chính tr.5, sửa dòng Hình trong slides.md cho khớp.
 
 ## Cho cả nhóm biết
 - (bước 5, Lam) Commons đang giới hạn lượt tải (429); máy chủ tự thử lại sau vài phút.
@@ -87,3 +93,16 @@ Brief: du-an/plan-20261022-203403/brief.md
 - Tải lại hình (agents/mai/thoai-hoa-khop-goi-v2-nguon.md, lần 1): 0 tải được, còn 3 lỗi
 - Giao ban: chèn 2 bước · Bước 13 vướng vì chưa có file hình cơ tứ đầu: Mai tải hình trước, sau đó Vy làm hết các lỗi BẮT BUỘC còn mở trong thiet-ke.md. VD-1 đến VD-3 vẫn ở trạng thái Mở, nhưng có vẻ chỉ là lỗi cũ sổ chưa cập
 - Bước 14: hết hạn mức → tạm dừng
+- Bước 16: vẫn CẦN SỬA nhưng đã hết vòng sửa → chuyển tiếp, để nghiệm thu xử lý
+- Nghiệm thu lần 1: 85/100
+- Điểm 85 ≥ 85 nhưng còn 2 việc nhỏ → giao vòng sửa nhanh (không nghiệm thu lại)
+- Hỏi chủ dự án 2 câu (điều phối)
+- Hồi cứu: 5 bài học mới, 2 bài học sửa/gộp, 6 lỗ hổng, 2 mẫu tốt
+- Bài học BH-51 tái phạm (lech-hai-file ×3) → lên checklist bắt buộc
+- Bài học BH-52 tái phạm (anh-sai-tu-the ×1) → lên checklist bắt buộc
+- Bài học BH-53 tái phạm (anh-sai-tu-the ×1) → lên checklist bắt buộc
+- Bài học BH-57 tái phạm (anh-sai-tu-the ×1) → lên checklist bắt buộc
+- Bài học BH-58 tái phạm (anh-sai-tu-the ×1) → lên checklist bắt buộc
+- Bài học: 5 tái phạm, 14 áp dụng mà không tái phạm ở dự án này
+- Chủ dự án đã trả lời 2 câu hỏi
+- Máy soát sau vòng sửa nhanh: không còn lỗi máy móc

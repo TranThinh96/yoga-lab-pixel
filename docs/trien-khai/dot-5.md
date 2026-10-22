@@ -252,3 +252,15 @@ BH-48 ("Khi đạo cụ trong ảnh tư thế đổi… sửa mọi chỗ nhắc
 ## Phát hiện thêm
 
 (Người triển khai ghi vào đây.)
+
+Lựa chọn khi đặc tả chưa nói rõ (chủ dự án xem lại):
+
+1. **5.4 Tên file bối cảnh** là đúng mã lượt chạy (`<giờ>-<id>.md`). Mọi lượt thuộc dự án có gói ngữ cảnh đều được ghi, kể cả lượt nghiệm thu và giao ban của điều phối viên (bước 0); những lượt này chưa có nút trong giao diện, xem trong thư mục `du-an/<mã>/boi-canh/` hoặc ở ngăn chi tiết lượt chạy. Lượt hỏi nhanh (4.5) dùng prompt riêng nên không có file.
+2. **5.5 Chủ đề** lấy bằng `planTopic` như phần còn lại của máy chủ, nên dự án cũ chưa có `plan.topic` (vd v5 `plan-20261016-204631`) vẫn đo được ảnh ngoài thư mục (ra 0), không phải "không có chủ đề" như bảng ở bước 4.
+3. **5.6 Bản xem `agents/lam/kinh-nghiem.md` và `tri-thuc/00-ban-do.md`** được dựng lại bằng chính máy chủ (trên bản sao workspace) rồi chép vào commit dữ liệu: BH-48 không còn là checklist của Lam, bản đồ ghi 0 lỗ hổng chưa sửa. `index.md` không chép vì bản sao làm sai thứ tự giờ sửa (giống dot-0.md).
+
+Đã thử trên bản sao workspace:
+
+4. **5.4** với một lệnh `claude` giả: dự án một bước của Lam ghi `du-an/<mã>/boi-canh/<mã lượt>.md` có đủ quyết định, bài học, note liên quan; bước có `boiCanh` trỏ đúng file.
+5. **5.5** `GET /api/tri-nao` ra đúng bảng ở bước 4 (v6: 6 câu hỏi trùng, 16/26 = 61,5%, 2 ảnh; `index.md` 24 dòng). Khối Trí não kiểm bằng cách chạy riêng hàm dựng HTML trên kết quả đó.
+6. **5.1, 5.3** chỉ kiểm bằng kiểm thử và đọc code; cần một dự án thật để thấy (xem thu-tren-may.md, Đợt 5).

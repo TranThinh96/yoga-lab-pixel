@@ -22,7 +22,7 @@ const { dongTraCuu } = congCu;
 const { soatVanBan } = require('./lib/soat-loi');
 const { vietBanDo } = require('./lib/ban-do');
 const { ghiQuyetDinh, goiYChoCauHoi, quyetDinhChoKeHoach, vietSoQuyetDinh } = require('./lib/quyet-dinh');
-const { LOAI_LOI, mucTrong, docVanDe, docDaXuLy, docDuyetLai, docTinNhan, chuFile, ganVanDe, nhomTheoChu, capNhatTuSua, capNhatTuDuyetLai, vietSoVanDe } = require('./lib/van-de');
+const { LOAI_LOI, mucTrong, docVanDe, docDaXuLy, docDuyetLai, docTinNhan, chuFile, ganVanDe, nhomTheoChu, nhomSua, capNhatTuSua, capNhatTuDuyetLai, vietSoVanDe } = require('./lib/van-de');
 const { docCauHoi: parseQuestions, laCauHoiMoiTruong, locBaiHocMoi, phanLoaiCauHoi, chonChuDe, chuDeTu, chuDeTiepNoi } = require('./lib/van-ban');
 const { chuDeTriThuc, docBangTriThuc, hopNhatMenhDe, hopNhatNguon, capNhatTruyCap, hopNhatTuThe, maHinh, hopNhatHinh, cacChuDe, vietMocChuDe, vietBanDoTriThuc, docThuatNgu, dienThuatNgu, timTriThuc, goiNguCanh, slug, KIEU_MAU, trichMauTot, taoMauTot, chonMauTot } = require('./lib/tri-thuc');
 const { docGhiChu } = require('./lib/ghi-chu');
@@ -1588,10 +1588,9 @@ function handleReview(plan, idx, text, banGhi = '') {
   if (s.verdict !== 'fix') return;
   const target = plan.steps[s.checks - 1];
   const round = (s.round || 0) + 1;
-  // Vấn đề BẮT BUỘC đang mở của bước này, nhóm theo chủ file; vấn đề NÊN của cùng chủ đi kèm
+  // Vấn đề đang mở của bước này, nhóm theo chủ file; chủ chỉ có vấn đề NÊN cũng được giao sửa
   const mo = soVanDe ? (plan.issues || []).filter(x => x.status === 'mo' && x.lastStep === n) : [];
-  const { nhom, khongChu } = nhomTheoChu(mo.filter(x => x.level === 'BẮT BUỘC'));
-  for (const x of mo.filter(x => x.level !== 'BẮT BUỘC' && nhom.has(x.owner))) nhom.get(x.owner).issues.push(x);
+  const { nhom, khongChu } = nhomSua(mo);
   if (khongChu.length) plan.log.push(`Bước ${n}: ${khongChu.length} vấn đề không rõ ai phụ trách file (${khongChu.map(x => x.id).join(', ')})`);
   if (!nhom.size) nhom.set(target.agentId, { step: s.checks, issues: [] }); // không đọc được bảng: trả về người làm như cũ
   const chu = [...nhom].sort((a, b) => (a[0] === target.agentId ? -1 : b[0] === target.agentId ? 1 : a[1].step - b[1].step));

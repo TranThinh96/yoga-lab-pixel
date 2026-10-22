@@ -73,6 +73,17 @@ test('ganVanDe và nhomTheoChu', () => {
   assert.equal(khongChu.length, 0);
 });
 
+test('nhomSua: chủ chỉ có vấn đề NÊN cũng được giao', () => {
+  const v = (id, level, owner, ownerStep) => ({ id, level, owner, ownerStep, status: 'mo' });
+  const doc = r => [...r.nhom].map(([a, g]) => [a, g.step, g.issues.map(x => x.id)]);
+  assert.deepEqual(doc(vd.nhomSua([v('VD-14', 'BẮT BUỘC', 'vy', 7), v('VD-15', 'NÊN', 'vy', 7), v('VD-17', 'NÊN', 'lam', 4), v('VD-18', 'NÊN', null, null)])),
+    [['vy', 7, ['VD-14', 'VD-15']], ['lam', 4, ['VD-17']]]);
+  assert.deepEqual(doc(vd.nhomSua([v('VD-1', 'NÊN', 'lam', 4), v('VD-2', 'NÊN', 'vy', 7)])), [['lam', 4, ['VD-1']], ['vy', 7, ['VD-2']]]);
+  const r = vd.nhomSua([v('VD-1', 'BẮT BUỘC', null, null)]);
+  assert.deepEqual(doc(r), []);
+  assert.equal(r.khongChu.length, 1);
+});
+
 test('capNhatTuSua', () => {
   const rows = vd.docDaXuLy(readFixture('da-xu-ly-mau.md'));
   let p = taoVanDe();

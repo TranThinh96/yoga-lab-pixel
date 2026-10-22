@@ -196,7 +196,7 @@ máy chủ chép bảng thành note. Chỉ người trong `brainApprovers` (mặ
 
 **Agent dùng thế nào**: mỗi lượt, máy chủ soạn sẵn phần "BỐI CẢNH TỪ BỘ NÃO CHUNG" (quy tắc của bạn, quyết định đã chốt,
 vấn đề đang mở của người đó, các note có thể liên quan). Agent gọi công cụ `tra_cuu` trước khi tìm web và chỉ tìm phần còn thiếu
-(công cụ chỉ có khi bật `labTools`).
+(công cụ chỉ có khi bật `labTools`). Phần BỐI CẢNH của mỗi bước dự án được chép vào `du-an/<mã>/boi-canh/`; bấm nút **Bối cảnh** cạnh "Bàn giao" để xem bước đó đã nhận bài học, checklist nào.
 
 ## Nhóm tự học thế nào
 

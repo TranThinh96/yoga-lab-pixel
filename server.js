@@ -636,7 +636,8 @@ async function startRun(agent, task, attachments = [], opts = {}) {
     tokens: 0, tokensIn: 0, cacheWrite: 0, cacheRead: 0, tokensOut: 0, costUsd: null, turns: 0,
     effort: agent.engine !== 'gemini' ? agent.effort || '' : '', models: [], toolCalls: 0, tools: {}, acts: [], files: [],
     ...(opts.planId ? { planId: opts.planId, step: opts.step || 0 } : {}),
-    ...(checklist.length ? { checklist } : {}) // mã bài học bậc 2 đã giao: máy chủ kiểm mục Tự kiểm của bàn giao
+    ...(checklist.length ? { checklist } : {}), // mã bài học bậc 2 đã giao: máy chủ kiểm mục Tự kiểm của bàn giao
+    ...(goi && opts.planId ? { boiCanh: `du-an/${opts.planId}/boi-canh/${stamp(startedAt)}-${agent.id}.md` } : {}) // bản chép phần BỐI CẢNH để xem lại
   };
 
   // Gemini CLI chạy không tương tác sẽ từ chối folder chưa được "tin cậy" và hạ approval mode về default.
@@ -647,6 +648,12 @@ async function startRun(agent, task, attachments = [], opts = {}) {
   try { spawnInto(agent, entry, cmd, args, stdinJson ? JSON.stringify({ event: 'user', message: { content: prompt } }) + '\n' : prompt, env); }
   catch (e) { running.delete(agent.id); if (labKey) { labKeys.delete(labKey); fsp.unlink(mcpFile).catch(() => {}); } throw e; }
   running.set(agent.id, entry);
+  if (run.boiCanh) { // ghi không chờ: lỗi ghi file không làm hỏng lượt chạy
+    const abs = insideWorkspace(run.boiCanh);
+    if (abs) fsp.mkdir(path.dirname(abs), { recursive: true })
+      .then(() => fsp.writeFile(abs, `# Bối cảnh lượt ${run.id}\n> Máy chủ tự sinh file này. Đừng sửa tay: đây là bản chép phần BỐI CẢNH đã gửi cho agent.\n\n${goi}\n`, 'utf8'))
+      .catch(e => console.error('Không ghi được file bối cảnh:', e.message));
+  }
 
   broadcast({ type: 'run', run: liveRun(run) }); // để giao diện biết việc đang làm và giờ bắt đầu
   broadcast({ type: 'status', agentId: agent.id, status: 'working' });
@@ -1846,7 +1853,7 @@ function startStep(plan, idx) {
       if (run.status === 'stopped') { plan.status = 'paused'; plan.note = `Bạn đã dừng bước ${idx + 1}`; return emitPlan(plan); }
       onStepError(plan, idx);
     }
-  }).then(run => { s.runId = run.id; for (const m of tinMoi) m.delivered = true; emitPlan(plan); })
+  }).then(run => { s.runId = run.id; s.boiCanh = run.boiCanh || null; for (const m of tinMoi) m.delivered = true; emitPlan(plan); })
     .catch(e => {
       idx = plan.steps.indexOf(s);
       if (e.status === 409) { s.status = 'pending'; plan.waiting = agent.id; return emitPlan(plan); } // vừa có người giao việc khác

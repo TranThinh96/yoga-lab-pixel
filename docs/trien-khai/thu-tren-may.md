@@ -87,7 +87,7 @@ Gửi những thứ đó cho người triển khai, hoặc ghi vào mục "Phát
    - khối **Đề xuất cải tiến**: đọc từng đề xuất sửa hướng dẫn vai (cũ → mới), bấm Duyệt, Sửa rồi duyệt, hoặc Bỏ;
    - thử **Hoàn tác** một đề xuất vừa duyệt.
 3. Mở `tri-thuc/he-thong/lo-hong.md`: đây là việc của người phát triển, không phải của agent. Gửi danh sách này khi muốn sửa tiếp hệ thống.
-4. Bài học hợp bước: ngăn "Việc được giao" chưa hiện phần BỐI CẢNH (xem "Phát hiện thêm" số 20 của dot-3.md). Tạm thời kiểm bằng bàn giao: ở bước có bài bậc 2, mục "Tự kiểm theo brief" phải có mã `[BH-…]` kèm "đã kiểm"; thiếu thì bảng dự án có dòng "chưa ghi checklist".
+4. Bài học hợp bước: bấm nút **Bối cảnh** của lượt đó để xem bài học và checklist đã giao (có từ Đợt 5). Ở bước có bài bậc 2, mục "Tự kiểm theo brief" phải có mã `[BH-…]` kèm "đã kiểm"; thiếu thì bảng dự án có dòng "chưa ghi checklist".
 
 ---
 

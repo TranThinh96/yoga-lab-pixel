@@ -3309,7 +3309,7 @@ function renderDrawer(cards, p){
         <details data-k="t${x.n}" ${open.has('t' + x.n) ? 'open' : ''}><summary>Việc được giao</summary><div class="task">${esc(taskText(x.task))}</div></details>
         ${x.status === 'error' ? (canResume(p) ? `<div class="r"><button class="btn sm primary" type="button" data-bd-resume="${esc(p.id)}">▶ Chạy tiếp dự án từ bước này</button></div>`
           : p && PLAN_ACTIVE.includes(p.status) && p.status !== 'paused' ? '<p class="s">Máy chủ đang tự xử lý: chạy lại bước này một lần, nếu vẫn lỗi thì điều phối viên lập lại kế hoạch.</p>' : '') : ''}
-        <div class="r">${x.handoff ? `<button class="btn sm" type="button" data-view="${esc(x.handoff)}">Bàn giao</button>` : ''}${fileBtns(x.files || [])}
+        <div class="r">${x.handoff ? `<button class="btn sm" type="button" data-view="${esc(x.handoff)}">Bàn giao</button>` : ''}${x.boiCanh ? `<button class="btn sm" type="button" data-view="${esc(x.boiCanh)}">Bối cảnh</button>` : ''}${fileBtns(x.files || [])}
           ${run ? `<button class="btn sm" type="button" data-sel="${esc(x.agentId)}">Theo dõi ${esc(name(x.agentId))}</button>` : ''}</div>
       </li>`; }).join('')}</ol>`;
     // Vấn đề trong sổ thuộc thẻ này (mọi trạng thái)
@@ -3325,7 +3325,7 @@ function renderDrawer(cards, p){
       ${txt ? `<p class="s" style="white-space:pre-wrap;font-size:13px">${esc(txt)}</p>` : ''}
       ${live ? `<p class="s"><span data-kel-d data-kt0="${new Date(r.startedAt).getTime()}"></span> · ${PHASES[phaseOf(S.acts[r.agentId] || [])]}</p>${liveList(r.agentId, r)}` : ''}
       <details data-k="task" ${open.has('task') || !txt ? 'open' : ''}><summary>Việc được giao</summary><div class="task">${esc(taskText(r.task))}</div></details>
-      <div class="r" style="display:flex;flex-wrap:wrap;gap:6px">${r.handoff ? `<button class="btn sm" type="button" data-view="${esc(r.handoff)}">Bàn giao</button>` : ''}${fileBtns(r.files || [])}
+      <div class="r" style="display:flex;flex-wrap:wrap;gap:6px">${r.handoff ? `<button class="btn sm" type="button" data-view="${esc(r.handoff)}">Bàn giao</button>` : ''}${r.boiCanh ? `<button class="btn sm" type="button" data-view="${esc(r.boiCanh)}">Bối cảnh</button>` : ''}${fileBtns(r.files || [])}
         <button class="btn sm${live ? '' : ' primary'}" type="button" data-sel="${esc(r.agentId)}">${live ? 'Theo dõi' : 'Giao việc tiếp cho'} ${esc(r.agentName || name(r.agentId))}</button></div>`;
   }
   d.hidden = false;
@@ -3682,7 +3682,7 @@ function openProject(id){
       <h4>${esc(nm(x.agentId))}</h4><p class="meta">${esc(meta)}</p>
       <p class="task clamp" title="${esc(taskText(x.task))}">${esc(gist(x.task))}</p>
       ${x.summary ? `<p class="sum">${esc(plain(x.summary))}</p>` : ''}${x.error ? `<p class="sum" style="border-color:var(--err)">${esc(x.error)}</p>` : ''}
-      <div class="row">${x.handoff ? `<button class="btn sm" data-view="${esc(x.handoff)}">Bàn giao</button>` : ''}${stepFiles.map(f => `<button class="btn sm" data-view="${esc(f.path)}">📝 ${esc(f.name)}</button>`).join('')}</div>
+      <div class="row">${x.handoff ? `<button class="btn sm" data-view="${esc(x.handoff)}">Bàn giao</button>` : ''}${x.boiCanh ? `<button class="btn sm" data-view="${esc(x.boiCanh)}">Bối cảnh</button>` : ''}${stepFiles.map(f => `<button class="btn sm" data-view="${esc(f.path)}">📝 ${esc(f.name)}</button>`).join('')}</div>
     </div></div>`;
   }).join('');
   $('#projBody').innerHTML = html;

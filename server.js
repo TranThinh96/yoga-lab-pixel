@@ -23,7 +23,7 @@ const { soatVanBan } = require('./lib/soat-loi');
 const { vietBanDo } = require('./lib/ban-do');
 const { ghiQuyetDinh, goiYChoCauHoi, quyetDinhChoKeHoach, vietSoQuyetDinh } = require('./lib/quyet-dinh');
 const { LOAI_LOI, mucTrong, docVanDe, docDaXuLy, docDuyetLai, docTinNhan, chuFile, ganVanDe, nhomTheoChu, nhomSua, capNhatTuSua, capNhatTuDuyetLai, vietSoVanDe } = require('./lib/van-de');
-const { docCauHoi: parseQuestions, laCauHoiMoiTruong, locBaiHocMoi, phanLoaiCauHoi, chonChuDe, chuDeTu, chuDeTiepNoi } = require('./lib/van-ban');
+const { docCauHoi: parseQuestions, laCauHoiMoiTruong, locBaiHocMoi, phanLoaiCauHoi, chonChuDe, chuDeTu, chuDeTiepNoi, dongHinhCu } = require('./lib/van-ban');
 const { chuDeTriThuc, docBangTriThuc, hopNhatMenhDe, hopNhatNguon, capNhatTruyCap, hopNhatTuThe, maHinh, hopNhatHinh, cacChuDe, vietMocChuDe, vietBanDoTriThuc, docThuatNgu, dienThuatNgu, timTriThuc, goiNguCanh, slug, KIEU_MAU, trichMauTot, taoMauTot, chonMauTot } = require('./lib/tri-thuc');
 const { docGhiChu } = require('./lib/ghi-chu');
 const { chonBuocChay, choBuocChen } = require('./lib/lich');
@@ -2535,11 +2535,13 @@ async function downloadSourceImages(nguonRel, handoffRel, planId = null) {
   }
   if (manifest.length) {
     const cell = s => String(s || '—').replace(/\|/g, '/').replace(/\r?\n/g, ' ');
+    // Giữ dòng của hình đã có trong danh sách cũ (chép từ dự án tiếp nối, hay từ file nguồn khác)
+    const cu = dongHinhCu(readWs(`${dirRel}/danh-sach.md`), manifest.map(r => r[0]));
     const md = `# Thư viện hình y khoa · ${topic}\n\nMáy chủ tải từ bảng "Hình & sơ đồ trong nguồn" của ${nguonRel} (chỉ dòng [DÙNG ĐƯỢC]). ` +
       `Lam, Vy chọn hình ở đây; trong "Danh sách hình" của thiet-ke.md ghi đường dẫn \`hinh-nguon/<tên file>\` (kèm link gốc) để máy chủ chép sang hinh/. ` +
       `Mở hình bằng Read để xem trước khi chọn. Nhãn tiếng Anh che và thêm nhãn Việt trong Canva, ghi "adapted".\n\n` +
       `| Tên file | Link gốc | Tác giả | Giấy phép | Thể hiện gì | Trạng thái |\n|---|---|---|---|---|---|\n` +
-      manifest.map(r => '| ' + r.map(cell).join(' | ') + ' |').join('\n') + '\n';
+      [...manifest, ...cu].map(r => '| ' + r.map(cell).join(' | ') + ' |').join('\n') + '\n';
     const mAbs = insideWorkspace(`${dirRel}/danh-sach.md`);
     await fsp.mkdir(path.dirname(mAbs), { recursive: true });
     await fsp.writeFile(mAbs, md, 'utf8');

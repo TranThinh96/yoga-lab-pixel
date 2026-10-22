@@ -80,6 +80,9 @@ test('phanLoaiBaiHoc với câu thật', () => {
   const lam2 = r(cau('lam', 'Đọc lại từng ý trên slide như một câu trọn nghĩa').full);
   assert.deepEqual([lam2.loai_loi, lam2.goc], ['chinh-ta-dau-cau', 'agent']);
   assert.equal(baiCu().filter(b => r(b.full).trang_thai === 'da-thang-cap').length, 17);
+  // BH-48: "trang An toàn" là tên trang
+  assert.equal(r('Khi đạo cụ trong ảnh tư thế đổi (ghế sang bolster), tìm và sửa mọi chỗ nhắc tên tư thế trong slides.md: bảng mục tiêu, trang An toàn, trang tư thế, tóm lược, Việc còn mở.').loai_loi, 'anh-sai-tu-the');
+  assert.equal(r('Ghi lưu ý an toàn cho từng tư thế').loai_loi, 'an-toan-thieu-ccd');
 });
 
 test('doanApDungKhi', () => {

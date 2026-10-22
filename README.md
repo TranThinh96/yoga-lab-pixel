@@ -226,7 +226,7 @@ Nâng cấp từ bản trước Đợt 3: chạy một lần `node scripts/chuye
 | `coordinatorId` | Điều phối viên mặc định (tự lưu khi bạn chọn trong mục Dự án) |
 | `maxPlanSteps` | Kế hoạch dài nhất bao nhiêu bước (mặc định 6) |
 | `maxReplans` | Bước lỗi thì điều phối viên được lập lại kế hoạch mấy lần (mặc định 1) |
-| `labTools` | Cho agent Claude gọi công cụ của máy chủ qua MCP nội bộ (soát lỗi, kiểm link, tải hình, tra bộ não). Mặc định tắt; bật sau khi thử trên máy |
+| `labTools` | Cho agent Claude gọi công cụ của máy chủ qua MCP nội bộ (soát lỗi, kiểm link, tải hình, tra bộ não). Với `thiet-ke.md`, số chữ từng trang của `soat_loi` là ước lượng từ dòng Bố cục. Mặc định tắt; bật sau khi thử trên máy |
 | `issueLedger` | Sổ vấn đề: người duyệt ghi bảng lỗi, máy chủ giao sửa cho người phụ trách file có lỗi. `false` = vòng duyệt như trước. Mặc định bật |
 | `maxCheckins` | Số lần tối đa điều phối viên được gọi giữa chừng (giao ban) khi có tín hiệu. `0` = tắt. Mặc định 3 |
 | `chromePreflight` | Trước khi giao việc cho agent dùng Chrome, máy chủ thử kết nối bằng một lượt rất ngắn; hỏng thì tạm dừng dự án và báo cách sửa. Mặc định bật |

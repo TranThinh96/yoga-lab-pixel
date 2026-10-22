@@ -3,7 +3,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
-const { soatVanBan } = require('../lib/soat-loi');
+const { soatVanBan, soChuThietKe } = require('../lib/soat-loi');
 
 const readFixture = n => fs.readFileSync(path.join(__dirname, 'fixtures', n), 'utf8').normalize('NFC');
 const MD = JSON.parse(readFixture('soat-loi-mong-doi.json'));
@@ -42,4 +42,11 @@ test('kiemFileHinh', () => {
   };
   assert.deepEqual(kiemFileHinh(vao), ['Trang 5: chưa có output/t/hinh/trang-05-b.jpg', 'slides.md nhắc hinh-nguon/y.png nhưng chưa có file']);
   assert.deepEqual(kiemFileHinh({ ...vao, coThuMucHinh: false }), ['slides.md nhắc hinh-nguon/y.png nhưng chưa có file']);
+});
+
+test('soChuThietKe: ước lượng chữ trên slide từ dòng Bố cục', () => {
+  const ra = soChuThietKe(readFixture('thiet-ke-khop-goi.md')).map(x => `${x.trang}:${x.chu}`).join(' ');
+  assert.equal(ra, '1:12 2:45 3:66 4:88 5:9 6:9 7:9 8:69 9:74 10:3'); // trang 4: Vy tự ghi "≈ 88"
+  const nho = '## Trang 1 · X\n- Bố cục: nền `#3E5F45`. Tiêu đề: "Vận động là nền tảng [3][6]"\n- Prompt: "woman on a yoga mat"\n';
+  assert.deepEqual(soChuThietKe(nho), [{ trang: 1, chu: 5 }]);
 });

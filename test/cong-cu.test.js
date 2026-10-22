@@ -18,6 +18,8 @@ test('soat_loi', async () => {
   assert.match(r.text, /dòng lỗi giả/);
   assert.match(r.text, /Trang 4 · lech-dao-cu/);
   assert.match(r.text, /Số chữ trên slide/);
+  const t = await goi('soat_loi', { file: 'output/t/thiet-ke.md' }, ctx, ['soat_loi']);
+  assert.match(t.text, /Số chữ trên slide theo thiết kế \(ước lượng/);
   const k = await goi('soat_loi', { file: 'output/t/slides.md' }, ctx, []);
   assert.equal(k.isError, true);
   const x = await goi('soat_loi', { file: 'output/t/khong-co.md' }, ctx, ['soat_loi']);

@@ -4,7 +4,7 @@
 
 ## Chủ đề
 - [[chu-de/suy-giap|suy-giap]] · 55 ý đã duyệt · 26 nguồn · 5 tư thế · 0 hình
-- [[chu-de/thoai-hoa-khop-goi|thoai-hoa-khop-goi]] · 15 ý đã duyệt · 25 nguồn · 7 tư thế · 5 hình
+- [[chu-de/thoai-hoa-khop-goi|thoai-hoa-khop-goi]] · 14 ý đã duyệt · 25 nguồn · 7 tư thế · 5 hình
 
 ## Cần bạn xem
 | Ý | Chủ đề | Lý do |

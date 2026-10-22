@@ -5,7 +5,6 @@
 ## Ý đã kiểm chứng
 | Ý | Mức | Nguồn | Hạn xem lại |
 |---|---|---|---|
-| [[menh-de/chua-duyet-y-nao\|Chưa duyệt ý nào]] | y-kien |  | 2027-10-22 |
 | [[menh-de/dvt-sung-dau-bap-chan-mot-ben\|Đau, sưng một chân (thường bắp chân hay đùi) có thể là DVT;]] | manh | [[nhs-dvt]] | 2027-10-21 |
 | [[menh-de/goi-115-dau-hieu-nguy-hiem\|Gọi 115: đau ngực nặng kéo dài, thở bất thường, tím môi hoặc đầu chi, ngất, m…]] | vua | [[vinmec-dau-hieu-goi-115]], [[bachmai-so-cuu-dot-quy]], [[cap-cuu-115-hcm]] | 2027-10-21 |
 | [[menh-de/koa-150-phut-tuan\|Hướng dẫn chung cho người lớn: ít nhất 150 phút hoạt động nhịp điệu vừa mỗi t…]] | manh | [[nhs-thoai-hoa-khop]] | 2027-10-21 |
@@ -68,5 +67,5 @@
 - [[nguon/yoga-vs-strengthening-rct-n-117-researchgate-bi-chan|ResearchGate (bị chặn)]] · Yoga vs strengthening RCT N=117 · truy cập: chua-kiem
 
 ## Dự án đã dùng
-- [[du-an/plan-20261022-203403/brief|plan-20261022-203403]]
 - [[du-an/plan-20261021-195355/brief|plan-20261021-195355]]
+- [[du-an/plan-20261022-203403/brief|plan-20261022-203403]]

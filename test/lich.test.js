@@ -68,3 +68,13 @@ test('choBuocChen: duyệt lại phía sau chờ các bước giao ban chèn và
   assert.deepEqual(b[4].from, []);
   assert.deepEqual(chonBuocChay(b, { max: 2 }), [3]);
 });
+
+test('chonBuocChay: bước dùng sản phẩm chờ lượt làm tiếp sau câu trả lời', () => {
+  const b = [
+    { agentId: 'lam', status: 'done', from: [] },
+    { agentId: 'lam', status: 'pending', from: [1], contOf: 1 },
+    { agentId: 'vy', status: 'pending', from: [1] }
+  ];
+  assert.equal(gocBuoc(b, 2), 1);
+  assert.deepEqual(chonBuocChay(b, { max: 2 }), [1]);
+});

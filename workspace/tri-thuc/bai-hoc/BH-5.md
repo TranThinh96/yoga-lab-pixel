@@ -8,9 +8,10 @@ ap_dung_khi:
 loai_loi: nguon-khong-khop
 bac: 1
 lan_tai_pham: 0
-lan_hieu_qua: 1
+lan_hieu_qua: 2
 trang_thai: moi
 ngay: 2026-10-16
 tu_van_de: []
+bang_chung: có bài 0/1 bước lỗi · trước khi có bài 0/0
 ---
 Luôn mở và đối chiếu bài báo gốc trên PubMed/PMC trước khi trích số liệu (ví dụ Baishya 2024 PMC10966165, Tele-Yoga 2025 PMC12246764); không tin tưởng trích dẫn thứ cấp.

@@ -12,13 +12,13 @@
 - tri-thuc/ — bộ não chung, bắt đầu từ tri-thuc/00-ban-do.md
 
 ## Dự án gần đây
+- plan-20261022-203403 · thoai-hoa-khop-goi-v2 · Xong, 85/100 · nghiệm thu: du-an/plan-20261022-203403/nghiem-thu.md
 - plan-20261021-195355 · thoai-hoa-khop-goi · Xong, 88/100 · nghiệm thu: du-an/plan-20261021-195355/nghiem-thu.md
 - plan-20261020-220605 · mat-ngu-v1 · Xong, 88/100 · nghiệm thu: du-an/plan-20261020-220605/nghiem-thu.md
-- plan-20261020-212512 · suy-giap-v7 · Xong · brief: du-an/plan-20261020-212512/brief.md
 
 ## Sản phẩm mới nhất
+- output/thoai-hoa-khop-goi-v2/: thiet-ke.md (Vy), slides.md (Lam)
 - output/thoai-hoa-khop-goi/: thiet-ke.md (Vy), slides.md (Lam)
 - output/mat-ngu-v1/: thiet-ke.md (Vy), slides.md (Lam)
-- output/suy-giap-v7/: slides.md (Lam)
 
 Bản đồ cũ (agent tự ghi trước đây): luu-tru/index-cu.md

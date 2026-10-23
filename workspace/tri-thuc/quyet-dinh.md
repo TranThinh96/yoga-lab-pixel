@@ -2,6 +2,23 @@
 
 > Máy chủ tự sinh từ .yogalab/quyet-dinh.json. Sửa câu trả lời trong giao diện Yoga Lab, không sửa ở đây.
 
+## thoai-hoa-khop-goi-v2
+- **QD-28** (plan-20261022-203403, 2026-10-22) *nhóm tự quyết*
+  - Hỏi: Bài (1) tr.6 vẫn gần "Ngồi ghế duỗi gối" tr.7. Đề xuất: giữ (đã nêu điểm khác); nếu muốn khác hẳn thì thay bằng Mini Squat vịn ghế ≤45° [20].
+  - Trả lời: (Chủ dự án để nhóm tự quyết theo phương án đề xuất)
+- **QD-29** (plan-20261022-203403, 2026-10-22) *nhóm tự quyết*
+  - Hỏi: Tr.1 còn "30 phút", buổi nay 37. Đề xuất: chỉ đổi con số.
+  - Trả lời: (Chủ dự án để nhóm tự quyết theo phương án đề xuất)
+- **QD-30** (plan-20261022-203403, 2026-10-22) bạn trả lời
+  - Hỏi: Đứng–ngồi qua gối ~90° ở ghế thường, vượt mốc 45–60° của brief. Đề xuất: giữ, ghi cần vật lý trị liệu xem lại; hoặc thay bằng Mini Squat ≤45° [20].
+  - Trả lời: Thay bằng Mini Squat vịn ghế ≤45° [20] để đúng mốc gập nông của brief.
+- **QD-31** (plan-20261022-203403, 2026-10-22) bạn trả lời
+  - Hỏi: Tr.11 "Mang về nhà" (trang cũ, giữ nguyên chữ) vẫn nói "chuỗi 6 tư thế", chưa nhắc 2 bài cơ đùi. Đề xuất: cho phép thêm một cụm ngắn "+ 2 bài cơ đùi trước (tr.6)" vào thẻ thứ ba ở dự án sau, hoặc giữ nguyên vì tr.6 đã có phần "Về nhà".
+  - Trả lời: Giữ nguyên tr.11 (các trang cũ giữ nguyên chữ); tr.6 đã có phần Về nhà.
+- **QD-32** (plan-20261022-203403, 2026-10-22) *nhóm tự quyết*
+  - Hỏi: Hình tr.5: chấp nhận Knee_diagram (chỉ thấy phần dưới cơ tứ đầu) hay chờ Quadriceps.png (4 cơ tô màu) trước khi dựng Canva? Đề xuất: dựng bằng Knee_diagram, đổi khi file về.
+  - Trả lời: (Chủ dự án để nhóm tự quyết theo phương án đề xuất)
+
 ## thoai-hoa-khop-goi
 - **QD-27** (plan-20261021-195355, 2026-10-21) *nhóm tự quyết*
   - Hỏi: Có trợ giảng cho phần xuống/lên thảm không? Đề xuất: có 1–2 người; nếu không, cả nhóm làm bản ngồi ghế tr.7–8. (làm tiếp sau khi trả lời không cần)

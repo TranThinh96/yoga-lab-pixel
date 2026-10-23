@@ -74,3 +74,12 @@ test('chuDeTiepNoi: bỏ đuôi -v<n>, lấy số lớn nhất trong output/ + 1
   assert.equal(vb.chuDeTiepNoi('mat-ngu', ['mat-ngu']), 'mat-ngu-v2');
   assert.equal(vb.chuDeTiepNoi('mat-ngu', ['mat-ngu', 'mat-ngu-v3']), 'mat-ngu-v4');
 });
+
+test('dongHinhCu: giữ dòng hình cũ không có trong lần tải mới', () => {
+  const cu = ['# Thư viện hình y khoa · khop-goi', '', '| Tên file | Link gốc | Tác giả | Giấy phép | Thể hiện gì | Trạng thái |', '|---|---|---|---|---|---|',
+    '| khop-goi.png | https://commons.wikimedia.org/wiki/File:Knee.svg | Mysid | Public domain | Khớp gối | đã tải |',
+    '| quad.png | https://commons.wikimedia.org/wiki/File:Q.png | Gray | Public domain | Cơ tứ đầu | KHÔNG tải được: HTTP 429 |'].join('\n');
+  assert.deepEqual(vb.dongHinhCu(cu, ['quad.png']).map(c => c[0]), ['khop-goi.png']);
+  assert.equal(vb.dongHinhCu(cu, []).length, 2);
+  assert.deepEqual(vb.dongHinhCu('', ['a.png']), []);
+});

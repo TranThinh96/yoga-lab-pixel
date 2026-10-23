@@ -16,3 +16,4 @@
 - [BH-82] Đặt [n] ngay sau đúng cụm mà câu trích nói; dòng liệt kê nhiều mục thì mục nào không có trong câu trích phải tách ra và ghi 'nguyên tắc Yoga Lab', không để một [n] phủ cả dòng.
 - [BH-83] Mục bắt buộc của trang An toàn trong Khung trang (chống chỉ định chung, gọi 115, câu thuốc) phải nằm ở 'Ý chính' để học viên nhìn thấy, không chỉ ở trường 'An toàn' dành cho giảng viên.
 - [BH-84] Với mỗi tư thế có ghế, viết cách đặt ghế làm được ngoài đời: mặt nào của ghế sát tường, người đứng hay ngồi ở đâu, cái gì giữ ghế không trượt; trang nào đặt khác thì ghi riêng.
+- [BH-91] Sau khi đổi một bài tập, dò lại mục Việc còn mở và đầu file xem còn câu nào nói về bài cũ (tên bài, đạo cụ, liều) rồi sửa cùng lượt.

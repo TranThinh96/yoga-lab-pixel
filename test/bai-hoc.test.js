@@ -144,6 +144,47 @@ test('danhGiaBaiHoc: tái phạm thì lên bậc, không tái phạm thì tính 
   assert.deepEqual(bh.danhGiaBaiHoc(ds2, [], ctx)[0].sua, { lan_hieu_qua: 2, trang_thai: 'hieu-qua' });
 });
 
+// Dự án giả: mỗi bước của Lam, ownerStep = số bước; loi: số bước có lỗi qua-chu
+const duAn = (createdAt, n, loi, daNhan) => ({ createdAt, steps: Array.from({ length: n }, () => ({ status: 'done', agentId: 'lam', ...(daNhan ? { baiHocDaNhan: daNhan } : {}) })),
+  issues: Array.from({ length: loi }, (_, i) => ({ level: 'BẮT BUỘC', kind: 'qua-chu', ownerStep: i + 1 })) });
+
+test('bangChungBaiHoc + ketLuanBangChung: so bước nhận bài với bước trước khi có bài', () => {
+  const [b] = bh.docBaiHoc([note('BH-3', { loai_loi: 'qua-chu' })]); // ngày 2026-10-16
+  const bc = bh.bangChungBaiHoc(b, [duAn('2026-10-01T00:00:00Z', 4, 2), duAn('2026-10-20T00:00:00Z', 4, 0, ['BH-3']),
+    duAn('2026-10-21T00:00:00Z', 3, 3)]); // dự án sau ngày có bài mà bước không nhận bài: không tính
+  assert.deepEqual(bc, { co: { buoc: 4, loi: 0 }, truoc: { buoc: 4, loi: 2 } });
+  assert.equal(bh.ketLuanBangChung(bc), 'tot');
+  assert.equal(bh.ketLuanBangChung({ co: { buoc: 4, loi: 2 }, truoc: { buoc: 4, loi: 2 } }), 'khong-tot');
+  assert.equal(bh.ketLuanBangChung({ co: { buoc: 2, loi: 0 }, truoc: { buoc: 4, loi: 2 } }), 'chua-du');
+  assert.equal(bh.ketLuanBangChung({ co: { buoc: 3, loi: 0 }, truoc: { buoc: 0, loi: 0 } }), 'tot');
+  assert.equal(bh.ketLuanBangChung({ co: { buoc: 3, loi: 1 }, truoc: { buoc: 0, loi: 0 } }), 'chua-du');
+  // bước của người khác, bước không khớp ap_dung_khi thì không tính
+  const [r] = bh.docBaiHoc([note('BH-4', { loai_loi: 'qua-chu', ap_dung_khi: ['fix'] })]);
+  assert.deepEqual(bh.bangChungBaiHoc(r, [duAn('2026-10-01T00:00:00Z', 4, 2)], { nhanCua: () => ['work'] }).truoc, { buoc: 0, loi: 0 });
+  assert.deepEqual(bh.daNhanTheoBuocCua({ steps: [{ status: 'done', baiHocDaNhan: ['BH-3'] }, { status: 'done' }, { status: 'error', baiHocDaNhan: [] }] }), { 1: ['BH-3'] });
+});
+
+test('danhGiaBaiHoc có bằng chứng: chỉ lên hieu-qua khi bước nhận bài ít lỗi hơn', () => {
+  const ds = bh.docBaiHoc([note('BH-3', { loai_loi: 'qua-chu' })]);
+  ds[0].data.lan_hieu_qua = 1;
+  const ctx = { batDau: '2026-10-20', nguoiThamGia: ['lam'], nhanTheoNguoi: { lam: ['work'] }, daNhanTheoBuoc: { 1: ['BH-3'] } };
+  const tot = { co: { buoc: 4, loi: 0 }, truoc: { buoc: 4, loi: 2 } };
+  assert.deepEqual(bh.danhGiaBaiHoc(ds, [], { ...ctx, bangChung: { 'BH-3': tot } })[0].sua,
+    { lan_hieu_qua: 2, bang_chung: 'có bài 0/4 bước lỗi · trước khi có bài 2/4', trang_thai: 'hieu-qua' });
+  assert.equal(bh.danhGiaBaiHoc(ds, [], { ...ctx, bangChung: { 'BH-3': { co: { buoc: 1, loi: 0 }, truoc: tot.truoc } } })[0].sua.trang_thai, undefined);
+  // đã hieu-qua mà số liệu cho thấy không tác dụng → về moi, ghi log
+  ds[0].data.trang_thai = 'hieu-qua';
+  const [k] = bh.danhGiaBaiHoc(ds, [], { ...ctx, bangChung: { 'BH-3': { co: { buoc: 4, loi: 2 }, truoc: tot.truoc } } });
+  assert.equal(k.sua.trang_thai, 'moi');
+  assert.match(k.ghi, /BH-3 chưa thấy tác dụng/);
+  // dự án có ghi bài đã nhận mà không bước nào nhận BH-3: không tính lần áp dụng
+  assert.deepEqual(bh.danhGiaBaiHoc(ds, [], { ...ctx, daNhanTheoBuoc: { 1: ['BH-9'] } }), []);
+  // lỗi ở bước không nhận bài thì không tính tái phạm; bước nhận bài thì có
+  const loi2 = [{ id: 'VD-1', kind: 'qua-chu', owner: 'lam', ownerStep: 2 }];
+  assert.notEqual(bh.danhGiaBaiHoc(ds, loi2, { ...ctx, daNhanTheoBuoc: { 1: ['BH-3'], 2: [] } })[0].sua.trang_thai, 'khong-hieu-qua');
+  assert.equal(bh.danhGiaBaiHoc(ds, loi2, { ...ctx, daNhanTheoBuoc: { 2: ['BH-3'] } })[0].sua.trang_thai, 'khong-hieu-qua');
+});
+
 test('danhGiaBaiHoc: bậc 2 → lỗ hổng + đề xuất len-bac; bậc 3 → đề xuất sửa hướng dẫn', () => {
   const vd = [{ id: 'VD-4', kind: 'qua-chu', owner: 'lam' }];
   const ctx = { batDau: '2026-11-01', nguoiThamGia: ['lam'], nhanTheoNguoi: { lam: ['work'] } };
@@ -216,6 +257,10 @@ test('thongKeHoc', () => {
   assert.match(t, /- Checklist chưa ghi: 2 lần/);
   assert.match(t, /Bỏ hẳn trang 5/);
   assert.ok(!/gạch thấp nhất →/.test(t));
+  assert.match(t, /- Bài học chưa thấy tác dụng .*: \(không có\)/);
+  const t2 = bh.thongKeHoc(plan, runs, bh.docBaiHoc([note('BH-17', { loai_loi: 'lech-hai-file' })]), id => id,
+    { bangChung: { 'BH-17': { co: { buoc: 4, loi: 2 }, truoc: { buoc: 3, loi: 1 } }, 'BH-99': { co: { buoc: 4, loi: 4 }, truoc: { buoc: 4, loi: 0 } } } });
+  assert.match(t2, /- Bài học chưa thấy tác dụng .*: \[BH-17\] \(có bài 2\/4 bước lỗi · trước khi có bài 1\/3\)$/m);
 });
 
 test('apDungSuaHuongDan: đủ ba trường hợp, thêm vào cuối, hoàn tác', () => {

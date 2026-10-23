@@ -264,3 +264,28 @@ Lựa chọn khi đặc tả chưa nói rõ (chủ dự án xem lại):
 4. **5.4** với một lệnh `claude` giả: dự án một bước của Lam ghi `du-an/<mã>/boi-canh/<mã lượt>.md` có đủ quyết định, bài học, note liên quan; bước có `boiCanh` trỏ đúng file.
 5. **5.5** `GET /api/tri-nao` ra đúng bảng ở bước 4 (v6: 6 câu hỏi trùng, 16/26 = 61,5%, 2 ảnh; `index.md` 24 dòng). Khối Trí não kiểm bằng cách chạy riêng hàm dựng HTML trên kết quả đó.
 6. **5.1, 5.3** chỉ kiểm bằng kiểm thử và đọc code; cần một dự án thật để thấy (xem thu-tren-may.md, Đợt 5).
+
+Thử trên máy (2026-10-22, cùng dự án thử với dot-4.md số 16–23, `plan-20261022-203403`, đang tạm dừng ở bước 14/16):
+
+7. **Đạt 5.1:** Hạ duyệt thiết kế (bước 11) CẦN SỬA; Lam chỉ có VD-19 (NÊN, `slides.md`) và vẫn được giao bước 13, chạy song song với Vy.
+8. **Đạt 5.2:** việc lẻ của Vy gọi `soat_loi` cho `output/thoai-hoa-khop-goi/thiet-ke.md`, bàn giao có đúng dòng `Số chữ trên slide theo thiết kế (ước lượng…): Trang 1: 12 · Trang 2: 45 · Trang 3: 66 · Trang 4: 88 · …`, không gọi Bash.
+9. **Đạt 5.4:** mọi lượt của dự án có file `du-an/plan-20261022-203403/boi-canh/<mã lượt>.md`; nút **Bối cảnh** trong ngăn chi tiết thẻ mở đúng file. Cửa sổ xem file ghi "Chưa rõ agent nào tạo file này" (file do máy chủ sinh), không ảnh hưởng.
+10. **Đạt 5.5, 5.6:** khối Trí não có 3 cột mới và thẻ `index.md`: 24 dòng; v6 ra 6 câu hỏi trùng, 2 ảnh ngoài thư mục, An mở lại 16/26 = 61,5%. `BH-48` có `loai_loi: anh-sai-tu-the`, `trang_thai: moi`.
+11. **5.3 đạt phần chính** (chạy tiếp ngày 2026-10-22, 22:00): nghiệm thu lần 1 được 85/100 và giao 2 việc sửa nhanh. Hồi cứu xong trước khi các bước sửa chạy, và bối cảnh bước sửa của Vy có `[BH-57]`, bài vừa lên checklist ở chính lần hồi cứu này. Nghiệm thu có kèm 2 câu hỏi nên máy chủ đi nhánh `askOwner` (giữ như cũ); ghi chú "Chờ hồi cứu xong rồi giao vòng sửa" vì vậy chưa thấy. Muốn thấy nó thì cần một lần nghiệm thu giao việc sửa mà không hỏi gì.
+12. **Sổ vấn đề:** VD-1..3 (An nêu ở file nguồn khi file chưa tồn tại, người sửa "chưa rõ") vẫn "Mở" dù Mai đã sửa và An duyệt lại đạt. Vấn đề không rõ chủ không vào danh sách duyệt lại nên không bao giờ được đóng; nếu không ai đóng tay, chúng sẽ còn mở tới nghiệm thu.
+13. **Bộ não nhập dòng giữ chỗ thành ý đã duyệt:** ở bước 2, bảng ý của An chỉ có dòng "Chưa duyệt ý nào" (ghi chú "Chờ file nguồn của Mai"); máy chủ tạo `tri-thuc/menh-de/chua-duyet-y-nao.md` với `trang_thai: da-duyet`. Cần coi dòng kiểu này là trống (giống cách sửa mã giữ chỗ "(chưa kiểm)" ở dot-2.md số 16) và xoá hoặc đặt `bac-bo` cho note đó.
+
+Chạy tiếp tới nghiệm thu (2026-10-22, 22:00–22:12, sau khi hạn mức làm mới):
+
+14. **Lỗi (đã sửa): bước duyệt lại không chờ bước giao ban chèn vào khi chạy song song.** Giao ban sau bước 13 chèn bước 14 (Mai tải hình) và 15 (Vy sửa thiết kế) với `from` rỗng. Bước 16 (Hạ duyệt lại) chỉ chờ bước 11–13, nên với `maxParallel: 2` Hạ bắt đầu cùng lúc với Mai, trước khi Vy sửa. Hạ duyệt bản thiết kế cũ, vẫn CẦN SỬA, rồi hết vòng sửa và để nghiệm thu xử lý. `choBuocChen` (`lib/lich.js`, có kiểm thử) nay thêm các bước chèn vào `from` của mọi bước đang chờ phía sau. Chạy tuần tự không đổi. Các chỗ chèn bước khác (`handleReview`, hình tải hỏng) chưa xét.
+15. **Bản sửa lỗi 429 (dot-4.md số 19) chưa được thử thật:** lần chạy lại này Mai vẫn bị Commons trả 429, nhưng có ghi `danh-sach.md` nên bước được tính là xong, không đi vào nhánh lỗi. Hình cơ tứ đầu vẫn chưa tải được; thiết kế dùng tạm `Knee_diagram` theo câu trả lời của chủ dự án.
+16. Dự án xong: 85/100 lần đầu, 2,71 triệu token quy đổi (bước nguồn 0,48 triệu), 3 lần giao ban, 0 câu hỏi trùng. Hồi cứu ra 5 bài học mới, 2 lần sửa/gộp, 6 lỗ hổng, 2 mẫu tốt; 5 bài cũ của Vy (BH-51, 52, 53, 57, 58) tái phạm và lên checklist. Không có đề xuất cải tiến nào, nên khối Đề xuất cải tiến vẫn chưa thử được với đề xuất thật.
+
+Sửa các chỗ hở còn lại sau lần thử (2026-10-22, chưa chạy lại dự án thật để thấy):
+
+17. dot-5.md số 13 (dòng giữ chỗ thành ý đã duyệt): `docBangTriThuc` bỏ dòng ý không có mức, nguồn và câu trích; câu trích "—" coi là trống. Chạy lại trên mọi bảng thật trong `agents/`: chỉ dòng "Chưa duyệt ý nào" bị bỏ.
+18. dot-4.md số 18 (4.1, pha 1 thất bại vẫn coi là xong): pha 1 mà trạng thái không phải "đang chạy" hay "xong", và ngoài file Deep Research chưa có sản phẩm nào, thì báo lỗi bước `Deep Research chưa khởi chạy được (…)`. Lỗi đi qua `onStepError` (chạy lại pha 1, rồi lập lại kế hoạch), không bị coi là hết hạn mức.
+19. dot-4.md số 21 (danh sách hình của bản v2 mất dòng cũ): `downloadSourceImages` giữ các dòng của `danh-sach.md` cũ không có trong lần tải này (`dongHinhCu`). Đã thêm lại 4 dòng hình khớp gối cho bản v2.
+20. dot-5.md số 12 (vấn đề "chưa rõ người sửa" mở mãi): không tìm được chủ file thì giao người làm của bước được duyệt (`ganVanDe`, tuỳ chọn `macDinh`). Vấn đề nay có bước sửa và được duyệt lại; cũng bớt một tín hiệu giao ban.
+21. Các chỗ chèn bước khác khi chạy song song: bước sửa của `handleReview` và `giaoThayHinh` có `fixOf`/`checks` nên đã đúng. Lượt làm tiếp sau câu trả lời (`chenLamTiep`) chỉ có `contOf`; `gocBuoc` nay đi theo cả `contOf`, để bước dùng sản phẩm đó chờ lượt làm tiếp.
+22. dot-4.md số 22 (giao ban thừa): giao ban sau bước 7 do dòng Vướng mắc "Hình Quadriceps chưa tải", trong lúc máy chủ đang hẹn tải lại hình đó (429). Máy chủ nay nhớ các lần tải lại đang hẹn theo dự án; trong lúc đó, vướng mắc về hình không gọi giao ban.

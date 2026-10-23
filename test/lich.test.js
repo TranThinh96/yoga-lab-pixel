@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { gocBuoc, chonBuocChay } = require('../lib/lich');
+const { gocBuoc, chonBuocChay, choBuocChen } = require('../lib/lich');
 
 // Sau một bước duyệt (3) có lỗi của cả Vy (thiết kế, bước 2) và Lam (kịch bản, bước 1)
 const B = () => [
@@ -50,4 +50,31 @@ test('chonBuocChay: có bước lỗi thì không chạy gì', () => {
 test('chonBuocChay: chuỗi tuần tự với max 1', () => {
   const b = ['done', 'done', 'pending', 'pending'].map((status, i) => ({ agentId: 'a' + i, status, from: [] }));
   assert.deepEqual(chonBuocChay(b, { max: 1 }), [2]);
+});
+
+test('choBuocChen: duyệt lại phía sau chờ các bước giao ban chèn vào', () => {
+  // Như plan-20261022-203403: giao ban chèn Mai tải hình, Vy sửa thiết kế trước bước Hạ duyệt lại
+  const b = [
+    { agentId: 'vy', status: 'done', from: [] },
+    { agentId: 'ha', status: 'done', from: [1], checks: 1 },
+    { agentId: 'vy', status: 'done', from: [1, 2], fixOf: 1 },
+    { agentId: 'mai', status: 'pending', from: [] },
+    { agentId: 'vy', status: 'pending', from: [] },
+    { agentId: 'ha', status: 'pending', from: [2, 3], checks: 3 }
+  ];
+  assert.deepEqual(chonBuocChay(b, { max: 2 }), [3, 5]);
+  choBuocChen(b, 3, 2);
+  assert.deepEqual(b[5].from, [2, 3, 4, 5]);
+  assert.deepEqual(b[4].from, []);
+  assert.deepEqual(chonBuocChay(b, { max: 2 }), [3]);
+});
+
+test('chonBuocChay: bước dùng sản phẩm chờ lượt làm tiếp sau câu trả lời', () => {
+  const b = [
+    { agentId: 'lam', status: 'done', from: [] },
+    { agentId: 'lam', status: 'pending', from: [1], contOf: 1 },
+    { agentId: 'vy', status: 'pending', from: [1] }
+  ];
+  assert.equal(gocBuoc(b, 2), 1);
+  assert.deepEqual(chonBuocChay(b, { max: 2 }), [1]);
 });

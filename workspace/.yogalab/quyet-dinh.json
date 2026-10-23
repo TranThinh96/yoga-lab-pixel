@@ -322,5 +322,65 @@
   "goal": "Workshop 30 phút: yoga nhẹ cho người thoái hoá khớp gối (người 50–70 tuổi). Cần: nguồn kiểm chứng, lưu ý an toàn và chống chỉ định, kịch bản khoảng 8 trang slide và bản thiết kế. Giữ dự án nhỏ: ít bước nhất có thể, không quá 5 bước.",
   "at": "2026-10-21T14:02:43.011Z",
   "tuQuyet": true
+ },
+ {
+  "id": "QD-28",
+  "q": "Bài (1) tr.6 vẫn gần \"Ngồi ghế duỗi gối\" tr.7. Đề xuất: giữ (đã nêu điểm khác); nếu muốn khác hẳn thì thay bằng Mini Squat vịn ghế ≤45° [20].",
+  "a": "(Chủ dự án để nhóm tự quyết theo phương án đề xuất)",
+  "from": "lam",
+  "step": 5,
+  "planId": "plan-20261022-203403",
+  "topic": "thoai-hoa-khop-goi-v2",
+  "goal": "Bản tiếp nối của workshop thoái hoá khớp gối: thêm 2 trang mới về bài tập tăng sức mạnh cơ đùi trước (cơ tứ đầu) an toàn cho người 50–70 tuổi thoái hoá khớp gối. Cần nguồn mới cho riêng phần này (Mai nghiên cứu bằng Deep Research, An kiểm chứng), rồi cập nhật kịch bản slides.md và thiết kế thiet-ke.md cho 2 trang đó; các trang cũ giữ nguyên. Lam và Vy được dùng công cụ hoi_dong_nghiep để hỏi nhanh An khi cần. Giữ dự án nhỏ: không quá 6 bước.",
+  "at": "2026-10-22T13:57:28.173Z",
+  "tuQuyet": true
+ },
+ {
+  "id": "QD-29",
+  "q": "Tr.1 còn \"30 phút\", buổi nay 37. Đề xuất: chỉ đổi con số.",
+  "a": "(Chủ dự án để nhóm tự quyết theo phương án đề xuất)",
+  "from": "an",
+  "step": 6,
+  "planId": "plan-20261022-203403",
+  "topic": "thoai-hoa-khop-goi-v2",
+  "goal": "Bản tiếp nối của workshop thoái hoá khớp gối: thêm 2 trang mới về bài tập tăng sức mạnh cơ đùi trước (cơ tứ đầu) an toàn cho người 50–70 tuổi thoái hoá khớp gối. Cần nguồn mới cho riêng phần này (Mai nghiên cứu bằng Deep Research, An kiểm chứng), rồi cập nhật kịch bản slides.md và thiết kế thiet-ke.md cho 2 trang đó; các trang cũ giữ nguyên. Lam và Vy được dùng công cụ hoi_dong_nghiep để hỏi nhanh An khi cần. Giữ dự án nhỏ: không quá 6 bước.",
+  "at": "2026-10-22T14:02:03.123Z",
+  "tuQuyet": true
+ },
+ {
+  "id": "QD-30",
+  "q": "Đứng–ngồi qua gối ~90° ở ghế thường, vượt mốc 45–60° của brief. Đề xuất: giữ, ghi cần vật lý trị liệu xem lại; hoặc thay bằng Mini Squat ≤45° [20].",
+  "a": "Thay bằng Mini Squat vịn ghế ≤45° [20] để đúng mốc gập nông của brief.",
+  "from": "an",
+  "step": 6,
+  "planId": "plan-20261022-203403",
+  "topic": "thoai-hoa-khop-goi-v2",
+  "goal": "Bản tiếp nối của workshop thoái hoá khớp gối: thêm 2 trang mới về bài tập tăng sức mạnh cơ đùi trước (cơ tứ đầu) an toàn cho người 50–70 tuổi thoái hoá khớp gối. Cần nguồn mới cho riêng phần này (Mai nghiên cứu bằng Deep Research, An kiểm chứng), rồi cập nhật kịch bản slides.md và thiết kế thiet-ke.md cho 2 trang đó; các trang cũ giữ nguyên. Lam và Vy được dùng công cụ hoi_dong_nghiep để hỏi nhanh An khi cần. Giữ dự án nhỏ: không quá 6 bước.",
+  "at": "2026-10-22T14:02:03.123Z",
+  "tuQuyet": false
+ },
+ {
+  "id": "QD-31",
+  "q": "Tr.11 \"Mang về nhà\" (trang cũ, giữ nguyên chữ) vẫn nói \"chuỗi 6 tư thế\", chưa nhắc 2 bài cơ đùi. Đề xuất: cho phép thêm một cụm ngắn \"+ 2 bài cơ đùi trước (tr.6)\" vào thẻ thứ ba ở dự án sau, hoặc giữ nguyên vì tr.6 đã có phần \"Về nhà\".",
+  "a": "Giữ nguyên tr.11 (các trang cũ giữ nguyên chữ); tr.6 đã có phần Về nhà.",
+  "from": "chef",
+  "step": 0,
+  "planId": "plan-20261022-203403",
+  "topic": "thoai-hoa-khop-goi-v2",
+  "goal": "Bản tiếp nối của workshop thoái hoá khớp gối: thêm 2 trang mới về bài tập tăng sức mạnh cơ đùi trước (cơ tứ đầu) an toàn cho người 50–70 tuổi thoái hoá khớp gối. Cần nguồn mới cho riêng phần này (Mai nghiên cứu bằng Deep Research, An kiểm chứng), rồi cập nhật kịch bản slides.md và thiết kế thiet-ke.md cho 2 trang đó; các trang cũ giữ nguyên. Lam và Vy được dùng công cụ hoi_dong_nghiep để hỏi nhanh An khi cần. Giữ dự án nhỏ: không quá 6 bước.",
+  "at": "2026-10-22T15:09:01.575Z",
+  "tuQuyet": false
+ },
+ {
+  "id": "QD-32",
+  "q": "Hình tr.5: chấp nhận Knee_diagram (chỉ thấy phần dưới cơ tứ đầu) hay chờ Quadriceps.png (4 cơ tô màu) trước khi dựng Canva? Đề xuất: dựng bằng Knee_diagram, đổi khi file về.",
+  "a": "(Chủ dự án để nhóm tự quyết theo phương án đề xuất)",
+  "from": "chef",
+  "step": 0,
+  "planId": "plan-20261022-203403",
+  "topic": "thoai-hoa-khop-goi-v2",
+  "goal": "Bản tiếp nối của workshop thoái hoá khớp gối: thêm 2 trang mới về bài tập tăng sức mạnh cơ đùi trước (cơ tứ đầu) an toàn cho người 50–70 tuổi thoái hoá khớp gối. Cần nguồn mới cho riêng phần này (Mai nghiên cứu bằng Deep Research, An kiểm chứng), rồi cập nhật kịch bản slides.md và thiết kế thiet-ke.md cho 2 trang đó; các trang cũ giữ nguyên. Lam và Vy được dùng công cụ hoi_dong_nghiep để hỏi nhanh An khi cần. Giữ dự án nhỏ: không quá 6 bước.",
+  "at": "2026-10-22T15:09:01.575Z",
+  "tuQuyet": true
  }
 ]

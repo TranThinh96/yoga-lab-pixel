@@ -183,5 +183,11 @@
       },
       "effort": "medium"
     }
-  ]
+  ],
+  "deepResearchTwoPhase": true,
+  "stepModel": {
+    "rereview": "haiku"
+  },
+  "maxParallel": 2,
+  "consultTool": true
 }

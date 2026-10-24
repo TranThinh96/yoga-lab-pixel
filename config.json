@@ -34,10 +34,13 @@
   },
   "lintBanned": [
     "chữa khỏi",
-    "thải độc",
-    "giảm liều",
+    "trị dứt",
     "chắc chắn khỏi",
-    "kích thích tuyến giáp"
+    "đẩy đĩa đệm vào",
+    "nắn lại đĩa đệm",
+    "tái tạo đĩa đệm",
+    "không cần mổ",
+    "thay thế bác sĩ"
   ],
   "lintVariants": [
     [

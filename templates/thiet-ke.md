@@ -88,6 +88,7 @@ Mô tả người mẫu trên **khớp người mẫu trong slide mẫu suy giá
 - Cancer Research UK diagrams trên Wikimedia Commons (CC BY-SA 4.0), NIH/NCI (Public domain)
 **Thư viện hình thật:** lúc research, Mai ghi bảng "## Hình & sơ đồ trong nguồn" và máy chủ tải sẵn các hình [DÙNG ĐƯỢC] vào `output/<chu-de>/hinh-nguon/` (kèm `danh-sach.md`: link gốc, tác giả, giấy phép). Chọn hình từ đây trước, mở hình bằng Read để xem nhãn cần che.
 Trong "Danh sách hình" (tiêu đề đúng `## Danh sách hình`, mỗi dòng một file, ô tên file bắt đầu bằng tên file): ghi `hinh-nguon/<tên file>` kèm link gốc, máy chủ chép sang `hinh/` với tên trang; hình chưa có trong thư viện thì ghi link trang File: của Commons hoặc link thẳng tới file .jpg/.png để máy chủ tải.
+Cột cuối **"Có file (máy chủ ghi)"** do máy chủ tự điền sau mỗi bước, theo file thật trong `hinh/`: không sửa cột này, và không ghi "đã có / chưa có / cần chép sang hinh/" vào cột Trạng thái. Cột Trạng thái chỉ ghi việc cần làm với hình: cần tạo, tạo lại, cắt, che nhãn, dự phòng, không dùng, chưa đạt. Người duyệt tin cột "Có file", không nêu vấn đề về việc file có hay chưa.
 Nhãn tiếng Việt thêm bằng chữ trong Canva. **Không dùng ảnh scan từ sách giáo khoa**.
 Để đạt độ màu và độ "infographic" như mẫu: ưu tiên Servier Medical Art (minh hoạ màu, tách được từng cơ quan/tế bào) và hình OpenStax màu; ghép nhiều hình nhỏ có giấy phép với khối Canva, nhãn Việt; tham khảo bố cục trang mẫu nhưng **không chép hình của mẫu**.
 

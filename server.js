@@ -19,7 +19,7 @@ const https = require('https');
 const crypto = require('crypto');
 const congCu = require('./lib/cong-cu');
 const { dongTraCuu } = congCu;
-const { soatVanBan } = require('./lib/soat-loi');
+const { soatVanBan, congSoat, dienCotCoFile } = require('./lib/soat-loi');
 const { vietBanDo } = require('./lib/ban-do');
 const { ghiQuyetDinh, goiYChoCauHoi, quyetDinhChoKeHoach, vietSoQuyetDinh } = require('./lib/quyet-dinh');
 const { LOAI_LOI, mucTrong, docVanDe, docDaXuLy, docDuyetLai, docTinNhan, chuFile, ganVanDe, nhomTheoChu, nhomSua, capNhatTuSua, capNhatTuDuyetLai, vietSoVanDe } = require('./lib/van-de');
@@ -87,6 +87,7 @@ const DEFAULT_CONFIG = {
   maxParallel: 1, // số bước của dự án chạy cùng lúc (1 = tuần tự); từ 2: các bước độc lập, vd nhiều người sửa sau một lần duyệt
   consultTool: false, // thử nghiệm: công cụ hoi_dong_nghiep (cần labTools), mỗi dự án tối đa 3 lần hỏi nhanh
   deepResearchTwoPhase: false, // Deep Research hai lượt ngắn: lượt 1 khởi chạy, máy chủ chờ (không tốn token), lượt 2 lấy kết quả
+  machineGate: true, // cổng soát: bước vừa ghi slides.md / thiet-ke.md còn trang quá chữ hoặc lệch hai file thì máy chủ trả về sửa ngay, trước khi tới người duyệt
   buildSlides: true, // dự án xong: máy chủ dựng output/<chủ đề>/<chủ đề>.pptx từ slides.md, thiet-ke.md và hinh/ (không tốn token)
   agents: []
 };
@@ -1604,6 +1605,8 @@ function handleReview(plan, idx, text, banGhi = '') {
     if (rows) ganVanDe(plan, rows, { buoc: n, tu: s.agentId, chuDe: planTopic(plan), chuFileFn: f => chuFile(plan.steps, f, idx),
       macDinh: lam ? { agentId: lam.agentId, step: s.checks } : null });
     else if (!s.round) plan.log.push(`Bước ${n}: không thấy bảng "Danh sách vấn đề" của ${name(s.agentId)}`);
+    // Lỗi máy cổng soát đã giao sửa một lần mà còn: đi cùng vòng sửa của lần duyệt này
+    for (const v of plan.issues || []) if (v.from === 'may-chu' && v.khoaSoat && v.status === 'mo' && v.lastStep < n) v.lastStep = n;
     const moBB = (plan.issues || []).filter(x => x.status === 'mo' && x.level === 'BẮT BUỘC' && x.lastStep === n);
     if (s.verdict === 'pass' && moBB.length) plan.log.push(`Bước ${n}: kết luận ĐẠT nhưng còn ${moBB.length} vấn đề BẮT BUỘC mở`);
   }
@@ -1741,6 +1744,7 @@ function startStep(plan, idx) {
       `- Việc của bạn là KIỂM, không làm thay: không WebSearch tìm nguồn mới. Ý thiếu nguồn hoặc nguồn không khớp → ghi BẮT BUỘC "cần nguồn" để người làm tự tìm.`,
       ...(checked && checked.noChange ? [`- CHÚ Ý: bước sửa trước không ghi vào file sản phẩm nào (${checked.fileSua.slice(0, 3).join(', ')}). Kiểm kỹ từng chỗ người sửa báo "đã sửa".`] : []),
       lintBlock(lintFiles(plan.steps.filter(x => x.agentId === (checked || {}).agentId).flatMap(x => x.files || []))),
+      ...conLoiMay(plan),
       `- Dòng CUỐI của bàn giao phải là đúng một trong hai: "KẾT LUẬN: ĐẠT" (không còn lỗi BẮT BUỘC) hoặc "KẾT LUẬN: CẦN SỬA".`] : []),
     ...noHandoff.map(x => `\nKết quả bước trước (${x.agentId}, không có file bàn giao): ${x.summary.slice(0, 600)}`),
     ...noMedicalAi(agent, [s.task, ...att].join(' ')),
@@ -1858,6 +1862,9 @@ function startStep(plan, idx) {
         return prep.then(() => {
           if (plan.status !== 'running') return emitPlan(plan);
           if (config.issueLedger !== false && hinhHong.length) giaoThayHinh(plan, idx, hinhHong);
+          // Sau khi tải / đặt hình: cột Có file khớp ổ đĩa, rồi cổng soát trước khi người sau nhận
+          capNhatCotCoFile([...new Set([...thuMucSanPham(run.files), ...(planTopic(plan) ? [`output/${planTopic(plan)}/`] : [])])]);
+          congSoatSau(plan, plan.steps.indexOf(s), s, run);
           if (qs.length) return askOwner(plan, qs, 'running');
           const coord = coordinatorOf(plan);
           if (coord && agent.id !== coord.id && (plan.checkins || 0) < cfgNum('maxCheckins', 3)) {
@@ -1960,6 +1967,82 @@ function giaoThayHinh(plan, idx, hong) {
     for (const x of g.issues) x.fixStep = idx + 2;
     plan.log.push(`Máy chủ: ${g.issues.length} hình không tải được → giao ${name(owner)} thay link (bước ${idx + 2})`);
   }
+}
+
+// ── Cổng soát: lỗi máy bắt được thì trả về sửa ngay, không để người duyệt nêu rồi mới qua vòng sửa và duyệt lại ──
+// Thư mục sản phẩm có slides.md hoặc thiet-ke.md trong danh sách file
+const thuMucSanPham = files => [...new Set((files || []).map(f => (/^(output\/[^/]+\/)(?:slides|thiet-ke)\.md$/.exec(f) || [])[1]).filter(Boolean))];
+
+// Cột "Có file" của bảng Danh sách hình theo file thật trong hinh/ (bản ghi tay hay lệch với ổ đĩa)
+function capNhatCotCoFile(dirs) {
+  for (const dir of dirs) {
+    const rel = dir + 'thiet-ke.md', txt = readWs(rel);
+    if (!txt) continue;
+    let cacBan = [];
+    try { cacBan = fs.readdirSync(insideWorkspace(dir + 'hinh/cac-ban')).map(f => f.normalize('NFC')); } catch {}
+    const tinhTrang = ten => {
+      const goc = ten.replace(/\.[a-z]+$/i, '');
+      if (['.png', '.jpg', '.jpeg', '.webp', '.svg'].some(d => wsExists(`${dir}hinh/${goc}${d}`))) return 'co';
+      return cacBan.some(f => f.startsWith(goc)) ? 'cac-ban' : 'chua';
+    };
+    const moi = dienCotCoFile(txt, tinhTrang);
+    if (moi !== txt) try { fs.writeFileSync(insideWorkspace(rel), moi, 'utf8'); } catch {}
+  }
+}
+
+// Bước làm / sửa vừa ghi slides.md hoặc thiet-ke.md: trang quá chữ, lệch hai file thành vấn đề BẮT BUỘC, giao người phụ trách file sửa ngay.
+// Bước do cổng chèn thì chỉ soát lại để đóng hoặc giữ mở vấn đề, không chèn tiếp (tránh vòng lặp).
+function congSoatSau(plan, idx, s, run) {
+  if (config.machineGate === false || config.issueLedger === false || s.checks) return;
+  const name = id => (config.agents.find(a => a.id === id) || {}).name || id;
+  const n = idx + 1, maxChu = cfgNum('lintMaxWords', 40);
+  plan.issues = plan.issues || []; plan.issueSeq = plan.issueSeq || 0;
+  for (const dir of thuMucSanPham(run.files)) {
+    const viet = f => (run.files || []).includes(dir + f);
+    const ds = congSoat({ slidesTxt: readWs(dir + 'slides.md'), thietKeTxt: readWs(dir + 'thiet-ke.md'), vietSlides: viet('slides.md'), vietThietKe: viet('thiet-ke.md'), maxChu });
+    const khoa = x => `${dir}${x.file}|${x.trang}|${x.kieu}`;
+    if (s.gate) {
+      const con = new Set(ds.map(khoa)), cua = plan.issues.filter(v => v.fixStep === n && v.khoaSoat && v.khoaSoat.startsWith(dir));
+      for (const v of cua) {
+        if (con.has(v.khoaSoat)) { v.status = 'mo'; v.note = 'Máy soát vẫn thấy sau bước sửa'; v.lastStep = n; } else v.status = 'dong';
+      }
+      const conMo = cua.filter(v => v.status === 'mo');
+      if (cua.length) plan.log.push(`Cổng soát bước ${n}: ${cua.length - conMo.length}/${cua.length} lỗi máy đã hết${conMo.length ? `, còn ${conMo.map(v => v.id).join(', ')} (để người duyệt xem)` : ''}`);
+      continue;
+    }
+    const daMo = new Set(plan.issues.filter(v => v.status === 'mo' && v.khoaSoat).map(v => v.khoaSoat));
+    const moi = ds.filter(x => !daMo.has(khoa(x))).map(x => {
+      const file = dir + x.file, chu = chuFile(plan.steps, file, n);
+      return { id: `VD-${++plan.issueSeq}`, file, where: `Trang ${x.trang}`, level: 'BẮT BUỘC', kind: x.loai, text: x.chi_tiet,
+        fix: x.loai === 'qua-chu' ? `Rút còn khoảng ${maxChu} chữ; ý phụ chuyển sang Lời giảng` : 'Sửa thiet-ke.md cho khớp slides.md (thiết kế theo kịch bản). Nếu slides.md mới là chỗ sai thì nhắn người viết slides',
+        goc: 'agent', from: 'may-chu', owner: chu ? chu.agentId : null, ownerStep: chu ? chu.step : null, status: 'mo', note: '', round: 0, lastStep: n, fixStep: null, khoaSoat: khoa(x) };
+    });
+    if (!moi.length) continue;
+    plan.issues.push(...moi);
+    const { nhom } = nhomTheoChu(moi);
+    let at = n;
+    for (const [owner, g] of nhom) {
+      // Người phụ trách còn bước chưa xong (vd sửa song song sau cùng một lần duyệt): cổng soát lại khi bước đó xong
+      const dangCho = plan.steps.find((x, i) => i !== idx && x.agentId === owner && x.status !== 'done' && !x.checks);
+      if (dangCho) { plan.log.push(`Cổng soát bước ${n}: ${g.issues.length} lỗi máy ở file của ${name(owner)}, chờ bước ${plan.steps.indexOf(dangCho) + 1} của ${name(owner)}`); continue; }
+      if (plan.steps.length + 1 > cfgNum('maxTotalSteps', 20)) { plan.log.push(`Cổng soát bước ${n}: ${g.issues.length} lỗi máy nhưng đã chạm trần số bước, để người duyệt xem`); continue; }
+      const issueIds = g.issues.map(x => x.id);
+      insertSteps(plan, at, [{ agentId: owner, from: [n], fixOf: g.step, round: 0, kind: 'fix', gate: true, issueIds, ...blankStep,
+        task: `Máy chủ soát file vừa ghi và thấy lỗi máy móc: ${issueIds.join(', ')} (danh sách chi tiết kèm theo). Sửa trước khi chuyển sang người duyệt; chỉ sửa đúng các chỗ này, không làm lại phần khác.` }]);
+      choBuocChen(plan.steps, at, 1);
+      plan.steps[g.step - 1].latest = at + 1;
+      for (const x of g.issues) x.fixStep = at + 1;
+      const dem = k => g.issues.filter(x => x.kind === k).length;
+      plan.log.push(`Cổng soát bước ${n}: ${[dem('qua-chu') && dem('qua-chu') + ' trang quá chữ', dem('lech-hai-file') && dem('lech-hai-file') + ' chỗ lệch slides.md / thiet-ke.md'].filter(Boolean).join(', ')} → ${name(owner)} sửa ngay (bước ${at + 1})`);
+      at++;
+    }
+  }
+}
+
+// Cho người duyệt: lỗi máy cổng soát chưa sửa được (đã có trong sổ, tự vào vòng sửa)
+function conLoiMay(plan) {
+  const ds = (plan.issues || []).filter(v => v.from === 'may-chu' && v.khoaSoat && v.status === 'mo');
+  return ds.length ? [`- MÁY CHỦ CÒN THẤY (cổng soát, đã giao sửa một lần): ${ds.map(v => `${v.id} · ${v.file} · ${v.where} · ${v.text}`).join('; ')}. Các mã này đã có trong sổ vấn đề và tự vào vòng sửa; không chép lại vào bảng của bạn.`] : [];
 }
 
 // Lời dặn bước duyệt lại: danh sách vấn đề cần kiểm và người sửa đã báo gì

@@ -46,6 +46,18 @@ Chọn **một** bảng cho cả bộ, ghi tên ở đầu file thiết kế.
 - Sơ đồ, bảng, dòng thời gian: **dựng bằng hình khối trong Canva**, không dùng ảnh AI.
 - Mỗi trang chỉ một điểm nhấn màu đất nung (thường là cảnh báo).
 
+## Trình bày liệt kê
+
+Không để danh sách thành chữ trơn có gạch đầu dòng. Mỗi ý là **một thẻ riêng**, ghi rõ trong mục "Bố cục" của trang:
+- **Thẻ**: khối bo góc màu nền phụ; trong thẻ là **tên ý in đậm** (khối chữ riêng) và **mô tả** chữ thường ngay dưới (khối chữ riêng). Không viết "•" tay trong khối chữ, không gộp tên ý và mô tả vào một khối.
+- **Ý có thứ tự hoặc đánh số** (yếu tố nguy cơ, thói quen, ba điều mang về): số lớn **01, 02…** màu đất nung đặt đầu thẻ; 4–6 ý xếp lưới 2×2 hoặc 3+2.
+- **Ý ngang hàng, không thứ tự** (triệu chứng, định nghĩa): thẻ xếp dọc có vạch màu đất nung ở mép trái; trên nền tối thì thẻ xếp ngang, vạch ngắn ở trên.
+- **Các bước làm theo** (bài thở, quy trình): một thẻ lớn, mỗi hàng là một bước, cột trái "1 · Tên bước" đậm màu đất nung, cột phải mô tả.
+- **Dòng thời gian**: mốc đậm màu đất nung trên trục, mô tả nằm trong thẻ dưới mỗi mốc.
+- **Ý quan trọng nhất hoặc câu chốt** đặt trong một ô **khối đậm** (màu tiêu đề), chữ sáng: thường là ô cuối của lưới hoặc mốc "đi khám".
+- Câu chốt đứng riêng: chữ nghiêng màu đất nung. Ý chỉ có nguồn (vd chỉ "[1]") thì ghi nguồn chữ nhỏ, không kéo giãn thẻ.
+- Trang cảnh báo đã có điểm nhấn riêng (khung đỏ đất, chữ to) thì giữ, không chia thẻ.
+
 ## Bốn loại hình và cách lấy
 
 ### A. Minh hoạ nét mảnh (khái niệm, biểu tượng KHÔNG phải y khoa: năng lượng, nghỉ ngơi, hơi thở…)
@@ -89,6 +101,28 @@ Nhãn tiếng Việt thêm bằng chữ trong Canva. **Không dùng ảnh scan t
 - Không vẽ máu, vết mổ, cảnh bệnh nặng gây sợ. Diễn tả bệnh bằng biểu tượng hoặc nét mặt mệt mỏi nhẹ.
 - Tên file gợi ý: `trang-07-truc-giap.png`, để trong `output/<chu-de>/hinh/`.
 
+## Slide hoàn thiện (máy chủ tự dựng)
+
+Khi dự án xong, máy chủ dựng `output/<chu-de>/<chu-de>.pptx` từ `slides.md`, file này và ảnh trong `hinh/`: bảng màu và font lấy từ đầu file, ảnh của mỗi trang lấy từ bảng "Danh sách hình" (bỏ hình dự phòng và hình chưa đạt), lời giảng vào ghi chú người nói. Ảnh Gemini tự cắt bỏ logo ở mép phải.
+Với hình cần cắt hoặc che nhãn tiếng Anh (thường là loại C), ghi thêm trong mục của trang **một dòng cho mỗi hình**, toạ độ là điểm ảnh của file gốc (mở hình bằng Read để đo):
+
+```
+- Dựng trang-02-cot-song.jpg: khung 0–1000, 0–440; che 428–572, 98–127 = ① Thân đốt sống; che 428–642, 148–177 = ② Lỗ liên hợp
+- Dựng trang-03-dia-dem.png: khung 170–540, 40–410; nhãn = Bình thường
+```
+
+- `khung x0–x1, y0–y1`: phần ảnh được dùng (bỏ chữ "Lateral view", nửa phim MRI…). Không ghi thì dùng cả ảnh.
+- `che x0–x1, y0–y1 = <nhãn Việt>`: khối trắng che nhãn Anh, đặt nhãn Việt vào đó. Hình đặt nhỏ mà nhãn không vừa thì máy chủ ghi số ①②… trên hình, nhãn đủ xuống dưới.
+- `nhãn = <chú thích>`: dòng chữ đậm dưới hình.
+- Một file có thể có nhiều dòng (cắt hai phần khác nhau). Trang đã có dòng "Dựng" thì máy chủ chỉ dùng các hình ghi trong các dòng đó, theo đúng thứ tự.
+
+## Khi dựng trên Canva
+
+- **Font tiêu đề phải hiện đúng dấu tiếng Việt** (Lora, Be Vietnam Pro…); mẫu Canva tự sinh hay dùng font lệch dấu, đổi ngay.
+- Thay **mọi** ảnh Canva tự sinh bằng ảnh của dự án trong `hinh/`; ảnh Gemini cắt bỏ logo ở góc phải dưới trước khi tải lên.
+- Chữ lấy đúng `slides.md`, không giữ câu Canva tự viết.
+- Lưu thiết kế ngay sau khi chủ dự án duyệt: phiên sửa Canva hết hạn sau một thời gian và mất hết thay đổi chưa lưu.
+
 ## Khuôn file thiết kế (`output/<chu-de>/thiet-ke.md`)
 
 ```
@@ -108,6 +142,7 @@ Nhãn tiếng Việt thêm bằng chữ trong Canva. **Không dùng ảnh scan t
 ## Kiểm tra cả bộ
 - [ ] Mỗi trang mẫu có trang tương ứng, đúng thứ tự, cùng bố cục (ghi "Theo mẫu tr.x")
 - [ ] Trang nào quá ~90 chữ
+- [ ] Trang có liệt kê đã chia thẻ (tên ý đậm + mô tả), có số lớn nếu có thứ tự, ý chính trong ô khối đậm
 - [ ] Trang tư thế chỉ có nhãn tên + ảnh; chống chỉ định nằm ở kịch bản và trang An toàn
 - [ ] Hình nào chưa có nguồn hoặc giấy phép
 - [ ] Ảnh tư thế có cùng một người mẫu không

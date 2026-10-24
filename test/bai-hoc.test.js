@@ -158,6 +158,9 @@ test('bangChungBaiHoc + ketLuanBangChung: so bước nhận bài với bước t
   assert.equal(bh.ketLuanBangChung({ co: { buoc: 2, loi: 0 }, truoc: { buoc: 4, loi: 2 } }), 'chua-du');
   assert.equal(bh.ketLuanBangChung({ co: { buoc: 3, loi: 0 }, truoc: { buoc: 0, loi: 0 } }), 'tot');
   assert.equal(bh.ketLuanBangChung({ co: { buoc: 3, loi: 1 }, truoc: { buoc: 0, loi: 0 } }), 'chua-du');
+  // Trước và sau đều 0 lỗi (dot-5 thử thoát vị đĩa đệm: "0/5 · trước 0/13"): không phải "chưa thấy tác dụng"
+  assert.equal(bh.ketLuanBangChung({ co: { buoc: 5, loi: 0 }, truoc: { buoc: 13, loi: 0 } }), 'chua-du');
+  assert.equal(bh.ketLuanBangChung({ co: { buoc: 5, loi: 1 }, truoc: { buoc: 13, loi: 0 } }), 'khong-tot');
   // bước của người khác, bước không khớp ap_dung_khi thì không tính
   const [r] = bh.docBaiHoc([note('BH-4', { loai_loi: 'qua-chu', ap_dung_khi: ['fix'] })]);
   assert.deepEqual(bh.bangChungBaiHoc(r, [duAn('2026-10-01T00:00:00Z', 4, 2)], { nhanCua: () => ['work'] }).truoc, { buoc: 0, loi: 0 });

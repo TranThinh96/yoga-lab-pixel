@@ -11,3 +11,4 @@
 - [BH-78] Với tư thế AI hay vẽ sai, mô tả hình học từ lần tạo đầu (đùi thẳng đứng, cẳng chân song song sàn nằm trọn trên mặt ghế, mông sát chân ghế) và nếu 2 lần vẫn sai thì báo ngay phương án dự phòng.
 - [BH-80] Trước khi tải ảnh, kiểm vị trí đạo cụ theo đúng câu trong prompt; nếu sai thì viết prompt cụ thể hơn (số bolster, gót nhấc khỏi thảm, gối cao hơn hông) thay vì tự nhận ảnh đạt.
 - [BH-81] Ảnh tạo lại vẫn sai thì không tải và giữ ảnh cũ (làm đúng); sau 2 lần sai cùng một kiểu đạo cụ, báo ngay đề xuất chụp ảnh thật, đừng dùng hết lượt cho các biến thể prompt.
+- [BH-94] Trước khi ghi 'đạt', mở từng ảnh tư thế và so ba điểm của prompt: cổ cùng hàng lưng, chân không cao hơn hông, tư thế ngồi đúng (ghế/sàn); sai một điểm thì tạo lại, không ghi 'đạt tạm'.

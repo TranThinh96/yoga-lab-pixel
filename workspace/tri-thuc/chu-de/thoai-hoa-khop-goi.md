@@ -24,7 +24,7 @@
 (không có)
 
 ## Tư thế
-- [[tu-the/cay-cau-co-do|Cây cầu có đỡ]] (Salamba Setu Bandhasana) · CCĐ: Đau hoặc thoát vị cổ, không quay đầu. Thận trọng: nhãn áp, huyết áp, ngồi dậy chậm tránh chóng mặt. Từ quý 2 thai kỳ tránh nằm ngửa phẳng, hỏi bác sĩ. Đau lưng dưới: hạ gạch, Cổ đau, loãng xương nặng, tăng huyết áp chưa kiểm soát: hỏi bác sĩ, không nâng cao thêm
+- [[tu-the/cay-cau-co-do|Cây cầu có đỡ]] (Salamba Setu Bandhasana) · CCĐ: Đau hoặc thoát vị cổ, không quay đầu. Thận trọng: nhãn áp, huyết áp, ngồi dậy chậm tránh chóng mặt. Từ quý 2 thai kỳ tránh nằm ngửa phẳng, hỏi bác sĩ. Đau lưng dưới: hạ gạch, Cổ đau, loãng xương nặng, tăng huyết áp chưa kiểm soát: hỏi bác sĩ, không nâng cao thêm, tăng huyết áp chưa kiểm soát (hỏi bác sĩ), từ quý 2 thai kỳ tránh nằm ngửa phẳng, đau lưng dưới hoặc đau lan chân tăng thì hạ gạch hoặc nằm co gối
 - [[tu-the/chien-binh-ii-nhe-vin-ghe|Chiến binh II nhẹ vịn ghế]] (Virabhadrasana II (bản nhẹ)) · CCĐ: Không gập gối sâu, không xoay vặn gối, dễ té: bản ngồi ghế
 - [[tu-the/nam-duoi-chan-voi-day|Nằm duỗi chân với dây]] (Supta Padangusthasana (chân dưới co)) · CCĐ: Mới mổ/tiêm: hỏi bác sĩ, không kéo chân thẳng căng, không nhún
 - [[tu-the/ngoi-ghe-duoi-goi|Ngồi ghế duỗi gối]] (Không có tên Phạn chuẩn) · CCĐ: Mới mổ/thay khớp, mới tiêm khớp, gối sưng nóng: hỏi bác sĩ, không duỗi cố khi đau
@@ -45,7 +45,7 @@
 - [[nguon/af-thoai-hoa-khop|Osteoarthritis]] · Arthritis Foundation · truy cập: ok
 - [[nguon/bachmai-so-cuu-dot-quy|Sơ cứu đột quỵ tại nhà: những thao tác "sống còn"]] · Bệnh viện Bạch Mai · truy cập: ok
 - [[nguon/bv-thong-nhat-thoai-hoa-goi|Tìm hiểu về thoái hóa khớp gối và các phương pháp điều trị]] · BV Đa khoa Thống Nhất – Đồng Nai · truy cập: ok
-- [[nguon/cap-cuu-115-hcm|Trang chủ]] · TT Cấp cứu 115 TP.HCM · truy cập: ok
+- [[nguon/cap-cuu-115-hcm|Trang chủ (dùng lại mã có sẵn trong tri-thuc/nguon)]] · TT Cấp cứu 115 TP.HCM · truy cập: ok
 - [[nguon/cdc-nguoi-lon-tuoi|Physical Activity Recommendations for Adults 65+]] · CDC · truy cập: chan
 - [[nguon/hunter-felson-bmj-osteoarthritis|Osteoarthritis]] · Hunter & Felson (BMJ) · truy cập: chua-kiem
 - [[nguon/lauche-2019-yoga-oa|Yoga for Osteoarthritis: a Systematic Review and Meta-analysis]] · Lauche R et al. · truy cập: ok
@@ -69,3 +69,4 @@
 ## Dự án đã dùng
 - [[du-an/plan-20261021-195355/brief|plan-20261021-195355]]
 - [[du-an/plan-20261022-203403/brief|plan-20261022-203403]]
+- [[du-an/plan-20261023-214835/brief|plan-20261023-214835]]

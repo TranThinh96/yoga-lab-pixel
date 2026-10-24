@@ -11,3 +11,4 @@
 - [BH-70] Khi chấp nhận ảnh 'tạm được', đối chiếu với tên tư thế và trang khác (vd trùng Savasana tr.10) rồi ghi rõ ảnh có còn thể hiện đúng tư thế trong mục tiêu không, không chỉ xét an toàn.
 - [BH-87] Khi duyệt lại vòng sửa, ngoài các mã được giao, soát lại các dòng có [n] và bảng tổng (Danh sách hình, Kiểm tra cả bộ) của trang vừa sửa, vì sửa chữ dễ làm lệch nguồn và bảng.
 - [BH-92] Duyệt lại một prompt đã báo mâu thuẫn thì đọc nguyên văn cả prompt mới, đừng chỉ kiểm cụm mới thêm; cụm cũ trái nghĩa hay còn sót lại.
+- [BH-95] Ảnh sai một tiêu chí an toàn viết trong brief (vd 'cổ không gập/ngửa') xếp mức BẮT BUỘC, không phải NÊN; luôn ghi file bàn giao có dòng KẾT LUẬN.

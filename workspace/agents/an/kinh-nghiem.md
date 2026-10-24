@@ -12,3 +12,4 @@
 - [BH-31] Khi duyệt kịch bản, rà cả những câu an toàn do chính mình viết ở bước kiểm nguồn ("huyết áp có thể thấp" chưa có nguồn): đã lọt sang slide. Đếm tay chữ trên slide dễ sai, máy gắn cờ mới đáng tin; các trang 41–44 chữ ghi NÊN.
 - [BH-34] Khi có tin '@an kiểm giúp' một câu trích mới sau vòng duyệt, mở link và ghi kết quả vào file kiểm chứng ngay trong lượt kế tiếp; ở mat-ngu-v1, câu NHLBI tr.2 bị treo đến lúc nghiệm thu.
 - [BH-35] Khi duyệt kịch bản, kiểm tên Phạn có đúng thực chất tư thế không (vd 'Viparita Karani' thì chân phải cao hơn hông); khi đạo cụ đổi, phải soát lại cả nhãn tên lẫn dòng chống chỉ định.
+- [BH-98] Trước khi kết luận 'nguồn chưa có câu trích' cho một ý, Grep số [n] và số mục (vd '1.2.1') trong file nguồn của Mai; chỉ báo thiếu khi Grep không ra câu trích nguyên văn.

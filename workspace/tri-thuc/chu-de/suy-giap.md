@@ -65,7 +65,7 @@
 (không có)
 
 ## Tư thế
-- [[tu-the/cay-cau-co-do|Cây cầu có đỡ]] (Salamba Setu Bandhasana) · CCĐ: Đau hoặc thoát vị cổ, không quay đầu. Thận trọng: nhãn áp, huyết áp, ngồi dậy chậm tránh chóng mặt. Từ quý 2 thai kỳ tránh nằm ngửa phẳng, hỏi bác sĩ. Đau lưng dưới: hạ gạch, Cổ đau, loãng xương nặng, tăng huyết áp chưa kiểm soát: hỏi bác sĩ, không nâng cao thêm
+- [[tu-the/cay-cau-co-do|Cây cầu có đỡ]] (Salamba Setu Bandhasana) · CCĐ: Đau hoặc thoát vị cổ, không quay đầu. Thận trọng: nhãn áp, huyết áp, ngồi dậy chậm tránh chóng mặt. Từ quý 2 thai kỳ tránh nằm ngửa phẳng, hỏi bác sĩ. Đau lưng dưới: hạ gạch, Cổ đau, loãng xương nặng, tăng huyết áp chưa kiểm soát: hỏi bác sĩ, không nâng cao thêm, tăng huyết áp chưa kiểm soát (hỏi bác sĩ), từ quý 2 thai kỳ tránh nằm ngửa phẳng, đau lưng dưới hoặc đau lan chân tăng thì hạ gạch hoặc nằm co gối
 - [[tu-the/con-ca-co-do|Tư thế Con cá có đỡ (giữ 1–2 phút)]] (Matsyasana) · CCĐ: Đau hoặc thoát vị cổ (bỏ nếu đau cổ khi tập). Thận trọng: nhãn áp, tim, huyết áp. Từ quý 2 thai kỳ tránh nằm ngửa phẳng (nâng thân trên bằng bolster hoặc bỏ)
 - [[tu-the/con-ran-co-tua|Tư thế Con rắn có tựa (giữ 1–2 phút)]] (Bhujangasana) · CCĐ: Không ngửa cổ, đau cổ. Chống chỉ định nằm sấp khi mang thai. Đau lưng dưới nặng, thoát vị, vừa mổ bụng, khó thở khi nằm sấp. Hạ huyết áp: ra từ từ
 - [[tu-the/em-be-tua-chan|Tư thế Em bé tựa chồng chăn (giữ 1–3 phút)]] (Balasana) · CCĐ: Thận trọng: nhãn áp (đầu cao hơn tim [18]), tim, huyết áp. Thai kỳ: mở gối rộng, không ép bụng
@@ -80,7 +80,7 @@
 - [[nguon/ata-suy-giap-nguoi-benh|Hypothyroidism (trang cho người bệnh)]] · ATA · truy cập: ok
 - [[nguon/ata-viem-giap-sau-sinh|Postpartum thyroiditis]] · ATA · truy cập: ok
 - [[nguon/baishya-metri-2024|Tổng quan yoga và suy giáp (PMC10966165)]] · Baishya & Metri, J Ayurveda Integr Med 2024 · truy cập: chan
-- [[nguon/cap-cuu-115-hcm|Trang chủ]] · TT Cấp cứu 115 TP.HCM · truy cập: ok
+- [[nguon/cap-cuu-115-hcm|Trang chủ (dùng lại mã có sẵn trong tri-thuc/nguon)]] · TT Cấp cứu 115 TP.HCM · truy cập: ok
 - [[nguon/eyewiki-nhan-ap|Lifestyle Habits and Glaucoma]] · EyeWiki (AAO) · truy cập: ok
 - [[nguon/guyton-hall-ch76|Textbook of Medical Physiology 12th ed, ch.76 (bản đăng lại doctorlib)]] · Guyton & Hall · truy cập: ok
 - [[nguon/intechopen-suy-tim-giap|Impact of Thyroid Disease on Heart Failure]] · IntechOpen (Stanciu et al.) · truy cập: ok
@@ -104,3 +104,4 @@
 
 ## Dự án đã dùng
 - [[du-an/plan-20261021-195355/brief|plan-20261021-195355]]
+- [[du-an/plan-20261023-214835/brief|plan-20261023-214835]]

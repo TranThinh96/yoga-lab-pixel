@@ -2,6 +2,20 @@
 
 > Máy chủ tự sinh từ .yogalab/quyet-dinh.json. Sửa câu trả lời trong giao diện Yoga Lab, không sửa ở đây.
 
+## thoat-vi-dia-dem
+- **QD-33** (plan-20261023-214835, 2026-10-23) *nhóm tự quyết*
+  - Hỏi: NASS: chưa có câu trích khuyến cáo vận động. Đề xuất: slide tr.8 ghi "NICE NG59 và ACP", bỏ NASS. Hoặc chủ dự án gửi PDF NASS 2012 (làm tiếp sau khi trả lời).
+  - Trả lời: (Chủ dự án để nhóm tự quyết theo phương án đề xuất)
+- **QD-34** (plan-20261023-214835, 2026-10-23) *nhóm tự quyết*
+  - Hỏi: Yếu một chân tăng dần (không kèm dấu hiệu khác) chưa có câu trích. Đề xuất: ghi vào tầng "Khám sớm" ("đi khám ngay trong ngày") sau khi bác sĩ/vật lý trị liệu xác nhận; nếu không thì giữ như hiện tại.
+  - Trả lời: (Chủ dự án để nhóm tự quyết theo phương án đề xuất)
+- **QD-35** (plan-20261023-214835, 2026-10-23) *nhóm tự quyết*
+  - Hỏi: VD-18: Danh sách vấn đề yêu cầu "6 dòng" sửa thành "đã chép", nhưng 2 dòng dự phòng (Servier tr.3, InjuryMap tr.5) vẫn ghi "dự phòng". Lam gỡ dòi slides.md nên chúng không dùng. Có phải xem là sửa đủ (chỉ 4 chính), hay cần sửa cả 2 dự phòng thành "đã chép"? (làm tiếp sau khi trả lời)
+  - Trả lời: (Chủ dự án để nhóm tự quyết theo phương án đề xuất)
+- **QD-36** (plan-20261023-214835, 2026-10-24) *nhóm tự quyết*
+  - Hỏi: Ảnh tr.10 (đứng vịn ghế): ghế đứng giữa phòng, gối gập hơi sâu. Đề xuất: dùng tạm, chụp ảnh thật đúng cách đặt (mặt ngồi áp tường, gối chùng nhẹ) khi có dịp.
+  - Trả lời: (Đã hỏi đủ số lần cho phép: nhóm tự quyết theo phương án đề xuất)
+
 ## thoai-hoa-khop-goi-v2
 - **QD-28** (plan-20261022-203403, 2026-10-22) *nhóm tự quyết*
   - Hỏi: Bài (1) tr.6 vẫn gần "Ngồi ghế duỗi gối" tr.7. Đề xuất: giữ (đã nêu điểm khác); nếu muốn khác hẳn thì thay bằng Mini Squat vịn ghế ≤45° [20].

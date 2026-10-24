@@ -148,7 +148,7 @@ Giao dự án cho Chef Yoga với mục tiêu kiểu *"Làm slide workshop 60 ph
 4. **Vy** (Thiết kế) viết `output/<chu-de>/thiet-ke.md` theo `templates/thiet-ke.md`: bảng màu, người mẫu cố định, bố cục và prompt ảnh hoặc link hình có giấy phép cho từng trang.
 5. **Hạ** biên tập lần cuối `slides.md`: rút gọn, sửa chính tả, lỗi lặp từ.
 
-Kết quả là kịch bản và bản thiết kế để dựng trong Canva; agent không tự dựng slide. Muốn đổi phong cách, sửa `workspace/templates/thiet-ke.md` (bảng màu, kiểu chữ, mô tả người mẫu). File mẫu gốc nằm trong `templates/` của Yoga Lab và chỉ được chép vào workspace khi workspace chưa có.
+Khi dự án xong, máy chủ tự dựng **slide hoàn thiện** `output/<chu-de>/<chu-de>.pptx` (không tốn token): bảng màu và font theo `thiet-ke.md`, ảnh lấy từ `hinh/` theo bảng "Danh sách hình", hình y khoa được cắt và che nhãn tiếng Anh theo các dòng `- Dựng …` trong thiết kế, lời giảng và lưu ý an toàn nằm trong ghi chú người nói. Trong **Dự án** có nút **⬇ Tải slide** và **Dựng lại slide** (dùng sau khi bạn sửa tay kịch bản, thiết kế hay ảnh); chạy tay: `node scripts/dung-slide.js workspace <chủ đề>`, thêm `--html <file>` để có bản xem trước trong trình duyệt. File mở được bằng PowerPoint, Google Slides, Keynote, hoặc nhập vào Canva để chỉnh tiếp; nên cài hai font Lora và Be Vietnam Pro (Google Fonts, miễn phí) để chữ đúng như thiết kế. Muốn đổi phong cách, sửa `workspace/templates/thiet-ke.md` (bảng màu, kiểu chữ, mô tả người mẫu). File mẫu gốc nằm trong `templates/` của Yoga Lab và chỉ được chép vào workspace khi workspace chưa có.
 
 ## Folder làm việc
 
@@ -240,6 +240,7 @@ Nâng cấp từ bản trước Đợt 3: chạy một lần `node scripts/chuye
 | `maxParallel` | Số bước của dự án được chạy cùng lúc. `1` = tuần tự như trước (mặc định). Từ `2`: các bước độc lập chạy song song, vd sau một lần duyệt có lỗi của nhiều người thì những người đó sửa cùng lúc; bước cần bản cuối của sản phẩm vẫn chờ đủ vòng duyệt lại. Chỉ rút ngắn thời gian, không bớt token |
 | `consultTool` | Thử nghiệm, cần bật `labTools`: agent trong dự án được gọi `hoi_dong_nghiep(ai, cau_hoi)` để hỏi nhanh một đồng nghiệp dùng Claude. Máy chủ chạy một lượt rất ngắn của người được hỏi (chỉ đọc file, tối đa 4 lượt, chờ tối đa 3 phút) và trả câu trả lời. Mỗi dự án tối đa 3 lần; token tính vào dự án. Mặc định tắt |
 | `deepResearchTwoPhase` | Deep Research hai lượt ngắn: lượt 1 chỉ khởi chạy trên Gemini, máy chủ chờ (không tốn token), lượt 2 lấy báo cáo. Mặc định tắt |
+| `buildSlides` | Dự án xong thì máy chủ dựng `output/<chủ đề>/<chủ đề>.pptx` từ kịch bản, thiết kế và ảnh. Mặc định bật; `false` để tắt (nút Dựng slide vẫn dùng được) |
 
 Model chọn trong ô **Model** khi thêm hoặc sửa agent:
 - **Claude**: `haiku` (nhẹ, rẻ), `sonnet` (cân bằng), `opus` (mạnh), `fable` (mạnh nhất, tốn nhất).

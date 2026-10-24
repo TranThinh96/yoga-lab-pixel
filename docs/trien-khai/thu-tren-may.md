@@ -117,3 +117,12 @@ Gửi những thứ đó cho người triển khai, hoặc ghi vào mục "Phát
 4. **Bối cảnh.** Bấm vào một thẻ bất kỳ trong dự án → nút **Bối cảnh** cạnh "Bàn giao": mở được file `du-an/<mã>/boi-canh/…` có quy tắc của bạn, quyết định, bài học, checklist.
 5. **Trí não.** Trang Báo cáo → khối Trí não có thêm cột "Câu hỏi trùng", "An mở lại", "Ảnh ngoài thư mục" và thẻ "`index.md`: n dòng". Dự án suy giáp v6 phải hiện 6 câu hỏi trùng và 2 ảnh ngoài thư mục.
 6. **BH-48.** Mở `tri-thuc/bai-hoc/BH-48.md`: `loai_loi` là `anh-sai-tu-the`, `trang_thai` là `moi`. Không đồng ý thì sửa lại trong Obsidian.
+
+---
+
+## Slide hoàn thiện (.pptx)
+
+1. **Mở file đã dựng.** `workspace/output/thoat-vi-dia-dem/thoat-vi-dia-dem.pptx` (15 trang) bằng PowerPoint. Nếu PowerPoint báo "cần sửa chữa" thì ghi lại nguyên văn và báo người phát triển. Cài font Lora và Be Vietnam Pro trước để chữ đúng như bản xem trước.
+2. **Xem từng trang:** chữ không tràn thẻ; tr.2, tr.3 nhãn tiếng Anh trên hình đã bị che, thay bằng nhãn Việt (tr.3 mặt cắt: số ①–⑤, chú thích dưới hình); ảnh Gemini không còn logo ngôi sao; ghi chú người nói của mỗi trang có lời giảng và lưu ý an toàn.
+3. **Nút trong Dự án:** mở dự án thoát vị đĩa đệm → **Dựng lại slide** → nhật ký có dòng "Đã dựng slide hoàn thiện: … (15 trang)", rồi **⬇ Tải slide** tải được file.
+4. **Dự án sau:** khi dự án xong, nhật ký tự có dòng "Đã dựng slide hoàn thiện". Có dòng "Dựng slide, cần xem: Trang n: …" nghĩa là trang đó cần ảnh mà `hinh/` chưa có.

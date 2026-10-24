@@ -9,6 +9,12 @@
         "start"
       ],
       "port": 4321
+    },
+    {
+      "name": "xem-slide",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8765", "--directory", "workspace/output"],
+      "port": 8765
     }
   ]
 }

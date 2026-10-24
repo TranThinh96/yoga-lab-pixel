@@ -87,6 +87,7 @@ const DEFAULT_CONFIG = {
   maxParallel: 1, // số bước của dự án chạy cùng lúc (1 = tuần tự); từ 2: các bước độc lập, vd nhiều người sửa sau một lần duyệt
   consultTool: false, // thử nghiệm: công cụ hoi_dong_nghiep (cần labTools), mỗi dự án tối đa 3 lần hỏi nhanh
   deepResearchTwoPhase: false, // Deep Research hai lượt ngắn: lượt 1 khởi chạy, máy chủ chờ (không tốn token), lượt 2 lấy kết quả
+  buildSlides: true, // dự án xong: máy chủ dựng output/<chủ đề>/<chủ đề>.pptx từ slides.md, thiet-ke.md và hinh/ (không tốn token)
   agents: []
 };
 
@@ -2665,6 +2666,30 @@ async function trimLessons(ids) {
   }
 }
 
+// Dựng slide hoàn thiện khi dự án xong (hoặc khi bạn bấm dựng lại): chạy scripts/dung-slide.js trong tiến trình con
+// để khỏi chặn máy chủ (giải mã, thu nhỏ ảnh mất vài giây). Không có slides.md + thiet-ke.md thì bỏ qua.
+function dungSlide(plan, { tay = false } = {}) {
+  if (!tay && config.buildSlides === false) return Promise.resolve(null);
+  const topic = planTopic(plan);
+  if (!topic || !wsExists(`output/${topic}/slides.md`) || !wsExists(`output/${topic}/thiet-ke.md`)) {
+    if (tay) { plan.log.push('Dựng slide: chưa có output/<chủ đề>/slides.md và thiet-ke.md'); emitPlan(plan); }
+    return Promise.resolve(null);
+  }
+  return new Promise(resolve => {
+    execFile(process.execPath, [path.join(__dirname, 'scripts', 'dung-slide.js'), workspaceDir(), topic], { timeout: 180e3, windowsHide: true, maxBuffer: 1 << 20 }, (err, stdout, stderr) => {
+      const lines = String(stdout || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+      if (err) plan.log.push(`Dựng slide lỗi: ${snippet(String(stderr || err.message).split(/\r?\n/).filter(Boolean).pop() || err.message)}`);
+      else {
+        plan.slideFile = `output/${topic}/${topic}.pptx`;
+        plan.log.push(`Đã dựng slide hoàn thiện: ${plan.slideFile}` + (lines[0] ? ` (${(/(\d+) trang/.exec(lines[0]) || [])[1] || '?'} trang)` : ''));
+        const luuY = lines.filter(l => /^Lưu ý:/.test(l)).map(l => l.replace(/^Lưu ý:\s*/, ''));
+        if (luuY.length) plan.log.push(`Dựng slide, cần xem: ${snippet(luuY.join('; '))}`);
+      }
+      emitPlan(plan); resolve(plan.slideFile || null);
+    });
+  });
+}
+
 // Nghiệm thu: điều phối viên chấm sản phẩm theo tiêu chí trong brief, ghi bài học cho từng người,
 // và nếu điểm chưa đạt thì giao thêm một vòng sửa (tối đa maxFixRounds), xong thì nghiệm thu lại.
 function finishPlan(plan) {
@@ -2676,7 +2701,7 @@ function finishPlan(plan) {
       plan.log.push(issues.length ? `Máy soát sau vòng sửa nhanh: còn ${issues.length} chỗ (${snippet(issues.slice(0, 3).join('; '))})` : 'Máy soát sau vòng sửa nhanh: không còn lỗi máy móc');
       if (issues.length) plan.note = `Máy soát còn ${issues.length} chỗ cần xem, chi tiết trong bảng dự án`;
     }
-    plan.status = 'done'; plan.endedAt = new Date().toISOString(); return emitPlan(plan);
+    plan.status = 'done'; plan.endedAt = new Date().toISOString(); emitPlan(plan); dungSlide(plan); return;
   }
   if (running.has(coord.id)) { if (plan.waiting !== coord.id) { plan.waiting = coord.id; emitPlan(plan); } return; }
   plan.waiting = null;
@@ -2718,6 +2743,7 @@ function finishPlan(plan) {
   const end = (note) => {
     plan.status = 'done'; plan.reviewDone = true; plan.endedAt = new Date().toISOString(); if (note) plan.note = note; emitPlan(plan);
     lessonsDone.then(() => trimLessons(people)).catch(() => {});
+    dungSlide(plan);
   };
   startRun(coord, task, att, {
     planId: plan.id, step: 0, maxTurns: stepTurns(coord, 'review'),
@@ -3049,7 +3075,8 @@ function originIndex(all) {
 }
 
 const TEXT_EXT = /\.(md|markdown|txt|csv|tsv|json|html?|xml|ya?ml|log|bib|ris)$/i;
-const RAW_TYPES = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.pdf': 'application/pdf' };
+const RAW_TYPES = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.pdf': 'application/pdf',
+  '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation' }; // .pptx luôn tải về, không mở trong trình duyệt
 
 async function listDir(relDir) {
   const abs = insideWorkspace(relDir);
@@ -3248,6 +3275,9 @@ const server = http.createServer(async (req, res) => {
         return send(res, 200, { ok: true, plan: await retryPlan(plan) });
       } else if (action === 'answer') {
         answerPlan(plan, b.answers, !!b.skip);
+      } else if (action === 'slide') {
+        if (PLAN_ACTIVE.has(plan.status)) return send(res, 409, { error: 'Dự án chưa xong: slide được dựng khi dự án kết thúc' });
+        await dungSlide(plan, { tay: true });
       } else if (action === 'stop') {
         if (!PLAN_ACTIVE.has(plan.status)) return send(res, 409, { error: 'Kế hoạch đã kết thúc' });
         stopPlan(plan, plan.status === 'draft' ? 'Bạn đã huỷ kế hoạch' : 'Bạn đã dừng kế hoạch');
@@ -3339,7 +3369,7 @@ const server = http.createServer(async (req, res) => {
       if (!buf) return send(res, 404, { error: 'Không thấy file' });
       const h = { 'Content-Type': type, 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' };
       if (type === 'image/svg+xml') h['Content-Security-Policy'] = "sandbox; default-src 'none'; style-src 'unsafe-inline'";
-      if (url.searchParams.has('download')) h['Content-Disposition'] = `attachment; filename*=UTF-8''${encodeURIComponent(path.basename(abs))}`;
+      if (url.searchParams.has('download') || /\.pptx$/i.test(abs)) h['Content-Disposition'] = `attachment; filename*=UTF-8''${encodeURIComponent(path.basename(abs))}`;
       res.writeHead(200, h);
       return res.end(buf);
     }

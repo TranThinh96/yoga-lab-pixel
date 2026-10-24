@@ -969,6 +969,7 @@ const live = {
   planRetry: id => http('POST', '/api/plan/retry', { id }),
   planStop: id => http('POST', '/api/plan/stop', { id }),
   planAnswer: (id, answers, skip) => http('POST', '/api/plan/answer', { id, answers, skip }),
+  planSlide: id => http('POST', '/api/plan/slide', { id }),
   deXuat: (id, hanhDong, moi) => http('POST', '/api/de-xuat', { id, hanhDong, moi }),
   limitsRefresh: () => http('POST', '/api/limits/refresh', {})
 };
@@ -3012,6 +3013,8 @@ function planView(p){
         ${['planning', 'running', 'replanning', 'reviewing'].includes(p.status) ? `<button class="btn sm danger" data-plan-stop>Dừng</button>` : ''}
         ${['paused', 'stopped'].includes(p.status) || (p.status === 'error' && !p.steps.length) ? `<button class="btn primary sm" data-plan-resume>${p.steps.length ? 'Chạy tiếp' : 'Lập lại kế hoạch'}</button>` : ''}
         ${p.status === 'paused' ? `<button class="btn sm" data-plan-stop>Huỷ</button>` : ''}
+        ${p.slideFile && !S.demo ? `<a class="btn sm primary" href="/api/raw?download=1&path=${encodeURIComponent(p.slideFile)}" title="${esc(p.slideFile)}">⬇ Tải slide</a>` : ''}
+        ${p.status === 'done' && !S.demo ? `<button class="btn sm" data-plan-slide title="Dựng lại file .pptx từ slides.md, thiet-ke.md và hinh/ (dùng sau khi bạn sửa tay)">${p.slideFile ? 'Dựng lại slide' : 'Dựng slide'}</button>` : ''}
         ${!isActive && p.steps.length ? `<button class="btn sm" data-plan-retry title="Tạo kế hoạch mới cùng mục tiêu và các bước đã chia (bỏ các vòng sửa), mang theo brief và câu trả lời của bạn. Bạn duyệt lại rồi mới chạy.">↻ Chạy lại</button>` : ''}
         ${!isActive || S.planView ? `<button class="btn sm" data-plan-back>${activePlan() && activePlan() !== p ? '← Dự án đang chạy' : '+ Dự án mới'}</button>` : ''}
       </div>
@@ -3102,6 +3105,10 @@ $('#book').addEventListener('click', async e => {
     return planAction(() => api.planStop(p.id));
   }
   if (b.hasAttribute('data-plan-resume') && p) return planAction(() => api.planResume(p.id));
+  if (b.hasAttribute('data-plan-slide') && p){
+    b.disabled = true; b.textContent = 'Đang dựng…';
+    return planAction(() => api.planSlide(p.id), 'Đã dựng xong, xem dòng cuối nhật ký dự án.').finally(() => { b.disabled = false; });
+  }
   if (b.hasAttribute('data-plan-retry') && p){
     if (!confirm('Chạy lại dự án này? Kế hoạch mới cùng mục tiêu và các bước sẽ ở trạng thái chờ duyệt. Sản phẩm trong output/ có thể bị ghi đè khi chạy.')) return;
     b.disabled = true;

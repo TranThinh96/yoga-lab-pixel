@@ -78,3 +78,24 @@ test('chonBuocChay: bước dùng sản phẩm chờ lượt làm tiếp sau câ
   assert.equal(gocBuoc(b, 2), 1);
   assert.deepEqual(chonBuocChay(b, { max: 2 }), [1]);
 });
+
+test('buocSauDr: chuyển pha Deep Research', () => {
+  const { buocSauDr } = require('../lib/lich');
+  // Pha 1 khởi chạy xong → chờ rồi lấy kết quả
+  assert.deepEqual(buocSauDr({ pha: 1, trangThai: 'đang chạy' }), { loai: 'cho', pha: 2 });
+  // Pha 2 Gemini chưa xong → kiểm lại tối đa 3 lần rồi báo lỗi
+  assert.deepEqual(buocSauDr({ pha: 2, trangThai: 'đang chạy (kiểm lúc 21:10)', lanKiem: 0 }), { loai: 'kiem-lai', lanKiem: 1 });
+  assert.equal(buocSauDr({ pha: 2, trangThai: 'đang chạy', lanKiem: 3 }).loai, 'loi');
+  // Pha 1 không khởi chạy được, chưa có file nguồn → lỗi bước
+  assert.equal(buocSauDr({ pha: 1, trangThai: 'lỗi: hết quota' }).loai, 'loi');
+  assert.match(buocSauDr({ pha: 1 }).lyDo, /không ghi/);
+  // Báo cáo đã lưu, chưa tổng hợp → pha 3 không có Chrome (kể cả pha 1 dùng lại báo cáo cũ)
+  assert.deepEqual(buocSauDr({ pha: 2, trangThai: 'xong' }), { loai: 'tong-hop', pha: 3 });
+  assert.deepEqual(buocSauDr({ pha: 1, trangThai: 'Xong' }), { loai: 'tong-hop', pha: 3 });
+  // Agent đã tự tổng hợp ngay, hoặc tắt công tắc → xong như trước
+  assert.deepEqual(buocSauDr({ pha: 2, trangThai: 'xong', coFileKhac: true }), { loai: 'xong' });
+  assert.deepEqual(buocSauDr({ pha: 2, trangThai: 'xong', tongHopRieng: false }), { loai: 'xong' });
+  // Pha 3 xong thì kết thúc, không quay vòng dù file báo cáo ghi gì
+  assert.deepEqual(buocSauDr({ pha: 3, trangThai: 'xong' }), { loai: 'xong' });
+  assert.deepEqual(buocSauDr({ pha: 3, trangThai: 'đang chạy' }), { loai: 'xong' });
+});

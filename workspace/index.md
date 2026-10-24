@@ -17,7 +17,7 @@
 - plan-20261021-195355 · thoai-hoa-khop-goi · Xong, 88/100 · nghiệm thu: du-an/plan-20261021-195355/nghiem-thu.md
 
 ## Sản phẩm mới nhất
-- output/thoat-vi-dia-dem/: slides.md (Lam), thiet-ke.md (Vy)
+- output/thoat-vi-dia-dem/: thiet-ke.md (Vy), slides.md (Lam)
 - output/thoai-hoa-khop-goi-v2/: slides.md (Lam), thiet-ke.md (Vy)
 - output/thoai-hoa-khop-goi/: thiet-ke.md (Vy), slides.md (Lam)
 

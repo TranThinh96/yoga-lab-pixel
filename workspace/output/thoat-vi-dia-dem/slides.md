@@ -77,13 +77,13 @@ Quy ước nguồn: [n] giữ đúng số trong `agents/mai/thoat-vi-dia-dem-ngu
 - Loại: so sánh · 2,5 phút
 - Ý chính:
   - (Câu to) Thoát vị đĩa đệm là khi nhân nhầy thoát ra qua chỗ nứt của vòng sợi, có thể chèn ép thần kinh. [5][6]
-  - **Phồng đĩa đệm:** mô đĩa nhô ra quanh cả vòng đĩa, không xem là thoát vị. [6]
+  - **Phồng đĩa đệm:** mô đĩa nhô ra rộng quanh vòng đĩa, không xem là thoát vị. [6]
   - **Thoát vị:** mô đĩa nhô ra ở một chỗ. [6]
   - Hình ảnh phồng, lồi đĩa đệm cũng gặp ở người không đau, nhiều hơn khi lớn tuổi. [7]
 - Câu chốt: Hình ảnh bất thường chưa kể hết câu chuyện; bác sĩ đọc nó cùng triệu chứng của bạn.
 - Hình: C + E · bên trái "đĩa bình thường" và bên phải "thoát vị chèn rễ thần kinh" từ `hinh-nguon/dia-dem-binh-thuong-va-thoat-vi-mat-ben.png` (BruceBlaus/Blausen, CC BY 3.0; cắt gọn nền cột sống mờ, không chữ) kèm mặt cắt ngang `hinh-nguon/thoat-vi-chen-re-than-kinh-mat-cat-ngang.jpg` (OpenStax College, CC BY 3.0) **chỉ giữ nửa trái, cắt bỏ nửa phải là phim MRI**, che các nhãn Anh, thêm nhãn Việt: Nhân nhầy · Vòng sợi · Phần đĩa thoát vị · Rễ thần kinh bị chèn. Thêm khối Canva "phồng": vòng đĩa tròn nhô đều quanh chu vi, đối chiếu "thoát vị": nhô một chỗ (kiểu mẫu tr.2 + tr.8). Dự phòng: `hinh-nguon/cot-song-that-lung-dia-dem-thoat-vi-servier.png`. Không AI, không MRI
 - Nguồn: [5] (cơ chế vòng sợi nứt, chèn ép), [6] (phồng khác thoát vị: danh pháp NASS/ASSR/ASNR 2014), [7] (hình ảnh ở người không đau: câu "tỷ lệ lồi đĩa tăng từ 29% lên 43%" chỉ dùng trong Lời giảng, không đưa % lên slide)
-- Lời giảng: Thoát vị là chuyện của vòng sợi bị nứt, lõi gel theo chỗ nứt mà nhô ra, và đôi khi chạm vào dây thần kinh gần đó. Theo danh pháp của các hội chuyên môn, phồng là nhô đều quanh cả vòng đĩa, còn thoát vị là nhô ở một chỗ. Nhiều tài liệu đời thường vẫn dùng chữ "phồng ra" cho thoát vị; hôm nay mình dùng theo danh pháp. Một điều đáng yên tâm: ở người hoàn toàn không đau, hình ảnh đĩa lồi cũng gặp, và gặp nhiều hơn khi lớn tuổi [7]. Vì vậy mình không tự đọc kết quả chụp để tự đoán, mà để bác sĩ đọc cùng với triệu chứng của mình.
+- Lời giảng: Thoát vị là chuyện của vòng sợi bị nứt, lõi gel theo chỗ nứt mà nhô ra, và đôi khi chạm vào dây thần kinh gần đó. Theo danh pháp của các hội chuyên môn, phồng là nhô ra rộng và đều trên một phần lớn vòng đĩa, còn thoát vị là nhô ở một chỗ. Nhiều tài liệu đời thường vẫn dùng chữ "phồng ra" cho thoát vị; hôm nay mình dùng theo danh pháp. Một điều đáng yên tâm: ở người hoàn toàn không đau, hình ảnh đĩa lồi cũng gặp, và gặp nhiều hơn khi lớn tuổi [7]. Vì vậy mình không tự đọc kết quả chụp để tự đoán, mà để bác sĩ đọc cùng với triệu chứng của mình.
 - An toàn: Slide không giúp tự chẩn đoán; ai đã có kết quả chụp thì hỏi bác sĩ điều đó nghĩa là gì với riêng mình.
 
 ## Trang 4 · Nguyên nhân & yếu tố nguy cơ
@@ -168,9 +168,9 @@ Quy ước nguồn: [n] giữ đúng số trong `agents/mai/thoat-vi-dia-dem-ngu
 ## Trang 10 · Tư thế với ghế
 - Loại: tư thế · 6 phút (tư thế 1: 2,5 · tư thế 2: 3,5)
 - Ý chính: —
-- Nhãn: NGỒI GHẾ LƯNG TRUNG TÍNH, VƯƠN TAY · ĐỨNG VỊN GHẾ, GẬP HÔNG NÔNG
+- Nhãn: NGỒI GHẾ LƯNG TRUNG TÍNH, VƯƠN TAY · GẬP HÔNG NÔNG
 - Câu chốt: —
-- Hình: B · hai ảnh ngang cạnh nhau (kiểu mẫu tr.22, không chữ khác), cùng người mẫu: (1) ngồi giữa ghế gỗ tựa lưng chắc, lưng ghế áp tường, bàn chân phẳng rộng bằng hông, chăn cuộn nhỏ sau thắt lưng, hai tay nâng lên cao quá đầu, lưng thẳng không ưỡn, cằm hơi thu, nhìn thẳng; (2) đứng sau lưng ghế (mặt ngồi sát tường), hai tay vịn mép lưng ghế, bàn chân rộng bằng hông, gối hơi chùng, thân nghiêng về trước một chút từ hông, lưng thẳng như tấm ván, cổ trung tính. Ảnh ngang thấy trọn người và đạo cụ. Dự phòng cho (2): ngồi ghế, thân nghiêng nhẹ từ hông, hai tay đặt trên đùi
+- Hình: B · hai ảnh ngang cạnh nhau (kiểu mẫu tr.22, không chữ khác), cùng người mẫu: (1) ngồi giữa ghế gỗ tựa lưng chắc, lưng ghế áp tường, bàn chân phẳng rộng bằng hông, chăn cuộn nhỏ sau thắt lưng, hai tay nâng lên cao quá đầu, lưng thẳng không ưỡn, cằm hơi thu, nhìn thẳng; (2) bản ngồi của tư thế 2: ngồi nửa trước ghế áp tường, bàn chân phẳng, hai tay đặt trên đùi, thân nghiêng nhẹ về trước từ hông, lưng thẳng như tấm ván, cổ cùng hàng lưng (`hinh/trang-10-gap-hong-ngoi-ghe.png`; ảnh đứng vịn ghế AI không dựng đúng cách đặt ghế nên dùng bản ngồi). Ảnh ngang thấy trọn người và đạo cụ
 - Nguồn: kỹ thuật và liều: hướng dẫn thực hành của Yoga Lab (ý kiến); quy tắc đau: tr.9
 - Lời giảng:
   - **Tư thế 1 · Ngồi ghế lưng trung tính, vươn tay** (biến thể ngồi ghế của Tadasana/Urdhva Hastasana; không có tên Phạn chuẩn). Cho cả lớp ngồi chỗ, làm ngay (2,5 phút gồm vào chỗ 0,5 và hướng dẫn 0,5).
@@ -184,6 +184,7 @@ Quy ước nguồn: [n] giữ đúng số trong `agents/mai/thoat-vi-dia-dem-ngu
     - Làm: thở ra, đẩy hông về sau như khép cánh tủ bằng mông; thân nghiêng về trước một chút, lưng thẳng như tấm ván, cổ cùng hàng với lưng. Dừng ngay khi thấy lưng muốn tròn; hít vào đứng thẳng lại. 5–6 lần, khoảng 12 giây mỗi lần. Không gập sâu.
     - Ra: đứng thẳng, quay ghế về chỗ cũ và ngồi xuống nghỉ.
     - Bản nhẹ: ngồi ghế, hai tay đặt trên đùi, nghiêng nhẹ thân từ hông rồi về thẳng; hoặc đứng vịn ghế chỉ đẩy hông về sau rất ít.
+    - Ảnh trên slide là bản ngồi: giảng viên nói rõ "ảnh là bản ngồi, ai thăng bằng tốt thì làm bản đứng vịn ghế theo mình làm mẫu". Người mẫu trong ảnh hơi cúi đầu: khi làm mẫu nhắc "mắt nhìn sàn phía trước, cổ cùng hàng lưng".
   - Mọi bản: đau lan xuống chân tăng thì dừng.
 - An toàn:
   - Tư thế 1: đau vai khi nâng tay → dừng ở ngang vai; chóng mặt hoặc huyết áp thấp → hạ tay, nghỉ; đau lan xuống chân tăng → dừng.
@@ -276,15 +277,16 @@ Quy ước nguồn: [n] giữ đúng số trong `agents/mai/thoat-vi-dia-dem-ngu
 [12] Steffens D et al., Prevention of Low Back Pain: A Systematic Review and Meta-analysis, JAMA Internal Medicine, 2016. https://pubmed.ncbi.nlm.nih.gov/26752509/
 [14] Trung tâm Cấp cứu 115 TP.HCM, trang chủ. http://ttcapcuu115.medinet.gov.vn/Default.aspx
 
-Hình giải phẫu: tr.2 và tr.3 (nửa mặt cắt ngang): OpenStax College, CC BY 3.0, qua Wikimedia Commons. Tr.3 (đĩa bình thường/thoát vị): BruceBlaus (Blausen.com staff), CC BY 3.0. Tr.5 (dây thần kinh toạ): Laboratoires Servier (Servier Medical Art), CC BY-SA 3.0; bản dựng giữ giấy phép chia sẻ tương tự. Dự phòng: InjuryMap, CC BY-SA 4.0.
+Hình giải phẫu: tr.2 và tr.3 (nửa mặt cắt ngang): OpenStax College, CC BY 3.0, qua Wikimedia Commons. Tr.3 (đĩa bình thường/thoát vị): BruceBlaus (Blausen.com staff), CC BY 3.0. Tr.5 (dây thần kinh toạ): Laboratoires Servier (Servier Medical Art), CC BY-SA 3.0; bản dựng giữ giấy phép chia sẻ tương tự.
 
 ## Việc còn mở
 - Không dùng NASS ở tr.8 theo quyết định đã chốt (NASS chỉ còn nguồn danh pháp [6] ở tr.3); nếu chủ dự án gửi được PDF NASS 2012 thì thêm sau.
-- Brief nêu "yếu chân tăng dần (hoặc hai chân)"; câu trích đã duyệt chỉ có "yếu hoặc tê ở hai chân, nặng hoặc tăng dần" [2][3], nên slide ghi như vậy. Yếu chỉ một chân tăng dần: chưa có câu trích, cần An hoặc chuyên gia cho ý kiến nếu muốn thêm.
-- [14] là trang TP.HCM; slide ghi "Ở Việt Nam gọi 115" như câu trên trang; nếu lớp ở tỉnh khác cần xác nhận số địa phương.
-- [4] NICE, [5] StatPearls, [6] NASS toàn văn An chưa tự mở lại (CAPTCHA/403): nên mở bằng Chrome một lần khi duyệt slide.
+- Brief nêu "yếu chân tăng dần (hoặc hai chân)"; câu trích đã duyệt chỉ có "yếu hoặc tê ở hai chân, nặng hoặc tăng dần" [2][3], nên slide ghi như vậy. **Yếu một chân tăng dần** (bàn chân rũ, đi hay vấp) về lâm sàng nên đi khám ngay trong ngày nhưng chưa có câu trích: nhờ bác sĩ xác nhận rồi thêm vào tầng "Khám sớm" của tr.7.
+- [14] là trang TP.HCM; slide ghi "Gọi 115"; nếu lớp ở tỉnh khác cần xác nhận số địa phương.
+- An đã đối chiếu các cụm có [4][5][6] (xem `agents/an/thoat-vi-dia-dem-kiem-slides.md`) qua câu trích của Mai và trang mở được; toàn văn [4] NICE NG59 và [5] StatPearls chưa ai tự mở (CAPTCHA/403): nên mở bằng trình duyệt một lần trước buổi.
 - Tr.3: chưa có hình "phồng" có giấy phép; dựng khối Canva theo định nghĩa [6] (Vy). Nửa phải MRI của hình 728 phải cắt bỏ.
-- Tr.9: dùng cụm "mới có thủ thuật ở cột sống" thay vì "mổ" để khỏi bàn mổ; chủ dự án đổi nếu muốn rõ hơn.
+- Tr.9: dùng cụm "mới can thiệp cột sống" thay vì "mổ" để khỏi bàn mổ; chủ dự án đổi nếu muốn rõ hơn.
+- Ảnh tr.11 (cây cầu, chó–chim) và biểu tượng tr.9 đã tạo lại đạt (24/10). Ảnh tr.10 đứng vịn ghế AI không dựng đúng (ghế không áp tường, gối gập sâu), chủ dự án chọn dùng ảnh bản ngồi `trang-10-gap-hong-ngoi-ghe.png` (24/10); AI tạo 2 lần đều lệch nhẹ (gối ~110°, thân ~30°, cổ hơi cúi), chủ dự án chấp nhận ảnh lần 2, đã có trong hinh/; giảng viên làm mẫu bản đứng và nhắc hướng nhìn.
 - Tr.10–11: đứng vịn ghế cần xoay ghế nửa vòng (0,75 phút); nếu lớp đông có thể dành riêng 1 ghế/người đã xoay sẵn để đỡ thời gian. Thời gian giữ cây cầu trong buổi 1–2 phút (tối đa 3 phút ở nhà) cho vừa 3 phút của trang.
 - Tr.11: tư thế 5 kết thúc ở nằm nghiêng để nối vào tr.12 (nằm ngửa co gối); thứ tự 3→4→5 giữ theo brief.
 - Tr.13: các ý "đứng dồn đều hai chân", "ngồi tựa lưng" và "nâng đồ sát người" là hướng dẫn thực hành của Yoga Lab, không có câu trích.

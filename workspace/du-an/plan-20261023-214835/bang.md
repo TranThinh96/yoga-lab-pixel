@@ -133,3 +133,4 @@ Brief: du-an/plan-20261023-214835/brief.md
 - Nghiệm thu lần 2: 92/100
 - Bỏ qua 1 câu hỏi mới (đã dừng hỏi 3 lần) → nhóm tự quyết theo đề xuất
 - Hồi cứu: 3 bài học mới, 3 bài học sửa/gộp, 4 lỗ hổng, 1 mẫu tốt
+- Đã dựng slide hoàn thiện: output/thoat-vi-dia-dem/thoat-vi-dia-dem.pptx (15 trang)

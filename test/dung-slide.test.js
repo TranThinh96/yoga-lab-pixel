@@ -124,7 +124,18 @@ test('dungBoSlide theo phong cách slide mẫu: tiêu đề chữ có chân, n�
   assert.notEqual(sl(2).bg, sl(3).bg, 'hai trang nội dung liền nhau khác nền');
   assert.equal(sl(12).bg, '3E5F45', 'trang "nền đậm" giữ nền xanh đậm');
   for (const i of [2, 3, 4, 5, 6, 7, 8, 9, 12, 13]) assert.ok(sl(i).shapes.some(s => s.trangTri && s.kieu === 've'), `trang ${i} có trang trí`);
-  assert.equal(ten(4, 'Thanh 1').length, 1, 'tr.4 danh sách ngắn thành thanh đánh số');
+  // Trình bày liệt kê: danh sách đánh số thành lưới thẻ số lớn, câu chốt vào ô trống của lưới với nền khối đậm
+  assert.equal(sl(4).shapes.filter(s => /^Thẻ số /.test(s.ten)).length, 5, 'tr.4 năm thẻ đánh số');
+  assert.equal(ten(4, 'Số 1')[0].mau, 'C2654F', 'số lớn màu nhấn');
+  assert.equal(ten(4, 'Câu chốt').length, 1, 'câu chốt chỉ ghi một lần');
+  assert.equal(ten(4, 'Câu chốt')[0].nen, '3E5F45', 'câu chốt trong ô khối đậm');
+  const o6 = ten(4, 'Thẻ số 3')[0], chot = ten(4, 'Câu chốt')[0];
+  assert.ok(Math.abs(chot.x - o6.x) < 1e-9 && chot.y > o6.y, 'câu chốt nằm ở ô thứ sáu của lưới');
+  // Dòng thời gian: mỗi mốc một thẻ, mốc cuối thẻ khối đậm
+  const the6 = sl(6).shapes.filter(s => s.dang === 'bo' && s.doan && s.doan.length);
+  assert.equal(the6.length, 4);
+  assert.equal(the6[3].nen, '3E5F45');
+  assert.ok(the6.slice(0, 3).every(s => s.nen === 'FFFFFF'));
   assert.equal(ten(7, 'Mũi tên').length, 1, 'tr.7 có mũi tên giữa hai tầng');
   assert.equal(ten(8, 'Phần giao').length, 1, 'tr.8 Venn có phần giao');
   assert.match(ten(8, 'Tên phần giao')[0].doan[0].chu[0].t, /Giao nhau/);

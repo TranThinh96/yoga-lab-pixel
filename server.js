@@ -531,7 +531,8 @@ function cliArgs(agent, maxTurns, effort, kind, lab = [], mcpFile = null, chiDoc
     '--permission-mode', chiDoc ? 'default' : 'acceptEdits',
     '--max-turns', String(maxTurns || agent.maxTurns || defaultTurns(agent) || config.maxTurns || 15),
     '--allowedTools', (chiDoc ? ['Read', 'Glob', 'Grep'] : claudeToolsOf(agent, kind, lab)).join(',')];
-  if (chiDoc) args.push('--disallowedTools', 'Write,Edit,NotebookEdit,Bash,WebFetch,WebSearch');
+  // Agent không có shell: --allowedTools không chặn được lệnh chỉ đọc (Claude Code tự cho chạy), nên cấm hẳn
+  args.push('--disallowedTools', (chiDoc ? 'Write,Edit,NotebookEdit,WebFetch,WebSearch,' : '') + 'Bash,PowerShell');
   if (mcpFile) { args.push('--mcp-config', mcpFile); if (!agent.useMcp) args.push('--strict-mcp-config'); }
   else if (chiDoc || (config.skipMcp && !agent.useMcp)) args.push('--strict-mcp-config');
   // Claude in Chrome: điều khiển Chrome thật của bạn (đã đăng nhập sẵn), ví dụ để chạy Gemini Deep Research bằng gói Gemini Pro

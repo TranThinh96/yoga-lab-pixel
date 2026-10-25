@@ -664,6 +664,7 @@ main{display:block; max-width:none; margin:0; padding:0}
 
 @media (max-width:1000px){ .hud-top .brand p{display:none} }
 @media (max-width:1180px){ #timeBtn .t, #usageBtn .t{display:none} }
+@media (max-width:1280px){ .hud-top #stats .c-tok{display:none} } /* nhường chỗ cho tên văn phòng; số token vẫn có khi rê chuột */
 @media (max-width:700px){
   :root{--top-h:52px; --dock-h:64px}
   .hud-top{gap:6px; padding:0 8px}
@@ -2613,7 +2614,7 @@ function renderPanel(){
     <div class="row"><button class="btn primary" data-run>Giao việc cho ${esc(a.name)}</button></div>`;
   const lastCard = last ? `
     <div class="run-card ${last.status}">
-      <div class="lbl-sm">Lần gần nhất · ${ago(new Date(last.endedAt || last.startedAt).getTime())}${last.endedAt ? ' · mất ' + dur(last.startedAt, last.endedAt) : ''}${last.tokens ? ' · ' + fmtTok(last.tokens) + ' token' : ''}</div>
+      <div class="lbl-sm">Lần gần nhất · ${ago(new Date(last.endedAt || last.startedAt).getTime())}${last.endedAt ? ' · mất ' + dur(last.startedAt, last.endedAt) : ''}${last.tokens ? ' · ' + fmtTok(last.tokens) + ' token' : ''}${last.costUsd ? ' · $' + last.costUsd.toFixed(2) : ''}</div>
       <p class="sum">${esc(plain(last.status === 'done' ? (last.summary || 'Đã xong.') : (last.error || last.summary || 'Có lỗi.')))}</p>
       <div class="row">
         ${canRetry(last) ? `<button class="btn sm primary" data-retry title="${esc(last.planId ? 'Chạy tiếp dự án từ bước bị lỗi' : 'Giao lại đúng việc này, cùng file đính kèm')}">↻ ${last.planId ? 'Chạy lại bước này' : 'Thử lại'}</button>` : ''}
@@ -2889,7 +2890,7 @@ function histRow(r, p){
     <span class="st ${stCls}"><span class="dot ${stCls}"></span>${RUN_TXT[r.status] || r.status}</span>
     <span class="task">${r.planId ? `<span class="step">${r.step ? 'Bước ' + r.step + (p ? '/' + p.steps.length : '') : 'Điều phối'}</span>` : ''}<b>${esc(r.agentName)}</b>${role && role !== 'Làm' ? ` <span class="role">${role}</span>` : ''}
       <span class="g">${esc(what)}</span>${r.status === 'error' && r.error ? `<span class="e">${esc(plain(r.error).slice(0, 160))}</span>` : ''}</span>
-    <span class="meta">${whenTxt(new Date(r.startedAt).getTime())}${r.endedAt ? ' · ' + dur(r.startedAt, r.endedAt) : ''}${r.tokens ? ' · ' + fmtTok(r.tokens) + ' token' : ''}${out ? ' · <u>mở kết quả</u>' : ''}</span></button>`;
+    <span class="meta">${whenTxt(new Date(r.startedAt).getTime())}${r.endedAt ? ' · ' + dur(r.startedAt, r.endedAt) : ''}${r.tokens ? ' · ' + fmtTok(r.tokens) + ' token' : ''}${r.costUsd ? ' · $' + r.costUsd.toFixed(2) : ''}${out ? ' · <u>mở kết quả</u>' : ''}</span></button>`;
 }
 function renderHistory(el){
   const groups = histGroups();
@@ -3952,7 +3953,8 @@ function renderStats(){
   const today = new Date().toDateString();
   const tok = S.runs.filter(r => new Date(r.startedAt).toDateString() === today).reduce((s, r) => s + (r.tokens || 0), 0);
   const runsToday = S.runs.filter(r => new Date(r.startedAt).toDateString() === today).length;
-  $('#stats').innerHTML = `<span class="chip${runningN ? ' live' : ''}" title="Số người đang làm việc"><span class="dot ${runningN ? 'working' : ''}"></span><b>${runningN}</b>/${S.agents.length} đang làm</span><span class="chip" title="Số lượt làm việc và token đã dùng hôm nay">Hôm nay <b>${runsToday}</b> việc · ${fmtTok(tok)} token</span>`;
+  const usd = S.runs.filter(r => new Date(r.startedAt).toDateString() === today).reduce((s, r) => s + (r.costUsd || 0), 0);
+  $('#stats').innerHTML = `<span class="chip${runningN ? ' live' : ''}" title="Số người đang làm việc"><span class="dot ${runningN ? 'working' : ''}"></span><b>${runningN}</b>/${S.agents.length} đang làm</span><span class="chip" title="Hôm nay: ${runsToday} việc · ${fmtTok(tok)} token${usd ? ' · ~' + usd.toFixed(2) + ' USD tham khảo (gói Pro không trừ tiền riêng)' : ''}">Hôm nay <b>${runsToday}</b> việc<span class="c-tok"> · ${fmtTok(tok)} token</span>${usd ? ' · $' + usd.toFixed(2) : ''}</span>`;
 }
 function renderFoot(){
   const c = S.cli;

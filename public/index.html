@@ -3284,7 +3284,7 @@ function planCards(p){
       verdict: lastCheck ? lastCheck.verdict : '', deps, rounds: checks.length,
       agentId: (working || next || last || head).agentId, people: [...new Set(list.map(x => x.agentId))],
       title: (/^Sửa\s/i.test(gist(head.task)) ? 'Sửa · ' : '') + role, file: cardFile(list), desc: gist(head.task),
-      tokens: list.reduce((t, x) => t + (x.tokens || 0), 0),
+      tokens: list.reduce((t, x) => t + (x.tokens || 0), 0), usd: list.reduce((t, x) => t + (x.costUsd || 0), 0),
       issues: (p.issues || []).filter(v => v.status === 'mo' && list.some(x => x.n === v.lastStep || x.n === v.fixStep)).length };
   });
 }
@@ -3293,7 +3293,7 @@ function soloCards(){
     col: r.status === 'working' ? 'working' : r.status === 'done' ? 'done' : 'fix',
     tag: r.status === 'stopped' ? 'Đã dừng' : r.status === 'error' ? 'Lỗi' : '', agentId: r.agentId, people: [r.agentId],
     title: taskText(r.task).split('\n')[0], desc: r.status === 'done' ? r.summary || '' : r.error || r.summary || '',
-    file: (r.files || []).find(f => /^output\//.test(f)) || '', tokens: r.tokens || 0 }));
+    file: (r.files || []).find(f => /^output\//.test(f)) || '', tokens: r.tokens || 0, usd: r.costUsd || 0 }));
 }
 // Thẻ đang chạy: lượt chạy tương ứng (để có giờ bắt đầu)
 function cardRun(c){
@@ -3317,7 +3317,7 @@ function kcardHtml(c, all){
     ${tags.length ? `<span class="kp">${tags.join('')}</span>` : ''}
     ${run ? `<span class="kbar" data-kt0="${new Date(run.startedAt).getTime()}" data-typ="${typ}"><i style="width:0"></i></span>` : ''}
     <span class="km"><span class="kp" style="margin:0">${c.people.map(id => avatar(agentById(id) || { name: id })).join('')}</span>
-      <span>${run ? `<span data-kel></span>` : deps ? esc(deps) : c.tokens ? fmtTok(c.tokens) + ' token' : ''}</span></span>
+      <span>${run ? `<span data-kel></span>` : deps ? esc(deps) : c.tokens ? fmtTok(c.tokens) + ' token' + (c.usd ? ' · $' + c.usd.toFixed(2) : '') : ''}</span></span>
   </button>`;
 }
 function boardCards(){ const p = boardPlan(); return p ? planCards(p) : soloCards(); }
@@ -3396,7 +3396,7 @@ function renderDrawer(cards, p){
       const txt = plain(x.status === 'error' ? x.error : x.summary);
       return `<li>${avatar(agentById(x.agentId) || { name: x.agentId })}
         <div class="h"><b>${esc(stepLabel(x, c))}</b><span>${esc(name(x.agentId))}</span><span class="ktag ${x.status === 'done' ? 'ok' : x.status === 'error' ? 'err' : x.status === 'working' ? 'gold' : ''}">${STEP_TXT[x.status] || x.status}</span>
-          ${x.verdict ? `<span class="ktag ${x.verdict === 'pass' ? 'ok' : 'err'}">${esc(VERDICT_TXT[x.verdict] || x.verdict)}</span>` : ''}<small class="muted">bước ${x.n}${x.tokens ? ' · ' + fmtTok(x.tokens) : ''}</small></div>
+          ${x.verdict ? `<span class="ktag ${x.verdict === 'pass' ? 'ok' : 'err'}">${esc(VERDICT_TXT[x.verdict] || x.verdict)}</span>` : ''}<small class="muted">bước ${x.n}${x.tokens ? ' · ' + fmtTok(x.tokens) : ''}${x.costUsd ? ' · $' + x.costUsd.toFixed(2) : ''}</small></div>
         ${txt ? `<p class="s">${esc(txt.length > 420 ? txt.slice(0, 418) + '…' : txt)}</p>` : ''}
         ${run ? `<p class="s"><span data-kel-d data-kt0="${new Date(run.startedAt).getTime()}"></span> · ${PHASES[phaseOf(S.acts[x.agentId] || [])]}</p>${liveList(x.agentId, run)}` : ''}
         <details data-k="t${x.n}" ${open.has('t' + x.n) ? 'open' : ''}><summary>Việc được giao</summary><div class="task">${esc(taskText(x.task))}</div></details>
@@ -3424,7 +3424,7 @@ function renderDrawer(cards, p){
   d.hidden = false;
   d.innerHTML = `<button class="btn sm icon-btn x" type="button" data-kclose aria-label="Đóng chi tiết">✕</button>
     <h3>${esc(c.title)}</h3>
-    <p class="sub">${c.kind === 'plan' ? `${c.steps.length} bước · ${c.rounds ? c.rounds + ' lần duyệt · ' : ''}${c.tokens ? fmtTok(c.tokens) + ' token' : 'chưa chạy'}` : ''}</p>
+    <p class="sub">${c.kind === 'plan' ? `${c.steps.length} bước · ${c.rounds ? c.rounds + ' lần duyệt · ' : ''}${c.tokens ? fmtTok(c.tokens) + ' token' + (c.usd ? ' · $' + c.usd.toFixed(2) : '') : 'chưa chạy'}` : ''}</p>
     ${c.file ? `<div class="r" style="display:flex;gap:6px;margin:0 0 10px"><button class="btn sm primary" type="button" data-view="${esc(c.file)}">📝 Mở ${esc(fname(c.file))}</button></div>` : ''}
     ${body}`;
   d.scrollTop = top;

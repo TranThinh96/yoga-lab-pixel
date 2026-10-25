@@ -27,7 +27,7 @@ const { docCauHoi: parseQuestions, laCauHoiMoiTruong, locBaiHocMoi, phanLoaiCauH
 const { chuDeTriThuc, docBangTriThuc, hopNhatMenhDe, hopNhatNguon, capNhatTruyCap, hopNhatTuThe, maHinh, hopNhatHinh, cacChuDe, vietMocChuDe, vietBanDoTriThuc, docThuatNgu, dienThuatNgu, timTriThuc, goiNguCanh, slug, KIEU_MAU, trichMauTot, taoMauTot, chonMauTot } = require('./lib/tri-thuc');
 const { docGhiChu } = require('./lib/ghi-chu');
 const { chonBuocChay, choBuocChen, hetHanMucGemini, buocSauDr } = require('./lib/lich');
-const { thongKeChiPhi } = require('./lib/uoc-tinh');
+const { thongKeChiPhi, uocTinhKeHoach } = require('./lib/uoc-tinh');
 const { chiSoTriNao } = require('./lib/chi-so');
 const { soMa, docBaiHoc, noiDungBaiHoc, suaBaiHoc, banXemKinhNghiem, nhanBuoc, chonBaiHoc, maTrong, bangChungBaiHoc, daNhanTheoBuocCua, danhGiaBaiHoc, themLoHong, demLoHongMo, thongKeHoc, hocTuJson, apDungHoc, apDungSuaHuongDan, hoanTacSuaHuongDan, themTuTranh } = require('./lib/bai-hoc');
 
@@ -1729,8 +1729,17 @@ function choGemini(plan, s) {
 }
 
 const checkingIn = new Set(); // id kế hoạch đang chờ điều phối viên giao ban
+// Ghi ước tính lúc kế hoạch bắt đầu chạy (bạn duyệt, hoặc tự chạy): thẻ dự án hiện thực tế so với ước tính.
+// Chỉ khi chưa bước nào chạy; số liệu không tính chính dự án này
+function ghiUocTinh(plan) {
+  if (plan.uocTinh !== undefined || !plan.steps.length || plan.steps.some(s => s.status !== 'pending')) return;
+  const u = uocTinhKeHoach(plan.steps, thongKeChiPhi(plans.filter(x => x !== plan), runs, weightOf)), t = u && (u.caDuAn || u);
+  plan.uocTinh = t ? { usd: t.usd, cao: t.cao } : null;
+}
+
 function pumpPlan(plan) {
   if (plan.status !== 'running') return;
+  ghiUocTinh(plan);
   if (checkingIn.has(plan.id) || chromeChecking.has(plan.id)) return;
   const idx = plan.steps.findIndex(s => s.status !== 'done');
   if (idx < 0) return finishPlan(plan);

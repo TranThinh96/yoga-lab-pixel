@@ -704,6 +704,7 @@ main{display:block; max-width:none; margin:0; padding:0}
   <div class="chips" id="stats"></div>
   <div class="chips lims" id="limits" hidden></div>
   <a class="btn sm" id="usageBtn" href="#usage" title="Báo cáo sử dụng">📊<span class="t"> Báo cáo</span></a>
+  <button class="btn sm icon-btn" id="notiBtn" type="button" hidden></button>
   <button class="btn sm" id="timeBtn" type="button" title="Đổi thời gian trong văn phòng"></button>
   <button class="btn sm icon-btn" id="fsBtn" type="button" title="Toàn màn hình (F)" aria-label="Toàn màn hình (F)">⛶</button>
 </header>
@@ -2805,10 +2806,10 @@ function syncTitle(){
   document.title = need ? `❗ Cần bạn · ${base}` : prog ? `⏳ ${prog} · ${base}` : base;
 }
 // Thông báo của máy khi tab đang ẩn. Xin quyền lúc bạn giao việc (trình duyệt chỉ cho xin khi bạn bấm nút)
-function askNotify(){ try { if (!S.demo && 'Notification' in window && Notification.permission === 'default') Notification.requestPermission().catch(() => {}); } catch {} }
+function askNotify(){ try { if (!S.demo && 'Notification' in window && Notification.permission === 'default') Notification.requestPermission().then(renderNoti, () => {}); } catch {} }
 function notify(title, body){
   try {
-    if (S.demo || !document.hidden || !('Notification' in window) || Notification.permission !== 'granted') return;
+    if (S.demo || store.get('yl-noti', 'on') === 'off' || !document.hidden || !('Notification' in window) || Notification.permission !== 'granted') return;
     const n = new Notification(title, { body: String(body || '').slice(0, 180), tag: 'yogalab-' + title });
     n.onclick = () => { window.focus(); n.close(); };
   } catch {}
@@ -3046,6 +3047,13 @@ function uocTinhKeHoach(steps, tk){
   }
   return coSo ? { usd, cao, wtok, thieu: steps.length - coSo, doan, caDuAn: tk.heSo ? { usd: usd * tk.heSo, cao: cao * tk.heSo, wtok: wtok * tk.heSo } : null } : null;
 }
+// Ước tính của một bước nháp: trung vị và lần tốn của người đó (hoặc cả nhóm) cho loại bước này
+function buocUocTinh(s){
+  const tk = S.uocTinh; if (!tk) return '';
+  const loai = s.checks ? 'review' : 'work', rieng = (tk.buoc[s.agentId] || {})[loai], x = rieng || tk.chung[loai];
+  if (!x) return '';
+  return `<span title="${rieng ? `Trung vị ${x.n} bước cùng loại của người này` : 'Người này chưa làm loại bước này: lấy số chung của nhóm'}">~${x.usd.toFixed(2)} USD${x.cao > x.usd * 1.3 ? `, lần tốn ~${x.cao.toFixed(2)}` : ''}${rieng ? '' : ' (số chung)'}</span>`;
+}
 function uocTinhHtml(steps){
   const u = uocTinhKeHoach(steps, S.uocTinh);
   if (!u) return '';
@@ -3108,7 +3116,7 @@ function planView(p){
       html += `<div class="node">${avatar(a)}
         <span class="row" style="gap:6px; flex-wrap:nowrap; min-width:0"><b>${i + 1}.</b><select data-step-agent="${i}" aria-label="Người làm bước ${i + 1}">${S.agents.filter(o => !p.team || p.team.includes(o.id)).map(o => `<option value="${esc(o.id)}" ${o.id === s.agentId ? 'selected' : ''}>${esc(o.name)} · ${esc(o.role)}</option>`).join('')}</select></span>
         <span class="tools"><button class="btn sm icon-btn" data-step-up="${i}" aria-label="Đưa bước ${i + 1} lên" ${i ? '' : 'disabled'}>↑</button><button class="btn sm icon-btn" data-step-del="${i}" aria-label="Xoá bước ${i + 1}">✕</button></span>
-        ${s.checks ? `<span class="txt muted" style="font-size:12.5px">Duyệt bước ${s.checks}</span>` : ''}
+        ${s.checks || buocUocTinh(s) ? `<span class="txt muted" style="font-size:12.5px">${s.checks ? `Duyệt bước ${s.checks}` : ''}${s.checks && buocUocTinh(s) ? ' · ' : ''}${buocUocTinh(s)}</span>` : ''}
         <textarea data-step-task="${i}" aria-label="Việc của bước ${i + 1}">${esc(s.task)}</textarea>
       </div>`;
     } else {
@@ -3909,6 +3917,24 @@ $('#delAgent').addEventListener('click', async () => {
 
 // ════════════════════════ thanh trên ════════════════════════
 const TIME_LBL = { auto:'☀︎ Theo giờ thật', day:'☀︎ Ban ngày', dusk:'◐ Hoàng hôn', night:'☾ Ban đêm' };
+// Nút chuông: trạng thái thông báo của máy, bật / tắt tạm (tắt chỉ lưu ở trình duyệt này)
+function renderNoti(){
+  const b = $('#notiBtn'), ok = !S.demo && 'Notification' in window;
+  b.hidden = !ok; if (!ok) return;
+  const perm = Notification.permission, on = perm === 'granted' && store.get('yl-noti', 'on') !== 'off';
+  b.textContent = on ? '🔔' : '🔕';
+  b.title = perm === 'denied' ? 'Trình duyệt đang chặn thông báo. Bấm biểu tượng ổ khoá cạnh địa chỉ trang để cho phép.'
+    : perm === 'default' ? 'Bấm để bật thông báo khi dự án cần bạn hoặc đã xong (chỉ báo khi bạn ở tab khác)'
+    : on ? 'Thông báo đang bật. Bấm để tắt.' : 'Thông báo đang tắt. Bấm để bật lại.';
+  b.setAttribute('aria-label', b.title);
+}
+$('#notiBtn').addEventListener('click', async () => {
+  const perm = Notification.permission;
+  if (perm === 'denied') toast('Trình duyệt đang chặn thông báo: bấm biểu tượng ổ khoá cạnh địa chỉ trang, cho phép Thông báo, rồi tải lại trang.');
+  else if (perm === 'default'){ try { await Notification.requestPermission(); } catch {} store.set('yl-noti', 'on'); if (Notification.permission === 'granted') toast('Đã bật thông báo.'); }
+  else { const off = store.get('yl-noti', 'on') !== 'off'; store.set('yl-noti', off ? 'off' : 'on'); toast(off ? 'Đã tắt thông báo.' : 'Đã bật thông báo.'); }
+  renderNoti();
+});
 function renderTime(){ const [ic, ...t] = TIME_LBL[S.timeMode].split(' '); $('#timeBtn').innerHTML = `${ic}<span class="t"> ${t.join(' ')}</span>`; $('#timeBtn').setAttribute('aria-label', 'Thời gian trong văn phòng: ' + t.join(' ')); }
 $('#timeBtn').addEventListener('click', () => {
   const order = ['auto','day','dusk','night']; S.timeMode = order[(order.indexOf(S.timeMode) + 1) % 4]; store.set('yl-time', S.timeMode); renderTime();
@@ -3972,7 +3998,7 @@ async function refreshLimits(){
 }
 document.addEventListener('click', e => { if (e.target.closest('#limits [data-rf]')) refreshLimits(); });
 setInterval(renderLimits, 60e3); // giờ làm mới đã qua thì đổi sang "mới"
-function renderAll(){ renderTags(); renderTeam(); renderPanel(); renderBook(); renderBoard(); renderStats(); renderFoot(); renderTime(); renderLimits(); }
+function renderAll(){ renderTags(); renderTeam(); renderPanel(); renderBook(); renderBoard(); renderStats(); renderFoot(); renderTime(); renderNoti(); renderLimits(); }
 
 // ════════════════════════ báo cáo sử dụng ════════════════════════
 const U = { days: store.get('yl-udays', 7), agent: '', status: '', kind: '', plan: '', page: 1, data: null, detail: store.get('yl-udetail', false) };

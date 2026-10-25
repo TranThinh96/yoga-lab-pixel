@@ -66,7 +66,7 @@ Khi việc lớn cần nhiều người, bạn không phải tự chuyển tay t
    Sau đó chia việc: ai làm gì, đọc bàn giao của bước nào, và **ai duyệt sản phẩm của ai** (bước duyệt).
    Họ **chỉ được giao việc cho người trực thuộc mình** (trực tiếp hoặc gián tiếp). Thiếu thông tin quan trọng thì họ hỏi bạn trước.
 3. Kế hoạch hiện ra để bạn duyệt. Bạn có thể đổi người làm, sửa nội dung, đổi thứ tự, thêm hoặc xoá bước. Xong thì bấm **Chạy kế hoạch**.
-   Phía trên các bước có **ước tính chi phí**: trung vị chi phí các bước cùng người, cùng loại (làm hay duyệt) ở các dự án trước, và cả dự án thường tốn gấp mấy lần (vòng duyệt–sửa, lập kế hoạch, nghiệm thu). Đổi người làm thì số tính lại ngay; vượt ngân sách `planTokenBudget` thì có nhắc. Bước Deep Research, tạo ảnh có lần tốn gấp nhiều lần trung vị, nên ước tính kèm mức "lần tốn" (9/10 lần thấp hơn mức này) khi mức đó cao hơn hẳn. Lúc dự án bắt đầu chạy, máy chủ ghi lại ước tính; thẻ dự án hiện "~<thực tế> USD / ước tính ~<số đã ghi>", và báo ⚠ khi thực tế vượt cả mức lần tốn. Deep Research và tạo ảnh dao động nhiều, nên đây là số tham khảo.
+   Phía trên các bước có **ước tính chi phí**: trung vị chi phí các bước cùng người, cùng loại (làm hay duyệt) ở các dự án trước, và cả dự án thường tốn gấp mấy lần (vòng duyệt–sửa, lập kế hoạch, nghiệm thu). Mỗi bước cũng ghi ước tính riêng ("số chung" khi người đó chưa làm loại bước này), để thấy bước nào đắt. Đổi người làm thì số tính lại ngay; vượt ngân sách `planTokenBudget` thì có nhắc. Bước Deep Research, tạo ảnh có lần tốn gấp nhiều lần trung vị, nên ước tính kèm mức "lần tốn" (9/10 lần thấp hơn mức này) khi mức đó cao hơn hẳn. Lúc dự án bắt đầu chạy, máy chủ ghi lại ước tính; thẻ dự án hiện "~<thực tế> USD / ước tính ~<số đã ghi>", và báo ⚠ khi thực tế vượt cả mức lần tốn. Deep Research và tạo ảnh dao động nhiều, nên đây là số tham khảo.
 4. Máy chủ tự chạy từng bước. Mỗi người nhận brief, **bảng dự án** `du-an/<mã>/bang.md` (tiến độ, kết luận duyệt, câu trả lời của bạn) và bàn giao cần đọc.
    Mỗi người tự kiểm sản phẩm theo tiêu chí trong brief trước khi bàn giao, và áp dụng những bài học máy chủ chọn sẵn cho bước đó (xem "Nhóm tự học thế nào").
 5. **Vòng duyệt:** người duyệt kết thúc bàn giao bằng `KẾT LUẬN: ĐẠT` hoặc `KẾT LUẬN: CẦN SỬA`. Cần sửa thì máy chủ tự chèn bước sửa và duyệt lại (người duyệt), tối đa `maxReviewRounds` vòng.
@@ -273,7 +273,7 @@ Chạm vào một agent đang làm việc để xem:
 - Số file đã đọc, lần tìm web, file đã ghi (bấm để mở) và **diễn biến** từng thao tác kèm thời điểm.
 Khi agent rảnh, ô giao việc lên đầu, kèm kết quả lần gần nhất và lịch sử 5 lượt trước.
 
-Khi bạn sang tab khác: **tiêu đề tab** hiện "⏳ 3/8" (bước đã xong của dự án đang chạy) hoặc "❗ Cần bạn" (chờ duyệt kế hoạch, chờ trả lời, tạm dừng). Lần đầu bạn giao việc hay lập kế hoạch, trình duyệt hỏi quyền **thông báo**; cho phép thì máy báo khi kế hoạch chờ duyệt, nhóm có câu hỏi, dự án tạm dừng hay xong, và khi việc lẻ xong (chỉ khi tab đang ẩn).
+Khi bạn sang tab khác: **tiêu đề tab** hiện "⏳ 3/8" (bước đã xong của dự án đang chạy) hoặc "❗ Cần bạn" (chờ duyệt kế hoạch, chờ trả lời, tạm dừng). Lần đầu bạn giao việc hay lập kế hoạch (hoặc bấm nút **🔔** ở đầu trang), trình duyệt hỏi quyền **thông báo**; cho phép thì máy báo khi kế hoạch chờ duyệt, nhóm có câu hỏi, dự án tạm dừng hay xong, và khi việc lẻ xong (chỉ khi tab đang ẩn). Nút 🔔 / 🔕 cho biết thông báo đang bật hay tắt, bấm để tắt tạm hoặc bật lại; trình duyệt đang chặn thì nút chỉ cách mở lại.
 
 ## Bảng việc (nút 📋 Bảng việc)
 

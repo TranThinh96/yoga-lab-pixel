@@ -332,4 +332,4 @@ Chi phí chỉ Claude Code báo về. Với gói Pro, đó là số để tham k
 - Mở `public/index.html` trực tiếp (không qua máy chủ) sẽ vào **chế độ xem thử**, agent chỉ diễn tập.
 - Ảnh trang trí nằm trong `public/assets/` (tạo bằng Gemini): `banner.jpg` ở đầu trang và
   `portrait-<id>.png` là chân dung trong bảng giao việc. Thêm agent mới thì bỏ ảnh vuông
-  `portrait-<id>.png` vào đó (ví dụ `portrait-sen.png`). Không có ảnh thì giao diện dùng nhân vật pixel vẽ sẵn.
+  `portrait-<id>.png` vào đó (ví dụ `portrait-sen.png`). Không có ảnh thì giao diện dùng nhân vật pixel vẽ sẵn. Muốn có chân dung ngay, chạy `node scripts/ve-chan-dung.js`: máy vẽ chân dung pixel cho mọi agent chưa có ảnh, theo màu tóc, da, áo và kiểu tóc trong `config.json` (thêm tên agent để chỉ vẽ người đó, `--ghi-de` để vẽ lại cả ảnh đã có). Chân dung của Chef, Vy, Nhi được vẽ bằng cách này.

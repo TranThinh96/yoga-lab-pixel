@@ -3130,7 +3130,7 @@ function planView(p){
     } else {
       html += `<div class="node ${s.status}">${avatar(a)}
         <span class="who">${i + 1}. ${esc(a ? a.name : s.agentId)} <small>· ${esc(a ? a.role : '')}</small></span>
-        <span class="st"><span class="dot ${s.status === 'pending' ? '' : s.status}"></span>${STEP_TXT[s.status] || s.status}${s.verdict ? ' · ' + (VERDICT_TXT[s.verdict] || s.verdict) : ''}${s.tokens ? ' · ' + fmtTok(s.tokens) : ''}</span>
+        <span class="st"><span class="dot ${s.status === 'pending' ? '' : s.status}"></span>${STEP_TXT[s.status] || s.status}${s.verdict ? ' · ' + (VERDICT_TXT[s.verdict] || s.verdict) : ''}${s.tokens ? ' · ' + fmtTok(s.tokens) : ''}${s.costUsd ? ' · $' + s.costUsd.toFixed(2) : ''}</span>
         ${s.status === 'error' && canResume(p) ? `<span class="txt"><button class="btn sm primary" data-plan-resume>▶ Chạy tiếp từ bước này</button></span>` : ''}
         <span class="txt${s.error ? '' : ' clamp'}" title="${esc(taskText(s.task))}">${s.checks ? `<b>[Duyệt bước ${s.checks}]</b> ` : s.fixOf ? `<b>[Sửa bước ${s.fixOf}]</b> ` : ''}${esc(gist(s.task))}${s.error ? `\n<span style="color:var(--err)">${esc(s.error)}</span>` : ''}</span>
         ${geminiRow(p, s)}

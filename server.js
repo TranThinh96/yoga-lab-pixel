@@ -1053,6 +1053,10 @@ async function loadPlans() {
   // Kế hoạch lưu từ bản trước chưa có link cuộc chat Gemini của bước Deep Research. Chỉ dự án chưa kết thúc:
   // dự án sau cùng chủ đề ghi đè file Deep Research, nên link trong file không còn là của dự án cũ
   for (const p of plans) if (PLAN_ACTIVE.has(p.status)) for (const s of p.steps || []) if (s.drFile && !s.geminiLink) s.geminiLink = linkGemini(readWs(s.drFile));
+  // Chi phí từng bước của kế hoạch lưu từ bản trước: cộng lại từ nhật ký lượt chạy (còn giữ 300 lượt gần nhất)
+  const phiBuoc = new Map();
+  for (const r of runs) if (r.planId && r.step && r.costUsd) phiBuoc.set(`${r.planId}#${r.step}`, (phiBuoc.get(`${r.planId}#${r.step}`) || 0) + r.costUsd);
+  for (const p of plans) (p.steps || []).forEach((s, i) => { const c = phiBuoc.get(`${p.id}#${i + 1}`); if (s.costUsd == null && c) s.costUsd = Math.round(c * 100) / 100; });
 }
 
 // ── Sổ quyết định: .yogalab/quyet-dinh.json là bản gốc, tri-thuc/quyet-dinh.md để xem trong Obsidian ──
@@ -1846,6 +1850,7 @@ function startStep(plan, idx) {
       s.runId = run.id; s.handoff = run.handoff; s.summary = (run.summary || '').slice(0, 1200);
       if (run.baiHocDaNhan) s.baiHocDaNhan = [...new Set([...(s.baiHocDaNhan || []), ...run.baiHocDaNhan])]; // cộng dồn các lần thử lại
       s.tokens = (s.tokens || 0) + (run.tokens || 0); // cộng dồn cả các lần thử lại
+      if (run.costUsd) s.costUsd = Math.round(((s.costUsd || 0) + run.costUsd) * 100) / 100;
       addUsage(plan, run);
       if (run.status === 'done') {
         s.status = 'done'; s.prevFiles = null;

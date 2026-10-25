@@ -3,6 +3,7 @@
 > Máy chủ tự sinh file này. Ghi chú của bạn: [[quy-tac-cua-toi]], thư mục ghi-chu-chuyen-mon/, [[thuat-ngu]], [[quyet-dinh]].
 
 ## Chủ đề
+- [[chu-de/dau-co-vai-gay|dau-co-vai-gay]] · 20 ý đã duyệt · 24 nguồn · 0 tư thế · 0 hình
 - [[chu-de/suy-giap|suy-giap]] · 55 ý đã duyệt · 26 nguồn · 5 tư thế · 0 hình
 - [[chu-de/thoai-hoa-khop-goi|thoai-hoa-khop-goi]] · 14 ý đã duyệt · 25 nguồn · 7 tư thế · 5 hình
 - [[chu-de/thoat-vi-dia-dem|thoat-vi-dia-dem]] · 31 ý đã duyệt · 15 nguồn · 5 tư thế · 6 hình
@@ -21,16 +22,25 @@
 - [[nguon/ata-2014-dieu-tri|Guidelines for the Treatment of Hypothyroidism]] · chan (2026-10-21)
 - [[nguon/baishya-metri-2024|Tổng quan yoga và suy giáp (PMC10966165)]] · chan (2026-10-21)
 - [[nguon/cdc-nguoi-lon-tuoi|Physical Activity Recommendations for Adults 65+]] · chan (2026-10-22)
+- [[nguon/jospt-neck-2017|Neck Pain: Revision 2017 (PMID 28666405)]] · chan (2026-10-25)
+- [[nguon/kim-2016-yoga-neck|Effects of yoga on chronic neck pain: a systematic review of RCTs (PMID 27512290)]] · chan (2026-10-25)
 - [[nguon/lemieux-2021-thai-ky|Trích hướng dẫn ATA 2017 về thai kỳ]] · chan (2026-10-21)
+- [[nguon/mahmoud-2019-fhp|The Relationship Between Forward Head Posture and Neck Pain: SR & MA (PMID 31773477)]] · chan (2026-10-25)
+- [[nguon/mayo-cervical-spondylosis|Cervical spondylosis – Symptoms and causes (19/9/2025)]] · chan (2026-10-25)
+- [[nguon/mayo-neck-pain|Neck pain – Symptoms and causes (13/5/2026)]] · chan (2026-10-25)
+- [[nguon/nhs-hwe-neck|Neck pain pathway (tải PDF)]] · chan (2026-10-25)
 - [[nguon/nice-ng226|Osteoarthritis in over 16s (NG226)]] · chan (2026-10-22)
 - [[nguon/nice-ng59|Low back pain and sciatica in over 16s: assessment and management (NG59)]] · chan (2026-10-23)
 - [[nguon/nilkantham-2025|Yoga và suy giáp (PMC12246764)]] · chan (2026-10-21)
 - [[nguon/oreilly-1998-quad|Quadriceps weakness in knee osteoarthritis: the effect on pain and disability]] · chan (2026-10-22)
 - [[nguon/qin-2023-hashimoto|Bài tổng quan về Hashimoto/suy giáp (PMC9968792)]] · chan (2026-10-21)
 - [[nguon/sharma-2024-yoga|Yoga và suy giáp (PMC11495305)]] · chan (2026-10-21)
+- [[nguon/statpearls-cervical-vertebrae|Anatomy, Head and Neck: Cervical Vertebrae (NBK539734)]] · captcha (2026-10-25)
+- [[nguon/statpearls-levator-scapulae|Anatomy, Head and Neck, Levator Scapulae Muscles (NBK553120)]] · captcha (2026-10-25)
 - [[nguon/statpearls-nucleus-pulposus-herniation|Nucleus Pulposus Herniation]] · captcha (2026-10-23)
 - [[nguon/statpearls-suy-giap-tien-lam-sang|Subclinical Hypothyroidism (NBK536970)]] · captcha (2026-10-21)
 - [[nguon/statpearls-suy-giap|Hypothyroidism (NBK519536)]] · captcha (2026-10-21)
+- [[nguon/statpearls-trapezius|Anatomy, Back, Trapezius (NBK518994)]] · captcha (2026-10-25)
 
 ## Hệ thống
 - [[he-thong/lo-hong|Lỗ hổng hệ thống]] · 14 việc chưa sửa (cho người phát triển)

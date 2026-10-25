@@ -1449,6 +1449,20 @@ function parseVerdict(text) {
   return m ? (m[1].toUpperCase() === 'ĐẠT' ? 'pass' : 'fix') : null;
 }
 
+// Bài học của điều phối viên và của cả nhóm lúc lập kế hoạch (lượt này dùng prompt riêng, không có phần BỐI CẢNH):
+// trước đây bài học về brief của Chef chỉ tới được lúc nghiệm thu, còn lúc viết brief thì Chef phải tự Grep tìm
+function baiHocLapKeHoach(coord) {
+  if (config.brain === false) return ['', `Bài học của bạn từ dự án trước: agents/${coord.id}/kinh-nghiem.md (đọc trước khi viết brief).`];
+  let ds = [];
+  try {
+    ds = docBaiHoc(docKhoTriThuc()).filter(b => !['huy', 'da-thang-cap'].includes(b.data.trang_thai) && [`agent:${coord.id}`, 'nhom'].includes(b.data.pham_vi));
+  } catch (e) { console.error('Không đọc được bài học cho lập kế hoạch:', e.message); }
+  if (!ds.length) return [];
+  const dong = b => { const t = String(b.noi_dung || '').replace(/\s+/g, ' ').trim(); return `- [${b.ma}] ${t.length > 300 ? t.slice(0, 299) + '…' : t}`; };
+  ds.sort((a, b) => soMa(a.ma) - soMa(b.ma)); // tên file xếp chữ (BH-1, BH-10, BH-2): theo số để lấy đúng 10 bài mới nhất
+  return ['', 'BÀI HỌC TỪ DỰ ÁN TRƯỚC (áp dụng khi viết brief và chia việc):', ...ds.slice(-10).map(dong)];
+}
+
 function buildPlanPrompt(coord, plan, failedIdx) {
   const max = Math.max(1, Number(config.maxPlanSteps) || 6);
   const byId = new Map(config.agents.map(a => [a.id, a]));
@@ -1462,6 +1476,7 @@ function buildPlanPrompt(coord, plan, failedIdx) {
     `Bạn là ${coord.name}${coord.role ? ' — ' + coord.role : ''}, điều phối viên của Yoga Lab. Bạn KHÔNG tự làm việc chuyên môn; bạn hiểu mục tiêu, viết brief, chia việc cho người trực thuộc và chịu trách nhiệm kết quả cuối.`,
     `Thư mục hiện tại là folder làm việc chung. Đọc index.md, xem tên file trong sources/ và templates/ (dùng Glob/Read, không có Bash). Nếu sources/ có tài liệu mẫu hoặc tham chiếu liên quan mục tiêu (slide mẫu, bài cũ, PDF), mở ra đọc lướt để biết mức độ sâu và phạm vi mong đợi.`,
     ...(coord.instructions && coord.instructions.trim() ? ['', 'HƯỚNG DẪN RIÊNG CỦA BẠN:', coord.instructions.trim()] : []),
+    ...baiHocLapKeHoach(coord),
     '', 'NGƯỜI TRỰC THUỘC (id: tên — vai; thụt lề = báo cáo cho người phía trên). Chỉ giao việc cho những người này:', ...team, '', `MỤC TIÊU: ${plan.goal}`
   ];
   const cu = plan.tiepNoiTu && plans.find(p => p.id === plan.tiepNoiTu);

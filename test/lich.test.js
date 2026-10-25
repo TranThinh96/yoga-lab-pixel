@@ -102,6 +102,10 @@ test('buocSauDr: chuyển pha Deep Research', () => {
   // Agent đã tự tổng hợp ngay, hoặc tắt công tắc → xong như trước
   assert.deepEqual(buocSauDr({ pha: 2, trangThai: 'xong', coFileKhac: true }), { loai: 'xong' });
   assert.deepEqual(buocSauDr({ pha: 2, trangThai: 'xong', tongHopRieng: false }), { loai: 'xong' });
+  // Pha 1 không ghi file báo cáo: dòng Trạng thái là của lượt cũ (dự án thử 25/10: file còn "đang chạy" từ Deep Research treo)
+  assert.deepEqual(buocSauDr({ pha: 1, trangThai: 'đang chạy (kiểm lúc ~00:07)', ghiFileDr: false, coFileKhac: true }), { loai: 'xong' });
+  assert.equal(buocSauDr({ pha: 1, trangThai: 'đang chạy', ghiFileDr: false }).loai, 'loi');
+  assert.deepEqual(buocSauDr({ pha: 1, trangThai: 'đang chạy', ghiFileDr: true }), { loai: 'cho', pha: 2 });
   // Pha 3 xong thì kết thúc, không quay vòng dù file báo cáo ghi gì
   assert.deepEqual(buocSauDr({ pha: 3, trangThai: 'xong' }), { loai: 'xong' });
   assert.deepEqual(buocSauDr({ pha: 3, trangThai: 'đang chạy' }), { loai: 'xong' });

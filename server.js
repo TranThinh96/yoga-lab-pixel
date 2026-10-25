@@ -360,7 +360,7 @@ function chromePrompt(agent, kind, pha, file) {
   const g = geminiWebOf(agent);
   const L = [
     `DÙNG CHROME (công cụ mcp__claude-in-chrome__*, Chrome thật của chủ dự án, đã đăng nhập sẵn):`,
-    `- Mỗi lần gọi công cụ là một lượt đọc lại toàn bộ ngữ cảnh: gộp các thao tác nối tiếp đoán trước được (navigate, bấm, chờ, find, zoom) vào MỘT lần browser_batch.`,
+    `- Mỗi lần gọi công cụ là một lượt đọc lại toàn bộ ngữ cảnh: gộp các thao tác nối tiếp đoán trước được (navigate, bấm, chờ, find, zoom) vào MỘT lần browser_batch. Tổng thời gian chờ trong một batch dưới ~40 giây (batch quá ~60 giây bị ngắt "did not respond in time"); chờ lâu hơn thì dùng javascript_tool await setTimeout riêng.`,
     `- Quyền dùng Chrome ĐÃ ĐƯỢC CẤP và extension ĐÃ BẬT cho lượt này; không xin phép ai, không dừng để hỏi. Bắt đầu bằng tabs_context_mcp với createIfEmpty: true, rồi tabs_create_mcp để có TAB MỚI và navigate tới trang cần dùng; không đụng tab chủ dự án đang dùng.`,
     `- Thông báo kiểu "no tab group", "session has no tab group", danh sách tab trống KHÔNG phải lỗi. Không được kết luận extension chưa bật từ tabs_context_mcp. Chỉ khi tabs_create_mcp hoặc navigate báo lỗi kết nối (thử lại 2 lần, cách nhau ~30 giây) mới dừng; khi đó chép NGUYÊN VĂN thông báo lỗi vào Vướng mắc.`,
     `- Gặp trang đăng nhập, xác minh, CAPTCHA: dừng, ghi Vướng mắc. Không nhập mật khẩu, không giải CAPTCHA, không đổi cài đặt tài khoản, không mua hay gửi gì thay chủ dự án.`,
@@ -1809,7 +1809,7 @@ function startStep(plan, idx) {
           if (pha === 1 || !s.drBatDau) s.drBatDau = run.startedAt; // mốc tính hạn chờ Gemini
           const choToiDa = cfgNum('drChoToiDa', 150);
           // Chỉ xét file của chính lượt này: file nguồn từ lượt trước (vd lượt dự phòng khi Gemini chậm) chưa có báo cáo Gemini
-          const sau = buocSauDr({ pha, trangThai: trangThaiDr(readWs(s.drFile)), coFileKhac: (run.files || []).filter(isProductFile).some(f => f !== s.drFile),
+          const sau = buocSauDr({ pha, trangThai: trangThaiDr(readWs(s.drFile)), ghiFileDr: (run.files || []).includes(s.drFile), coFileKhac: (run.files || []).filter(isProductFile).some(f => f !== s.drFile),
             lanKiem: s.lanKiem || 0, phutDaCho: (Date.now() - new Date(s.drBatDau).getTime()) / 60e3, choToiDa, tongHopRieng: config.drTongHopRieng !== false });
           if (sau.loai === 'loi') {
             s.status = 'error'; s.error = s.lastError = sau.lyDo;

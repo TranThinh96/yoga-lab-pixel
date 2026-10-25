@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { CAI_DAT, docCaiDat, kiemCaiDat } = require('../lib/cai-dat');
+const { CAI_DAT, docCaiDat, kiemCaiDat, datCaiDat } = require('../lib/cai-dat');
 
 test('docCaiDat: bật/tắt mặc định là bật trừ khi ghi false; số đọc từ config', () => {
   const ds = docCaiDat({ planTokenBudget: 4000000, machineGate: false, deepResearchTwoPhase: true });
@@ -27,4 +27,18 @@ test('kiemCaiDat: từ chối mục lạ, sai kiểu, ngoài khoảng', () => {
   assert.ok(kiemCaiDat(null).loi);
   // Một mục sai thì không nhận mục nào
   assert.equal(kiemCaiDat({ maxParallel: 2, passScore: 200 }).moi, undefined);
+});
+
+test('mục lồng: đọc, kiểm, ghi stepModel / stepEffort; để trống thì bỏ khoá', () => {
+  const config = { stepModel: { rereview: 'haiku' }, stepEffort: { rereview: 'medium', fix: 'medium' } };
+  const lay = k => docCaiDat(config).find(m => m.key === k).giaTri;
+  assert.equal(lay('stepModel.rereview'), 'haiku');
+  assert.equal(lay('stepModel.fix'), '');
+  assert.match(kiemCaiDat({ 'stepModel.fix': 'gpt' }).loi, /haiku, sonnet, opus/);
+  const { moi } = kiemCaiDat({ 'stepModel.fix': 'sonnet', 'stepEffort.rereview': '' });
+  datCaiDat(config, moi);
+  assert.deepEqual(config.stepModel, { rereview: 'haiku', fix: 'sonnet' });
+  assert.deepEqual(config.stepEffort, { fix: 'medium' });
+  datCaiDat(config, { passScore: 90 });
+  assert.equal(config.passScore, 90);
 });

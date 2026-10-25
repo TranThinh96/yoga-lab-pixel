@@ -28,7 +28,7 @@ const { chuDeTriThuc, docBangTriThuc, hopNhatMenhDe, hopNhatNguon, capNhatTruyCa
 const { docGhiChu } = require('./lib/ghi-chu');
 const { chonBuocChay, choBuocChen, hetHanMucGemini, buocSauDr, loiMoiTruong } = require('./lib/lich');
 const { thongKeChiPhi, uocTinhKeHoach } = require('./lib/uoc-tinh');
-const { docCaiDat, kiemCaiDat } = require('./lib/cai-dat');
+const { docCaiDat, kiemCaiDat, datCaiDat } = require('./lib/cai-dat');
 const { chiSoTriNao } = require('./lib/chi-so');
 const { soMa, docBaiHoc, noiDungBaiHoc, suaBaiHoc, banXemKinhNghiem, nhanBuoc, chonBaiHoc, maTrong, bangChungBaiHoc, daNhanTheoBuocCua, danhGiaBaiHoc, themLoHong, demLoHongMo, thongKeHoc, hocTuJson, apDungHoc, apDungSuaHuongDan, hoanTacSuaHuongDan, themTuTranh } = require('./lib/bai-hoc');
 
@@ -3459,7 +3459,7 @@ const server = http.createServer(async (req, res) => {
       const cuDir = path.join(stateDir(), 'config-cu');
       await fsp.mkdir(cuDir, { recursive: true });
       await fsp.copyFile(CONFIG_PATH, path.join(cuDir, `${stamp()}.json`)).catch(() => {});
-      Object.assign(config, kq.moi);
+      datCaiDat(config, kq.moi);
       await saveConfig();
       const caiDat = docCaiDat(config);
       broadcast({ type: 'cai-dat', caiDat, planTokenBudget: cfgNum('planTokenBudget', 0) });

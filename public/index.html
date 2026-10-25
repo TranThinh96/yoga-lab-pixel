@@ -258,7 +258,7 @@ textarea{resize:vertical; min-height:96px}
 .cd-row:first-of-type{border-top:0}
 .cd-row small{display:block; color:var(--muted); font-size:12px; margin-top:2px}
 .cd-so{justify-content:space-between}
-.cd-so input{width:9.5em; flex:none}
+.cd-so input, .cd-so select{width:9.5em; flex:none}
 .ag-meta .cost{font-size:12px; color:var(--muted); margin-top:2px}
 .node .gem-row{white-space:normal; gap:6px; align-items:center; margin-top:4px}
 .node .st{font-size:12px; font-weight:600; white-space:nowrap; display:flex; align-items:center; gap:5px}
@@ -3011,13 +3011,15 @@ function renderPlan(el){
 function caiDatView(){
   const nhom = [...new Set(S.caiDat.map(m => m.nhom))];
   return `<div class="cai-dat"><p class="hint">Đổi ở đây thay vì sửa config.json. Mỗi lần đổi, máy chủ giữ bản config.json cũ trong workspace/.yogalab/config-cu/. Dự án đang chạy dùng thiết lập mới từ bước sau.</p>
-    ${nhom.map(n => `<fieldset><legend>${esc(n)}</legend>${S.caiDat.filter(m => m.nhom === n).map(m => m.loai === 'bat'
+    ${nhom.map(n => `<fieldset><legend>${esc(n)}</legend>${S.caiDat.filter(m => m.nhom === n).map(m => m.loai === 'chon'
+      ? `<label class="cd-row cd-so"><span>${esc(m.ten)}${m.mo ? `<small>${esc(m.mo)}</small>` : ''}</span><select data-cd="${esc(m.key)}">${m.chon.map(o => `<option value="${esc(o)}" ${o === m.giaTri ? 'selected' : ''}>${o ? esc(o) : '(mặc định)'}</option>`).join('')}</select></label>`
+      : m.loai === 'bat'
       ? `<label class="att cd-row"><input type="checkbox" data-cd="${esc(m.key)}" ${m.giaTri ? 'checked' : ''}><span>${esc(m.ten)}${m.mo ? `<small>${esc(m.mo)}</small>` : ''}</span></label>`
       : `<label class="cd-row cd-so"><span>${esc(m.ten)}${m.mo ? `<small>${esc(m.mo)}</small>` : ''}</span><input type="number" data-cd="${esc(m.key)}" value="${m.giaTri}" min="${m.min}" max="${m.max}" step="${m.buoc || 1}"></label>`).join('')}</fieldset>`).join('')}</div>`;
 }
 $('#book').addEventListener('change', async e => {
   const k = e.target.dataset && e.target.dataset.cd; if (!k) return;
-  const v = e.target.type === 'checkbox' ? e.target.checked : Number(e.target.value);
+  const v = e.target.type === 'checkbox' ? e.target.checked : e.target.tagName === 'SELECT' ? e.target.value : Number(e.target.value);
   try { const r = await api.caiDat({ [k]: v }); S.caiDat = r.caiDat; toast('Đã lưu.'); }
   catch (err) { toast(err.message); S._planKey = null; renderBook(); } // trả ô về giá trị đang dùng
 });

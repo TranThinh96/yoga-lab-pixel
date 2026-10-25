@@ -3357,7 +3357,7 @@ function publicState() {
     obsidianVault: config.obsidianVault || path.basename(workspaceDir()),
     config: { maxTurns: config.maxTurns, skipMcp: config.skipMcp, maxPlanSteps: config.maxPlanSteps || 6, planTokenBudget: cfgNum('planTokenBudget', 0) },
     uocTinh: thongKeChiPhi(plans, runs, weightOf), // ước tính chi phí kế hoạch nháp
-    caiDat: docCaiDat(config), // cửa sổ Dự án → Cài đặt
+    caiDat: docCaiDat(config, DEFAULT_CONFIG), // cửa sổ Dự án → Cài đặt
     agents: config.agents,
     coordinatorId: config.coordinatorId || '',
     running: [...running.keys()],
@@ -3461,7 +3461,7 @@ const server = http.createServer(async (req, res) => {
       await fsp.copyFile(CONFIG_PATH, path.join(cuDir, `${stamp()}.json`)).catch(() => {});
       datCaiDat(config, kq.moi);
       await saveConfig();
-      const caiDat = docCaiDat(config);
+      const caiDat = docCaiDat(config, DEFAULT_CONFIG);
       broadcast({ type: 'cai-dat', caiDat, planTokenBudget: cfgNum('planTokenBudget', 0) });
       return send(res, 200, { ok: true, caiDat });
     }

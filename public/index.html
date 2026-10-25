@@ -259,6 +259,7 @@ textarea{resize:vertical; min-height:96px}
 .cd-row small{display:block; color:var(--muted); font-size:12px; margin-top:2px}
 .cd-so{justify-content:space-between}
 .cd-so input, .cd-so select{width:9.5em; flex:none}
+.cd-md{border:0; background:none; padding:0 0 0 4px; font:inherit; font-size:11.5px; color:var(--gold); cursor:pointer; text-decoration:underline dotted}
 .ag-meta .cost{font-size:12px; color:var(--muted); margin-top:2px}
 .node .gem-row{white-space:normal; gap:6px; align-items:center; margin-top:4px}
 .node .st{font-size:12px; font-weight:600; white-space:nowrap; display:flex; align-items:center; gap:5px}
@@ -3010,18 +3011,27 @@ function renderPlan(el){
 // ── cài đặt chung: các mục máy chủ cho đổi (lib/cai-dat.js), lưu ngay khi đổi ──
 function caiDatView(){
   const nhom = [...new Set(S.caiDat.map(m => m.nhom))];
+  // Mục khác mặc định: dấu "đã đổi" và nút trả về mặc định
+  const doi = m => m.giaTri !== m.macDinh ? ` <button type="button" class="cd-md" data-cd-md="${esc(m.key)}" title="Trả về mặc định: ${esc(m.macDinh === '' ? '(mặc định)' : m.macDinh === true ? 'bật' : m.macDinh === false ? 'tắt' : String(m.macDinh))}">đã đổi · ↺</button>` : '';
   return `<div class="cai-dat"><p class="hint">Đổi ở đây thay vì sửa config.json. Mỗi lần đổi, máy chủ giữ bản config.json cũ trong workspace/.yogalab/config-cu/. Dự án đang chạy dùng thiết lập mới từ bước sau.</p>
     ${nhom.map(n => `<fieldset><legend>${esc(n)}</legend>${S.caiDat.filter(m => m.nhom === n).map(m => m.loai === 'chon'
-      ? `<label class="cd-row cd-so"><span>${esc(m.ten)}${m.mo ? `<small>${esc(m.mo)}</small>` : ''}</span><select data-cd="${esc(m.key)}">${m.chon.map(o => `<option value="${esc(o)}" ${o === m.giaTri ? 'selected' : ''}>${o ? esc(o) : '(mặc định)'}</option>`).join('')}</select></label>`
+      ? `<label class="cd-row cd-so"><span>${esc(m.ten)}${doi(m)}${m.mo ? `<small>${esc(m.mo)}</small>` : ''}</span><select data-cd="${esc(m.key)}">${m.chon.map(o => `<option value="${esc(o)}" ${o === m.giaTri ? 'selected' : ''}>${o ? esc(o) : '(mặc định)'}</option>`).join('')}</select></label>`
       : m.loai === 'bat'
-      ? `<label class="att cd-row"><input type="checkbox" data-cd="${esc(m.key)}" ${m.giaTri ? 'checked' : ''}><span>${esc(m.ten)}${m.mo ? `<small>${esc(m.mo)}</small>` : ''}</span></label>`
-      : `<label class="cd-row cd-so"><span>${esc(m.ten)}${m.mo ? `<small>${esc(m.mo)}</small>` : ''}</span><input type="number" data-cd="${esc(m.key)}" value="${m.giaTri}" min="${m.min}" max="${m.max}" step="${m.buoc || 1}"></label>`).join('')}</fieldset>`).join('')}</div>`;
+      ? `<label class="att cd-row"><input type="checkbox" data-cd="${esc(m.key)}" ${m.giaTri ? 'checked' : ''}><span>${esc(m.ten)}${doi(m)}${m.mo ? `<small>${esc(m.mo)}</small>` : ''}</span></label>`
+      : `<label class="cd-row cd-so"><span>${esc(m.ten)}${doi(m)}${m.mo ? `<small>${esc(m.mo)}</small>` : ''}</span><input type="number" data-cd="${esc(m.key)}" value="${m.giaTri}" min="${m.min}" max="${m.max}" step="${m.buoc || 1}"></label>`).join('')}</fieldset>`).join('')}</div>`;
 }
 $('#book').addEventListener('change', async e => {
   const k = e.target.dataset && e.target.dataset.cd; if (!k) return;
   const v = e.target.type === 'checkbox' ? e.target.checked : e.target.tagName === 'SELECT' ? e.target.value : Number(e.target.value);
   try { const r = await api.caiDat({ [k]: v }); S.caiDat = r.caiDat; toast('Đã lưu.'); }
   catch (err) { toast(err.message); S._planKey = null; renderBook(); } // trả ô về giá trị đang dùng
+});
+$('#book').addEventListener('click', async e => {
+  const b = e.target.closest('[data-cd-md]'); if (!b) return;
+  e.preventDefault(); // nút nằm trong label: không bật/tắt ô kèm theo
+  const m = S.caiDat.find(x => x.key === b.dataset.cdMd); if (!m) return;
+  try { const r = await api.caiDat({ [m.key]: m.macDinh }); S.caiDat = r.caiDat; S._planKey = null; renderBook(); toast('Đã trả về mặc định.'); }
+  catch (err) { toast(err.message); }
 });
 // ── sơ đồ tổ chức ──
 function orgView(){

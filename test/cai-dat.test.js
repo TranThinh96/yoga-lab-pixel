@@ -11,6 +11,9 @@ test('docCaiDat: bật/tắt mặc định là bật trừ khi ghi false; số �
   assert.equal(lay('deepResearchTwoPhase'), true);
   assert.equal(lay('buildSlides'), true); // không có trong config = bật
   assert.equal(ds.length, CAI_DAT.length);
+  // Mặc định trong code: để giao diện đánh dấu mục đã đổi
+  const md = docCaiDat({ maxReviewRounds: 1, stepEffort: { fix: 'medium' } }, { maxReviewRounds: 2, stepEffort: { rereview: 'medium', fix: 'medium' } });
+  assert.deepEqual([md.find(m => m.key === 'maxReviewRounds').macDinh, md.find(m => m.key === 'stepEffort.rereview').macDinh, md.find(m => m.key === 'stepEffort.rereview').giaTri], [2, 'medium', '']);
 });
 
 test('kiemCaiDat: nhận giá trị hợp lệ, chuẩn hoá số', () => {

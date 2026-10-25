@@ -3094,6 +3094,13 @@ function khacChuaXong(p){
   return `<p class="plan-note">Còn ${ds.length} dự án chưa xong khác. Mỗi lúc chỉ chạy một dự án; muốn tạo dự án mới thì chạy tiếp hoặc huỷ hết:
     ${ds.map(x => `<button class="btn sm" data-plan-open="${esc(x.id)}" title="${esc(x.goal)}">${PLAN_TXT[x.status] || x.status} · ${esc(x.goal.length > 40 ? x.goal.slice(0, 38) + '…' : x.goal)}</button>`).join(' ')}</p>`;
 }
+// Lượt của điều phối viên (lập kế hoạch, giao ban, nghiệm thu) không thuộc bước nào: tổng dự án trừ tổng các bước
+// Bước đã chạy mà thiếu số tiền (nhật ký đã mất lượt của dự án cũ) thì không tính, kẻo dồn phần thiếu cho điều phối viên
+const phiDieuPhoi = p => {
+  if (p.steps.some(s => s.status !== 'pending' && s.tokens && s.costUsd == null)) return 0;
+  const c = (p.costUsd || 0) - p.steps.reduce((t, s) => t + (s.costUsd || 0), 0);
+  return c >= 0.01 ? c : 0;
+};
 function planView(p){
   const coord = agentById(p.coordinatorId);
   const draft = p.status === 'draft';
@@ -3126,7 +3133,7 @@ function planView(p){
     <div class="flow">
       <div class="node coord ${coordSt}">${avatar(coord)}
         <span class="who">${esc(coord ? coord.name : '?')} <small>· điều phối viên</small></span>
-        <span class="st"><span class="dot ${coordSt}"></span>${coordSt === 'working' ? 'Đang làm' : coordSt === 'error' ? 'Lỗi' : 'Xong'}</span>
+        <span class="st"><span class="dot ${coordSt}"></span>${coordSt === 'working' ? 'Đang làm' : coordSt === 'error' ? 'Lỗi' : 'Xong'}${phiDieuPhoi(p) ? ' · $' + phiDieuPhoi(p).toFixed(2) : ''}</span>
         <span class="txt muted">${coordTxt}</span>
       </div>`;
   steps.forEach((s, i) => {

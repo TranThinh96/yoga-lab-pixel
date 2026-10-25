@@ -221,7 +221,9 @@ test('apDungHoc với hoc mẫu đủ 5 mục', () => {
       { pham_vi: 'agent:ai-do', goc: 'agent', noi_dung: 'Phạm vi sai.' }
     ],
     gop: [{ giu: 'BH-3', bo: ['BH-9'], noi_dung: 'Nội dung gộp.' }],
-    sua_huong_dan: [{ agent: 'lam', cu: 'Viết ngắn.', moi: 'Viết ngắn, mỗi trang tối đa 40 chữ.', ly_do: 'quá chữ lặp lại' }],
+    sua_huong_dan: [{ agent: 'lam', cu: 'Viết ngắn.', moi: 'Viết ngắn, mỗi trang tối đa 40 chữ.', ly_do: 'quá chữ lặp lại' },
+      { agent: 'vy', moi: 'Đổi prompt thì sửa luôn cột tóm tắt trong Danh sách hình.' }, // không có đoạn cũ: thêm vào cuối
+      { agent: 'vy', cu: 'x' }], // thiếu đoạn mới: bỏ qua
     lo_hong: [{ mo_ta: 'Thiếu công cụ đếm chữ cho thiet-ke.md', bang_chung: 'VD-4' }],
     mau_tot: [{ file: 'output/x/slides.md', vi_tri: 'Trang 12', kieu: 'trang-slide', ly_do: 'gọn' }]
   };
@@ -231,11 +233,11 @@ test('apDungHoc với hoc mẫu đủ 5 mục', () => {
   assert.deepEqual([d.pham_vi, d.bac, d.loai_loi, d.ap_dung_khi], ['agent:lam', 1, 'lech-hai-file', ['fix', 'slides']]);
   assert.deepEqual(kq.loHong.map(l => l.mo_ta), ['(cong-cu) Máy chủ không chép ảnh từ hinh-moi sang hinh.', 'Thiếu công cụ đếm chữ cho thiet-ke.md']);
   assert.deepEqual(kq.yNhap, [{ y: 'Số cấp cứu ở Việt Nam là 115.' }]);
-  assert.deepEqual(kq.deXuat.map(x => [x.loai, x.agent, x.cu]), [['sua-huong-dan', 'lam', 'Viết ngắn.']]);
+  assert.deepEqual(kq.deXuat.map(x => [x.loai, x.agent, x.cu]), [['sua-huong-dan', 'lam', 'Viết ngắn.'], ['sua-huong-dan', 'vy', '']]);
   assert.deepEqual(kq.sua.map(s => [s.ma, s.sua.trang_thai || '']), [['BH-3', ''], ['BH-9', 'huy']]);
   assert.equal(kq.sua[0].opts.noi_dung, 'Nội dung gộp.');
   assert.equal(kq.mauTot.length, 1);
-  assert.equal(kq.boQua.length, 2); // trùng BH-3, phạm vi sai
+  assert.equal(kq.boQua.length, 3); // trùng BH-3, phạm vi sai, đề xuất thiếu đoạn mới
 });
 
 test('hocTuJson nhận kiểu cũ "lessons"', () => {
@@ -264,6 +266,10 @@ test('thongKeHoc', () => {
   const t2 = bh.thongKeHoc(plan, runs, bh.docBaiHoc([note('BH-17', { loai_loi: 'lech-hai-file' })]), id => id,
     { bangChung: { 'BH-17': { co: { buoc: 4, loi: 2 }, truoc: { buoc: 3, loi: 1 } }, 'BH-99': { co: { buoc: 4, loi: 4 }, truoc: { buoc: 4, loi: 0 } } } });
   assert.match(t2, /- Bài học chưa thấy tác dụng .*: \[BH-17\] \(có bài 2\/4 bước lỗi · trước khi có bài 1\/3\)$/m);
+  // Nội dung bài nêu ở trên đi kèm, mỗi mã một lần, để điều phối viên khỏi mở từng note
+  const dong = t2.split('\n').filter(l => /^ {4}- \[BH-17\] /.test(l));
+  assert.equal(dong.length, 1);
+  assert.match(t, /Nội dung các bài trên/);
 });
 
 test('apDungSuaHuongDan: đủ ba trường hợp, thêm vào cuối, hoàn tác', () => {

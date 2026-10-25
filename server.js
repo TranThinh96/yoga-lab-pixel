@@ -88,6 +88,7 @@ const DEFAULT_CONFIG = {
   consultTool: false, // thử nghiệm: công cụ hoi_dong_nghiep (cần labTools), mỗi dự án tối đa 3 lần hỏi nhanh
   deepResearchTwoPhase: false, // Deep Research hai lượt ngắn: lượt 1 khởi chạy, máy chủ chờ (không tốn token), lượt 2 lấy kết quả
   drChoToiDa: 150, // Deep Research hai pha: chờ Gemini tối đa bấy nhiêu phút kể từ lúc khởi chạy (kiểm lại cách 10 → 15 → 20 phút)
+  drChiGemini: true, // agent Deep Research chỉ tìm nguồn qua Gemini: không có WebFetch, WebSearch (tốn token Claude), kể cả bước sửa
   drTongHopRieng: true, // với Deep Research hai pha: lượt 2 chỉ lưu báo cáo, việc tổng hợp sang file nguồn chạy ở lượt 3 không có Chrome (ngữ cảnh nhỏ hơn)
   machineGate: true, // cổng soát: bước vừa ghi slides.md / thiet-ke.md còn trang quá chữ hoặc lệch hai file thì máy chủ trả về sửa ngay, trước khi tới người duyệt
   buildSlides: true, // dự án xong: máy chủ dựng output/<chủ đề>/<chủ đề>.pptx từ slides.md, thiet-ke.md và hinh/ (không tốn token)
@@ -337,12 +338,16 @@ const chromeModel = agent => usesChrome(agent) && /haiku/i.test(agent.model || '
 const claudeModel = (agent, kind) => { const m = (config.stepModel || {})[kind]; return m && !usesChrome(agent) ? m : chromeModel(agent); };
 // Chờ Gemini trên web tốn nhiều lượt (mỗi lần chờ là một lượt)
 const defaultTurns = agent => { const g = geminiWebOf(agent); return g ? ({ 'deep-research': 150, image: 150 }[g.mode] || 60) : undefined; };
+// Agent Deep Research chỉ tìm nguồn qua Gemini (gói của chủ dự án), không tự WebFetch / WebSearch bằng token Claude:
+// dự án thử 24/10, Gemini chậm, Mai tự WebFetch 38 nguồn ($1,43) và bỏ phí báo cáo Gemini
+const chiGemini = agent => config.drChiGemini !== false && !agent.tools && (geminiWebOf(agent) || {}).mode === 'deep-research';
 // Agent Deep Research không tự tìm web (để Gemini làm, tính vào quota Gemini), trừ bước sửa chỉ cần vài nguồn;
 // agent dùng Chrome được thêm công cụ Chrome
 function claudeToolsOf(agent, kind, lab = [], khongChrome = false) {
   const g = geminiWebOf(agent);
   let tools = agent.tools || config.claudeTools || [];
-  if (!agent.tools && g && g.mode === 'deep-research' && kind !== 'fix') tools = tools.filter(t => t !== 'WebSearch');
+  if (chiGemini(agent)) tools = tools.filter(t => t !== 'WebSearch' && t !== 'WebFetch');
+  else if (!agent.tools && g && g.mode === 'deep-research' && kind !== 'fix') tools = tools.filter(t => t !== 'WebSearch');
   if (usesChrome(agent) && !khongChrome) tools = tools.concat('mcp__claude-in-chrome');
   return lab.length ? tools.concat('mcp__yogalab') : tools;
 }
@@ -368,11 +373,16 @@ function chromePrompt(agent, kind, pha, file) {
   // Sửa theo nhận xét hoặc duyệt: chỉ cần vài nguồn cụ thể, không chạy lại Deep Research (10–30 phút, tốn quota)
   if (deep && kind && kind !== 'work') return L.concat('',
     `BƯỚC ${kind === 'fix' ? 'SỬA' : 'DUYỆT'}: KHÔNG chạy Deep Research mới.`,
+    ...(chiGemini(agent) ? [
+      `- Dùng lại báo cáo đã lưu trong agents/${agent.id}/ (file *-deep-research.md của chủ đề).`,
+      `- Không có WebFetch, WebSearch: mọi việc tìm hay kiểm nguồn đều nhờ Gemini. Mở https://gemini.google.com trong một tab mới, chat thường (KHÔNG bật Deep Research), gộp các ý cần tìm hoặc cần kiểm vào MỘT prompt (dán bằng một lệnh như dưới), yêu cầu link nguồn và câu trích nguyên văn tiếng Anh, rồi lấy câu trả lời bằng get_page_text. Muốn biết link còn mở được thì dùng kiem_link (nếu có).`,
+      DAN_PROMPT,
+      `- Gặp trang đăng nhập, CAPTCHA hoặc hết quota: dừng, ghi nguyên văn vào Vướng mắc.`] : [
     `- Dùng lại báo cáo đã lưu trong agents/${agent.id}/ (file *-deep-research.md của chủ đề) và mở link nguồn bằng WebFetch để kiểm.`,
     kind === 'fix'
       ? `- Cần tìm nguồn thay thế cho vài ý: dùng WebSearch, rồi mở link bằng WebFetch để xác minh trước khi ghi. Chỉ khi WebSearch không ra mới hỏi Gemini trên https://gemini.google.com trong một tab mới (chat thường, KHÔNG bật Deep Research).`
       : `- Cần tìm nguồn thay thế cho vài ý: hỏi Gemini trên https://gemini.google.com trong một tab mới, chat thường (KHÔNG bật Deep Research), rồi mở link nó đưa bằng WebFetch để xác minh trước khi ghi.`,
-    `- Gặp trang đăng nhập, CAPTCHA hoặc hết quota: dừng, ghi nguyên văn vào Vướng mắc.`);
+    `- Gặp trang đăng nhập, CAPTCHA hoặc hết quota: dừng, ghi nguyên văn vào Vướng mắc.`]));
   const f = file || raw;
   if (deep && pha === 1) return L.concat('',
     `CÁCH LÀM: GEMINI DEEP RESEARCH, PHA 1/2 (KHỞI CHẠY). Lượt này chỉ khởi chạy, không chờ kết quả.`,
@@ -393,7 +403,7 @@ function chromePrompt(agent, kind, pha, file) {
     `- Gemini báo lỗi hoặc hết quota: ghi nguyên văn vào Vướng mắc.`);
   L.push('',
     deep ? `CÁCH NGHIÊN CỨU: GEMINI DEEP RESEARCH (bắt buộc)` : `CÁCH LÀM: HỎI GEMINI TRÊN WEB (bắt buộc)`,
-    `- Việc chính chạy trên https://gemini.google.com trong tab đó, bằng tài khoản Gemini của chủ dự án. Không dùng Antigravity, không dùng API.${deep ? ' Không tự tìm bằng WebSearch; WebFetch chỉ để mở lại link nguồn khi cần kiểm.' : ''}`,
+    `- Việc chính chạy trên https://gemini.google.com trong tab đó, bằng tài khoản Gemini của chủ dự án. Không dùng Antigravity, không dùng API.${deep ? (chiGemini(agent) ? ' Không có WebSearch, WebFetch: cần kiểm thêm nguồn nào thì hỏi Gemini trong chat thường.' : ' Không tự tìm bằng WebSearch; WebFetch chỉ để mở lại link nguồn khi cần kiểm.') : ''}`,
     ...(deep ? [`- Trước khi chạy: nếu ${raw.replace('<chu-de>', '<đúng chủ đề này>')} đã có từ lượt trước (lượt bị ngắt giữa chừng) thì dùng lại, không chạy lại Deep Research.`] : []),
     `- Mở chat mới.${g.model ? ` Chọn model "${g.model}" trong menu model của Gemini (không có thì dùng model mạnh nhất có sẵn và ghi lại).` : ''}${deep ? ' Bật "Deep Research" trong ô nhập (nút Deep Research hoặc menu Công cụ/Tools).' : ''}`,
     deep
@@ -437,8 +447,10 @@ function tongHopPrompt(agent, file) {
   return [
     `CÁCH LÀM: GEMINI DEEP RESEARCH, PHA 3/3 (TỔNG HỢP). Lượt này không có Chrome, không mở lại Gemini.`,
     `- Báo cáo Gemini đã lưu nguyên văn trong ${file || `agents/${agent.id}/<chu-de>-deep-research.md`}. File lớn: Grep tìm đúng mục rồi Read từng đoạn, không đọc cả file nhiều lần.`,
-    `- Tổng hợp sang file nguồn theo hướng dẫn riêng và nhiệm vụ. Có từ 3 link trở lên cần mở: gọi kiem_link cho cả loạt trước (nếu có công cụ này), rồi chỉ WebFetch những link cần đối chiếu nội dung. Nguồn chỉ có trong báo cáo mà bạn chưa mở thì ghi "chưa kiểm".`,
-    `- Báo cáo thiếu mục quan trọng của brief: ghi vào Vướng mắc, không chạy Deep Research mới.`
+    chiGemini(agent)
+      ? `- Tổng hợp sang file nguồn theo hướng dẫn riêng và nhiệm vụ, chỉ từ báo cáo Gemini (lượt này không có WebFetch, WebSearch). Có kiem_link thì gọi cho cả loạt link để ghi link nào còn mở được. Câu trích lấy nguyên văn từ báo cáo; nguồn chưa ai đối chiếu nội dung thì ghi "chưa kiểm" để người duyệt kiểm.`
+      : `- Tổng hợp sang file nguồn theo hướng dẫn riêng và nhiệm vụ. Có từ 3 link trở lên cần mở: gọi kiem_link cho cả loạt trước (nếu có công cụ này), rồi chỉ WebFetch những link cần đối chiếu nội dung. Nguồn chỉ có trong báo cáo mà bạn chưa mở thì ghi "chưa kiểm".`,
+    `- Báo cáo thiếu mục quan trọng của brief: ghi vào Vướng mắc (kèm câu hỏi nên hỏi Gemini), không chạy Deep Research mới.`
   ];
 }
 
@@ -481,7 +493,9 @@ function buildPrompt(agent, task, handoffPath, attachments, kind, lab = [], goi 
   if (lab.length) lines.push('', 'CÔNG CỤ CỦA MÁY CHỦ (gọi như công cụ thường):',
     ...(lab.includes('soat_loi') ? ['- soat_loi(file): soát lỗi máy móc và đếm chữ từng trang của một file .md; với slides.md, thiet-ke.md còn đối chiếu hai file và kiểm file hình. Trước khi bàn giao, gọi soat_loi cho từng file sản phẩm bạn vừa ghi hoặc sửa, rồi sửa những chỗ đúng là lỗi.'] : []),
     ...(lab.includes('tai_hinh') ? ['- tai_hinh(link, ten): máy chủ tải một hình có giấy phép (trang File: của Commons hoặc link thẳng .jpg/.png/.webp) vào output/<chủ đề>/hinh-nguon/ (hoặc hinh/) và ghi danh-sach.md. Hình có link giấy phép mà file chưa có trong thư mục hình: gọi tai_hinh ngay, đừng chỉ ghi "chưa có file". Đừng thử tự tải bằng lệnh.'] : []),
-    ...(lab.includes('kiem_link') ? ['- kiem_link(urls): máy chủ mở thử tối đa 10 link một lần: còn mở được, bị chặn (403, CAPTCHA), không có (404); link Commons thì kiểm file có thật và đọc giấy phép. Có từ 3 link trở lên cần mở (bảng nguồn, Danh sách hình, khi duyệt): gọi kiem_link cho cả loạt TRƯỚC, rồi chỉ WebFetch những link mở được mà bạn cần đọc nội dung; link bị chặn thì không WebFetch lại, ghi "bị chặn" và tìm nguồn khác.'] : []),
+    ...(lab.includes('kiem_link') ? [chiGemini(agent)
+      ? '- kiem_link(urls): máy chủ mở thử tối đa 10 link một lần: còn mở được, bị chặn (403, CAPTCHA), không có (404); link Commons thì kiểm file có thật và đọc giấy phép. Dùng để ghi tình trạng link; cần đọc nội dung nguồn thì hỏi Gemini, không tự mở trang.'
+      : '- kiem_link(urls): máy chủ mở thử tối đa 10 link một lần: còn mở được, bị chặn (403, CAPTCHA), không có (404); link Commons thì kiểm file có thật và đọc giấy phép. Có từ 3 link trở lên cần mở (bảng nguồn, Danh sách hình, khi duyệt): gọi kiem_link cho cả loạt TRƯỚC, rồi chỉ WebFetch những link mở được mà bạn cần đọc nội dung; link bị chặn thì không WebFetch lại, ghi "bị chặn" và tìm nguồn khác.'] : []),
     ...(lab.includes('tra_cuu') ? ['- tra_cuu(tu_khoa): tìm trong bộ não chung (ý đã kiểm chứng, nguồn, tư thế, hình). Tra trước khi tìm web: mục nào đã có ý đã duyệt còn hạn thì dùng lại, không tìm lại.'] : []),
     ...(lab.includes('hoi_dong_nghiep') ? ['- hoi_dong_nghiep(ai, cau_hoi): hỏi nhanh một đồng nghiệp (mã người), nhận 3–6 câu trả lời. Mỗi dự án tối đa 3 lần; chỉ dùng khi tra_cuu và file bàn giao không đủ.'] : []),
     '- Không có Bash: đừng thử chạy lệnh, script hay python. Việc máy móc thì dùng công cụ trên.');
@@ -555,7 +569,7 @@ function cliArgs(agent, maxTurns, effort, kind, lab = [], mcpFile = null, chiDoc
     '--max-turns', String(maxTurns || agent.maxTurns || defaultTurns(agent) || config.maxTurns || 15),
     '--allowedTools', (chiDoc ? ['Read', 'Glob', 'Grep'] : claudeToolsOf(agent, kind, lab, khongChrome)).join(',')];
   // Agent không có shell: --allowedTools không chặn được lệnh chỉ đọc (Claude Code tự cho chạy), nên cấm hẳn
-  args.push('--disallowedTools', (chiDoc ? 'Write,Edit,NotebookEdit,WebFetch,WebSearch,' : '') + 'Bash,PowerShell');
+  args.push('--disallowedTools', (chiDoc ? 'Write,Edit,NotebookEdit,WebFetch,WebSearch,' : chiGemini(agent) ? 'WebFetch,WebSearch,' : '') + 'Bash,PowerShell');
   if (mcpFile) { args.push('--mcp-config', mcpFile); if (!agent.useMcp) args.push('--strict-mcp-config'); }
   else if (chiDoc || (config.skipMcp && !agent.useMcp)) args.push('--strict-mcp-config');
   // Claude in Chrome: điều khiển Chrome thật của bạn (đã đăng nhập sẵn), ví dụ để chạy Gemini Deep Research bằng gói Gemini Pro
@@ -1430,7 +1444,7 @@ function buildPlanPrompt(coord, plan, failedIdx) {
   const byId = new Map(config.agents.map(a => [a.id, a]));
   const team = teamOf(plan).map(id => byId.get(id)).filter(Boolean).map(a => {
     const depth = subordinates(coord.id).find(x => x.agent === a)?.depth || 1;
-    return `${'  '.repeat(depth - 1)}- ${a.id}: ${a.name} — ${a.role} (${a.engine === 'gemini' ? 'Gemini, hợp đọc tài liệu dài' : a.engine === 'antigravity' ? 'Antigravity ' + (a.model || '') + ', tìm web tốt' : geminiWebOf(a) ? ({ 'deep-research': 'Gemini Deep Research qua Chrome, mỗi lượt 10–30 phút, giao việc nghiên cứu lớn gộp một lần', image: 'tạo ảnh bằng Gemini qua Chrome, không vẽ hình y khoa' }[geminiWebOf(a).mode] || 'Gemini (web) qua Chrome') : a.chrome ? 'Claude ' + (a.model || '') + ' + Chrome' : 'Claude ' + (a.model || '')})`;
+    return `${'  '.repeat(depth - 1)}- ${a.id}: ${a.name} — ${a.role} (${a.engine === 'gemini' ? 'Gemini, hợp đọc tài liệu dài' : a.engine === 'antigravity' ? 'Antigravity ' + (a.model || '') + ', tìm web tốt' : geminiWebOf(a) ? ({ 'deep-research': 'Gemini Deep Research qua Chrome, có lúc quá 60 phút, giao việc nghiên cứu lớn gộp một lần' + (chiGemini(a) ? '; chỉ tìm nguồn qua Gemini, không có WebFetch/WebSearch: đừng giao tự mở từng nguồn, việc tìm thêm thì giao hỏi Gemini chat thường' : ''), image: 'tạo ảnh bằng Gemini qua Chrome, không vẽ hình y khoa' }[geminiWebOf(a).mode] || 'Gemini (web) qua Chrome') : a.chrome ? 'Claude ' + (a.model || '') + ' + Chrome' : 'Claude ' + (a.model || '')})`;
   });
   const replan = failedIdx != null;
   const brief = briefPath(plan), hasBrief = wsExists(brief);

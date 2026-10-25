@@ -3064,13 +3064,19 @@ function buocUocTinh(s){
   if (!x) return '';
   return `<span title="${rieng ? `Trung vị ${x.n} bước cùng loại của người này` : 'Người này chưa làm loại bước này: lấy số chung của nhóm'}">~${x.usd.toFixed(2)} USD${x.cao > x.usd * 1.3 ? `, lần tốn ~${x.cao.toFixed(2)}` : ''}${rieng ? '' : ' (số chung)'}</span>`;
 }
+// Ngân sách tính bằng token quy đổi; quy ra USD theo tỉ lệ chi phí / token quy đổi của các dự án trước
+function usdNganSach(){
+  const ds = S.plans.filter(p => p.costUsd > 0 && p.wtokens > 0);
+  const tok = ds.reduce((t, p) => t + p.wtokens, 0), usd = ds.reduce((t, p) => t + p.costUsd, 0);
+  return S.planBudget && tok ? S.planBudget * usd / tok : 0;
+}
 function uocTinhHtml(steps){
   const u = uocTinhKeHoach(steps, S.uocTinh);
   if (!u) return '';
   const tk = S.uocTinh, tong = u.caDuAn || u, vuot = S.planBudget > 0 && tong.wtok > S.planBudget;
   return `<p class="plan-note est${vuot ? ' warn' : ''}"><b>Ước tính:</b> các bước đã chia ~${u.usd.toFixed(2)} USD (${fmtTok(u.wtok)} token quy đổi)${u.caDuAn ? `; cả dự án thường ~${u.caDuAn.usd.toFixed(2)} USD, tính cả vòng duyệt–sửa, lập kế hoạch và nghiệm thu (×${String(tk.heSo).replace('.', ',')}, từ ${tk.soDuAn} dự án trước)` : ''}.${tong.cao > tong.usd * 1.3 ? ` Lần tốn có thể tới ~${tong.cao.toFixed(2)} USD (9/10 lần thấp hơn mức này).` : ''}
     <small class="muted">Trung vị các bước cùng người, cùng loại${u.doan ? `; ${u.doan} bước lấy số chung của nhóm vì người đó chưa làm loại bước này` : ''}${u.thieu ? `; ${u.thieu} bước chưa có số liệu` : ''}. Deep Research và tạo ảnh dao động nhiều.</small>
-    ${vuot ? `<br><small>Vượt ngân sách ${fmtTok(S.planBudget)} token quy đổi: dự án sẽ tạm dừng giữa chừng chờ bạn cho thêm.</small>` : ''}</p>`;
+    ${vuot ? `<br><small>Vượt ngân sách ${fmtTok(S.planBudget)} token quy đổi${usdNganSach() ? ` (≈ $${usdNganSach().toFixed(0)})` : ''}: dự án sẽ tạm dừng giữa chừng chờ bạn cho thêm.</small>` : S.planBudget ? `<br><small class="muted">Ngân sách dự án: ${fmtTok(S.planBudget)} token quy đổi${usdNganSach() ? ` (≈ $${usdNganSach().toFixed(0)} theo các dự án trước)` : ''}.</small>` : ''}</p>`;
 }
 // Bước Deep Research đang chờ Gemini (máy chủ hẹn giờ, không tốn token): mở cuộc chat để tự xem, thấy xong thì gọi lượt tiếp ngay
 const choGemini = (p, s) => p.status === 'running' && s.status === 'pending' && s.henLuc && new Date(s.henLuc).getTime() > Date.now();
@@ -3110,7 +3116,7 @@ function planView(p){
         ${!isActive || S.planView ? `<button class="btn sm" data-plan-back>${activePlan() && activePlan() !== p ? '← Dự án đang chạy' : '+ Dự án mới'}</button>` : ''}
       </div>
     </div>
-    <p class="meta muted" style="margin:-6px 0 12px;font-size:12.5px"><span class="dot ${planDot(p.status)}" style="display:inline-block;margin-right:6px"></span>${PLAN_TXT[p.status] || p.status}${p.tokens ? ' · ' + fmtTok(p.tokens) + ' token' : ''}${p.wtokens ? ' (' + fmtTok(p.wtokens) + ' quy đổi)' : ''}${p.costUsd ? ' · ~' + p.costUsd + ' USD' : ''}${p.uocTinh ? `<span title="Ước tính lúc bắt đầu chạy: trung vị ${p.uocTinh.usd.toFixed(2)} USD, lần tốn ${p.uocTinh.cao.toFixed(2)} USD (9/10 lần thấp hơn)"> / ước tính ~${p.uocTinh.usd.toFixed(2)}${p.costUsd > p.uocTinh.cao ? ' ⚠ vượt cả mức lần tốn' : ''}</span>` : ''}${p.replans ? ' · đã lập lại ' + p.replans + ' lần' : ''}${p.score != null ? ' · nghiệm thu ' + p.score + '/100' : ''} · ${ago(new Date(p.createdAt).getTime())}</p>
+    <p class="meta muted" style="margin:-6px 0 12px;font-size:12.5px"><span class="dot ${planDot(p.status)}" style="display:inline-block;margin-right:6px"></span>${PLAN_TXT[p.status] || p.status}${p.tokens ? ' · ' + fmtTok(p.tokens) + ' token' : ''}${p.wtokens ? ` (${fmtTok(p.wtokens)} quy đổi${S.planBudget && PLAN_ACTIVE.includes(p.status) ? `<span title="Chạm ngân sách thì dự án tạm dừng chờ bạn cho thêm"> / ngân sách ${fmtTok(S.planBudget * (p.budgetX || 1))}</span>` : ''})` : ''}${p.costUsd ? ' · ~' + p.costUsd + ' USD' : ''}${p.uocTinh ? `<span title="Ước tính lúc bắt đầu chạy: trung vị ${p.uocTinh.usd.toFixed(2)} USD, lần tốn ${p.uocTinh.cao.toFixed(2)} USD (9/10 lần thấp hơn)"> / ước tính ~${p.uocTinh.usd.toFixed(2)}${p.costUsd > p.uocTinh.cao ? ' ⚠ vượt cả mức lần tốn' : ''}</span>` : ''}${p.replans ? ' · đã lập lại ' + p.replans + ' lần' : ''}${p.score != null ? ' · nghiệm thu ' + p.score + '/100' : ''} · ${ago(new Date(p.createdAt).getTime())}</p>
     ${p.note ? `<p class="plan-note ${['error', 'paused'].includes(p.status) ? 'err' : ''}">${esc(p.note)}</p>` : ''}
     ${waitName ? `<p class="plan-note">Đang chờ ${esc(waitName)} làm xong việc khác.</p>` : ''}
     ${khacChuaXong(p)}

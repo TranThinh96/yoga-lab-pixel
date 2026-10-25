@@ -3024,7 +3024,7 @@ function finishPlan(plan) {
 
 async function createPlan(b) {
   const cur = activePlan();
-  if (cur) throw Object.assign(new Error('Đang có một kế hoạch chưa xong. Hãy chạy tiếp hoặc huỷ nó trước.'), { status: 409 });
+  if (cur) throw Object.assign(new Error(`Đang có dự án chưa xong: "${snippet(cur.goal)}" (${cur.id}). Hãy chạy tiếp hoặc huỷ nó trước.`), { status: 409 });
   const coord = config.agents.find(a => a.id === b.coordinatorId);
   if (!coord) throw Object.assign(new Error('Chọn điều phối viên'), { status: 400 });
   const goal = String(b.goal || '').trim().slice(0, 4000);

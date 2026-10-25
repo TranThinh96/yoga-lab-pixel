@@ -3071,6 +3071,13 @@ function geminiRow(p, s){
     <button class="btn sm primary" data-plan-check title="Không chờ tới giờ hẹn: gọi ngay lượt tiếp theo (lấy báo cáo, hoặc thử lại khi hạn mức đã làm mới)">Kiểm ngay</button>` : ''}
     ${s.geminiLink && !S.demo ? `<a class="btn sm" href="${esc(s.geminiLink)}" target="_blank" rel="noopener noreferrer" title="Mở cuộc chat Deep Research trên Gemini để xem tiến độ">🔗 Mở chat Gemini</a>` : ''}</span>`;
 }
+// Mỗi lúc chỉ một dự án được chạy: dự án chưa xong khác (vd hai dự án cùng tạm dừng) chặn cả việc tạo dự án mới
+function khacChuaXong(p){
+  const ds = S.plans.filter(x => x !== p && PLAN_ACTIVE.includes(x.status));
+  if (!ds.length || !PLAN_ACTIVE.includes(p.status)) return '';
+  return `<p class="plan-note">Còn ${ds.length} dự án chưa xong khác. Mỗi lúc chỉ chạy một dự án; muốn tạo dự án mới thì chạy tiếp hoặc huỷ hết:
+    ${ds.map(x => `<button class="btn sm" data-plan-open="${esc(x.id)}" title="${esc(x.goal)}">${PLAN_TXT[x.status] || x.status} · ${esc(x.goal.length > 40 ? x.goal.slice(0, 38) + '…' : x.goal)}</button>`).join(' ')}</p>`;
+}
 function planView(p){
   const coord = agentById(p.coordinatorId);
   const draft = p.status === 'draft';
@@ -3096,6 +3103,7 @@ function planView(p){
     <p class="meta muted" style="margin:-6px 0 12px;font-size:12.5px"><span class="dot ${planDot(p.status)}" style="display:inline-block;margin-right:6px"></span>${PLAN_TXT[p.status] || p.status}${p.tokens ? ' · ' + fmtTok(p.tokens) + ' token' : ''}${p.wtokens ? ' (' + fmtTok(p.wtokens) + ' quy đổi)' : ''}${p.costUsd ? ' · ~' + p.costUsd + ' USD' : ''}${p.uocTinh ? `<span title="Ước tính lúc bắt đầu chạy: trung vị ${p.uocTinh.usd.toFixed(2)} USD, lần tốn ${p.uocTinh.cao.toFixed(2)} USD (9/10 lần thấp hơn)"> / ước tính ~${p.uocTinh.usd.toFixed(2)}${p.costUsd > p.uocTinh.cao ? ' ⚠ vượt cả mức lần tốn' : ''}</span>` : ''}${p.replans ? ' · đã lập lại ' + p.replans + ' lần' : ''}${p.score != null ? ' · nghiệm thu ' + p.score + '/100' : ''} · ${ago(new Date(p.createdAt).getTime())}</p>
     ${p.note ? `<p class="plan-note ${['error', 'paused'].includes(p.status) ? 'err' : ''}">${esc(p.note)}</p>` : ''}
     ${waitName ? `<p class="plan-note">Đang chờ ${esc(waitName)} làm xong việc khác.</p>` : ''}
+    ${khacChuaXong(p)}
     ${p.status === 'asking' ? askBox(p) : ''}
     ${p.planRunId ? `<div class="row" style="margin:-4px 0 12px;gap:6px"><button class="btn sm" data-view="du-an/${esc(p.id)}/brief.md">Brief</button><button class="btn sm" data-view="du-an/${esc(p.id)}/bang.md">Bảng dự án</button>${p.acceptFile ? `<button class="btn sm" data-view="${esc(p.acceptFile)}">Nghiệm thu</button>` : ''}</div>` : ''}
     ${draft ? '<p class="hint">Sửa người làm hoặc nội dung từng bước nếu cần, rồi bấm <b>Chạy kế hoạch</b>.</p>' + uocTinhHtml(S.planEdit.steps) : ''}

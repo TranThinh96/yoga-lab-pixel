@@ -26,7 +26,7 @@ const { LOAI_LOI, mucTrong, docVanDe, docDaXuLy, docDuyetLai, docTinNhan, chuFil
 const { docCauHoi: parseQuestions, laCauHoiMoiTruong, locBaiHocMoi, phanLoaiCauHoi, chonChuDe, chuDeTu, chuDeTiepNoi, dongHinhCu } = require('./lib/van-ban');
 const { chuDeTriThuc, docBangTriThuc, hopNhatMenhDe, hopNhatNguon, capNhatTruyCap, hopNhatTuThe, maHinh, hopNhatHinh, cacChuDe, vietMocChuDe, vietBanDoTriThuc, docThuatNgu, dienThuatNgu, timTriThuc, goiNguCanh, slug, KIEU_MAU, trichMauTot, taoMauTot, chonMauTot } = require('./lib/tri-thuc');
 const { docGhiChu } = require('./lib/ghi-chu');
-const { chonBuocChay, choBuocChen, hetHanMucGemini, buocSauDr } = require('./lib/lich');
+const { chonBuocChay, choBuocChen, hetHanMucGemini, buocSauDr, loiMoiTruong } = require('./lib/lich');
 const { thongKeChiPhi, uocTinhKeHoach } = require('./lib/uoc-tinh');
 const { chiSoTriNao } = require('./lib/chi-so');
 const { soMa, docBaiHoc, noiDungBaiHoc, suaBaiHoc, banXemKinhNghiem, nhanBuoc, chonBaiHoc, maTrong, bangChungBaiHoc, daNhanTheoBuocCua, danhGiaBaiHoc, themLoHong, demLoHongMo, thongKeHoc, hocTuJson, apDungHoc, apDungSuaHuongDan, hoanTacSuaHuongDan, themTuTranh } = require('./lib/bai-hoc');
@@ -2301,6 +2301,13 @@ function onStepError(plan, idx) {
   if (plan.steps.some(x => x.status === 'working')) {
     plan.status = 'paused'; plan.note = `Bước ${idx + 1} lỗi: ${err || 'không rõ'}. Các bước khác đang chạy sẽ làm nốt; bấm "Chạy tiếp" để chạy lại bước lỗi.`;
     plan.log.push(`Bước ${idx + 1} lỗi khi còn bước khác đang chạy → tạm dừng`);
+    return emitPlan(plan);
+  }
+  const cachSua = loiMoiTruong(err);
+  if (cachSua) {
+    plan.status = 'paused';
+    plan.note = `Bước ${idx + 1} lỗi: ${snippet(err)}. Lỗi của máy hoặc trang web, lập lại kế hoạch không sửa được: ${cachSua}, rồi bấm "Chạy tiếp".`;
+    plan.log.push(`Bước ${idx + 1} lỗi môi trường (${snippet(err)}) → tạm dừng, không lập lại kế hoạch`);
     return emitPlan(plan);
   }
   if (plan.replans < Math.max(0, Number(config.maxReplans ?? 1))) return runCoordinator(plan, idx);

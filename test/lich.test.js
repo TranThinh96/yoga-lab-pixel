@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { gocBuoc, chonBuocChay, choBuocChen, hetHanMucGemini } = require('../lib/lich');
+const { gocBuoc, chonBuocChay, choBuocChen, hetHanMucGemini, loiMoiTruong } = require('../lib/lich');
 
 // Sau một bước duyệt (3) có lỗi của cả Vy (thiết kế, bước 2) và Lam (kịch bản, bước 1)
 const B = () => [
@@ -124,4 +124,15 @@ test('buocSauDr: chuyển pha Deep Research', () => {
   // Pha 3 xong thì kết thúc, không quay vòng dù file báo cáo ghi gì
   assert.deepEqual(buocSauDr({ pha: 3, trangThai: 'xong' }), { loai: 'xong' });
   assert.deepEqual(buocSauDr({ pha: 3, trangThai: 'đang chạy' }), { loai: 'xong' });
+});
+
+test('loiMoiTruong: lỗi máy / trang web thì có cách sửa (không lập lại kế hoạch), lỗi thường thì null', () => {
+  // Các lỗi lấy từ nhật ký dự án đã lập lại kế hoạch vô ích
+  assert.match(loiMoiTruong('Bị từ chối quyền: RunCommand (cấp trong ~/.gemini/antigravity-cli/settings.json, mục permissions.allow).'), /agy/);
+  assert.match(loiMoiTruong('Gemini CLI is not running in a trusted directory. To proceed'), /tin cậy/);
+  assert.match(loiMoiTruong('Không tạo được sản phẩm nào (xem Vướng mắc). Tôi chưa khởi chạy được Deep Research nên chưa có nguồn'), /gemini\.google\.com/);
+  assert.match(loiMoiTruong('Deep Research chưa khởi chạy được (không ghi file báo cáo)'), /Deep Research/);
+  assert.equal(loiMoiTruong('Không tạo được sản phẩm nào'), null);
+  assert.equal(loiMoiTruong('success'), null);
+  assert.equal(loiMoiTruong(''), null);
 });

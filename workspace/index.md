@@ -13,12 +13,12 @@
 
 ## Dự án gần đây
 - plan-20261025-195326 · tho-bung-thu-gian · Tạm dừng · brief: du-an/plan-20261025-195326/brief.md
-- plan-20261023-214835 · thoat-vi-dia-dem · Xong, 92/100 · nghiệm thu: du-an/plan-20261023-214835/nghiem-thu.md
-- plan-20261022-203403 · thoai-hoa-khop-goi-v2 · Xong, 85/100 · nghiệm thu: du-an/plan-20261022-203403/nghiem-thu.md
+- plan-20261025-160745 · dau-co-vai-gay · Tạm dừng · brief: du-an/plan-20261025-160745/brief.md
+- plan-20261024-225614 · dau-co-vai-gay · Đã dừng · brief: du-an/plan-20261024-225614/brief.md
 
 ## Sản phẩm mới nhất
+- output/dau-co-vai-gay/: slides.md (Lam), thiet-ke.md (Vy)
 - output/thoat-vi-dia-dem/: thiet-ke.md (Vy), slides.md (Lam)
 - output/thoai-hoa-khop-goi-v2/: slides.md (Lam), thiet-ke.md (Vy)
-- output/thoai-hoa-khop-goi/: thiet-ke.md (Vy), slides.md (Lam)
 
 Bản đồ cũ (agent tự ghi trước đây): luu-tru/index-cu.md

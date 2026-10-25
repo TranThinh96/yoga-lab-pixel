@@ -93,3 +93,35 @@ test('hetHanMucGemini: đọc giờ làm mới hạn mức Gemini từ bàn giao
   assert.deepEqual(hetHanMucGemini('HẾT HẠN MỨC GEMINI: Deep Research bị mờ', now), { dong: 'Deep Research bị mờ', at: null });
   assert.equal(hetHanMucGemini('Gemini báo lỗi, không rõ lý do', now), null);
 });
+
+test('buocSauDr: chuyển pha Deep Research', () => {
+  const { buocSauDr } = require('../lib/lich');
+  // Pha 1 khởi chạy xong → chờ rồi lấy kết quả
+  assert.deepEqual(buocSauDr({ pha: 1, trangThai: 'đang chạy' }), { loai: 'cho', pha: 2 });
+  // Pha 2 Gemini chưa xong → kiểm lại, giãn dần 10 → 15 → 20 phút, không vượt hạn chờ
+  assert.deepEqual(buocSauDr({ pha: 2, trangThai: 'đang chạy (kiểm lúc 21:10)', lanKiem: 0, phutDaCho: 30 }), { loai: 'kiem-lai', lanKiem: 1, phut: 10 });
+  assert.equal(buocSauDr({ pha: 2, trangThai: 'đang chạy', lanKiem: 1, phutDaCho: 41 }).phut, 15);
+  assert.equal(buocSauDr({ pha: 2, trangThai: 'đang chạy', lanKiem: 5, phutDaCho: 70 }).phut, 20);
+  assert.equal(buocSauDr({ pha: 2, trangThai: 'đang chạy', lanKiem: 5, phutDaCho: 145 }).phut, 5, 'lần kiểm cuối vừa đúng hạn');
+  // Dự án thử 24/10: Gemini chạy quá 60 phút, cách cũ (3 lần kiểm) bỏ cuộc ở phút 60 rồi chạy lại ngay
+  assert.equal(buocSauDr({ pha: 2, trangThai: 'đang chạy', lanKiem: 3, phutDaCho: 61 }).loai, 'kiem-lai');
+  const het = buocSauDr({ pha: 2, trangThai: 'đang chạy', lanKiem: 8, phutDaCho: 151 });
+  assert.equal(het.loai, 'loi'); assert.equal(het.khongChayLai, true); assert.match(het.lyDo, /151 phút/);
+  assert.equal(buocSauDr({ pha: 2, trangThai: 'đang chạy', phutDaCho: 50, choToiDa: 45 }).loai, 'loi', 'hạn chờ theo cấu hình');
+  // Pha 1 không khởi chạy được, chưa có file nguồn → lỗi bước
+  assert.equal(buocSauDr({ pha: 1, trangThai: 'lỗi: hết quota' }).loai, 'loi');
+  assert.match(buocSauDr({ pha: 1 }).lyDo, /không ghi/);
+  // Báo cáo đã lưu, chưa tổng hợp → pha 3 không có Chrome (kể cả pha 1 dùng lại báo cáo cũ)
+  assert.deepEqual(buocSauDr({ pha: 2, trangThai: 'xong' }), { loai: 'tong-hop', pha: 3 });
+  assert.deepEqual(buocSauDr({ pha: 1, trangThai: 'Xong' }), { loai: 'tong-hop', pha: 3 });
+  // Agent đã tự tổng hợp ngay, hoặc tắt công tắc → xong như trước
+  assert.deepEqual(buocSauDr({ pha: 2, trangThai: 'xong', coFileKhac: true }), { loai: 'xong' });
+  assert.deepEqual(buocSauDr({ pha: 2, trangThai: 'xong', tongHopRieng: false }), { loai: 'xong' });
+  // Pha 1 không ghi file báo cáo: dòng Trạng thái là của lượt cũ (dự án thử 25/10: file còn "đang chạy" từ Deep Research treo)
+  assert.deepEqual(buocSauDr({ pha: 1, trangThai: 'đang chạy (kiểm lúc ~00:07)', ghiFileDr: false, coFileKhac: true }), { loai: 'xong' });
+  assert.equal(buocSauDr({ pha: 1, trangThai: 'đang chạy', ghiFileDr: false }).loai, 'loi');
+  assert.deepEqual(buocSauDr({ pha: 1, trangThai: 'đang chạy', ghiFileDr: true }), { loai: 'cho', pha: 2 });
+  // Pha 3 xong thì kết thúc, không quay vòng dù file báo cáo ghi gì
+  assert.deepEqual(buocSauDr({ pha: 3, trangThai: 'xong' }), { loai: 'xong' });
+  assert.deepEqual(buocSauDr({ pha: 3, trangThai: 'đang chạy' }), { loai: 'xong' });
+});

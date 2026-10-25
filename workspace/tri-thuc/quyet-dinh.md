@@ -2,6 +2,11 @@
 
 > Máy chủ tự sinh từ .yogalab/quyet-dinh.json. Sửa câu trả lời trong giao diện Yoga Lab, không sửa ở đây.
 
+## dau-co-vai-gay
+- **QD-37** (plan-20261025-160745, 2026-10-25) *nhóm tự quyết*
+  - Hỏi: Chấp nhận dẫn [21][22] và JOSPT khi chưa mở được trang gốc, kèm dòng trong "Việc còn mở"? Đề xuất: chấp nhận, nhờ người có VPN Anh mở lại sau.
+  - Trả lời: (Chủ dự án để nhóm tự quyết theo phương án đề xuất)
+
 ## thoat-vi-dia-dem
 - **QD-33** (plan-20261023-214835, 2026-10-23) *nhóm tự quyết*
   - Hỏi: NASS: chưa có câu trích khuyến cáo vận động. Đề xuất: slide tr.8 ghi "NICE NG59 và ACP", bỏ NASS. Hoặc chủ dự án gửi PDF NASS 2012 (làm tiếp sau khi trả lời).

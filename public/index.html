@@ -3758,7 +3758,7 @@ function openProject(id){
   $('#projTitle').title = p.goal;
   $('#projMeta').innerHTML = `<span class="dot ${planDot(p.status)}" style="display:inline-block;margin-right:6px"></span>${PLAN_TXT[p.status] || p.status} · điều phối: <b>${esc(coord ? coord.name : p.coordinatorId)}</b> · bắt đầu ${new Date(p.createdAt).toLocaleString('vi-VN', { hour:'2-digit', minute:'2-digit', day:'2-digit', month:'2-digit' })}`;
   const stat = (k, v) => `<div><small>${k}</small><b>${v}</b></div>`;
-  let html = `<div class="pr-stats">${stat('Bước xong', doneN + '/' + p.steps.length)}${stat('Thời gian', dur(p.createdAt, new Date(end).toISOString()))}${stat('Token', fmtTok(p.tokens || 0))}${p.wtokens ? stat('Token quy đổi', fmtTok(p.wtokens)) : ''}${p.costUsd ? stat('Chi phí', '~' + p.costUsd + ' USD') : ''}${stat('Sản phẩm', files.length + ' file')}${p.replans ? stat('Lập lại kế hoạch', p.replans + ' lần') : ''}</div>`;
+  let html = `<div class="pr-stats">${stat('Bước xong', doneN + '/' + p.steps.length)}${stat('Thời gian', dur(p.createdAt, new Date(end).toISOString()))}${stat('Token', fmtTok(p.tokens || 0))}${p.wtokens ? stat('Token quy đổi', fmtTok(p.wtokens)) : ''}${p.costUsd ? stat('Chi phí', '~' + p.costUsd + ' USD' + (p.uocTinh ? ` (ước tính ~${p.uocTinh.usd.toFixed(2)})` : '')) : ''}${stat('Sản phẩm', files.length + ' file')}${p.replans ? stat('Lập lại kế hoạch', p.replans + ' lần') : ''}</div>`;
   if (p.score != null){
     const need = +((String(p.note || '').match(/chưa đạt (\d+)/) || [])[1] || 85), ok = p.score >= need;
     html += `<div class="pr-score ${ok ? 'ok' : 'bad'}"><b>${p.score}</b><span>/100</span><p><strong>${ok ? 'Đạt nghiệm thu' : 'Chưa đạt nghiệm thu'}</strong> · cần ${need} điểm${p.acceptFile ? ` · <button class="linkbtn" data-view="${esc(p.acceptFile)}">xem bảng chấm</button>` : ''}</p></div>`;
@@ -3772,7 +3772,7 @@ function openProject(id){
   html += `<h2 class="pr-sec">Từng bước</h2>`;
   html += p.steps.map((x, i) => {
     const r = runOf(x, i), stepFiles = files.filter(f => f.origin.step === i + 1);
-    const meta = [STEP_TXT[x.status] || x.status, r && r.endedAt ? 'mất ' + dur(r.startedAt, r.endedAt) : '', x.tokens ? fmtTok(x.tokens) + ' token' : ''].filter(Boolean).join(' · ');
+    const meta = [STEP_TXT[x.status] || x.status, r && r.endedAt ? 'mất ' + dur(r.startedAt, r.endedAt) : '', x.tokens ? fmtTok(x.tokens) + ' token' : '', x.costUsd ? '$' + x.costUsd.toFixed(2) : ''].filter(Boolean).join(' · ');
     return `<div class="pr-step"><span class="num ${x.status}">${i + 1}</span><div>
       <h4>${esc(nm(x.agentId))}</h4><p class="meta">${esc(meta)}</p>
       <p class="task clamp" title="${esc(taskText(x.task))}">${esc(gist(x.task))}</p>
@@ -3784,9 +3784,9 @@ function openProject(id){
   const att = p.reviewHandoff || (p.steps.filter(x => x.handoff).pop() || {}).handoff;
   $('#projFoot').innerHTML = coord && att ? `<span class="path">Muốn làm thêm? Giao cho ${esc(coord.name)} tiếp tục từ kết quả này.</span><button class="btn sm primary" data-pnext="${esc(att)}">Giao việc tiếp cho ${esc(coord.name)}</button>` : '';
   // Bản markdown của cả báo cáo để tải về
-  PRJ.md = [`# ${p.goal}`, '', `${PLAN_TXT[p.status] || p.status} · điều phối: ${coord ? coord.name : p.coordinatorId} · ${doneN}/${p.steps.length} bước · ${fmtTok(p.tokens || 0)} token`, '',
+  PRJ.md = [`# ${p.goal}`, '', `${PLAN_TXT[p.status] || p.status} · điều phối: ${coord ? coord.name : p.coordinatorId} · ${doneN}/${p.steps.length} bước · ${fmtTok(p.tokens || 0)} token${p.costUsd ? ' · ~' + p.costUsd + ' USD' : ''}`, '',
     '## Tổng kết', '', p.summary || '(chưa có)', '', '## Sản phẩm', '', ...(files.length ? files.map(f => `- ${f.path} (${f.origin.agentName})`) : ['(chưa có)']), '', '## Từng bước', '',
-    ...p.steps.flatMap((x, i) => [`### ${i + 1}. ${nm(x.agentId)} · ${STEP_TXT[x.status] || x.status}`, '', x.task, '', x.summary ? '> ' + x.summary.replace(/\n/g, '\n> ') : '', x.handoff ? `Bàn giao: ${x.handoff}` : '', ''])].join('\n');
+    ...p.steps.flatMap((x, i) => [`### ${i + 1}. ${nm(x.agentId)} · ${STEP_TXT[x.status] || x.status}${x.costUsd ? ' · $' + x.costUsd.toFixed(2) : ''}`, '', x.task, '', x.summary ? '> ' + x.summary.replace(/\n/g, '\n> ') : '', x.handoff ? `Bàn giao: ${x.handoff}` : '', ''])].join('\n');
   if (!projDlg.open) projDlg.showModal();
 }
 projDlg.addEventListener('click', e => {

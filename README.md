@@ -66,6 +66,7 @@ Khi việc lớn cần nhiều người, bạn không phải tự chuyển tay t
    Sau đó chia việc: ai làm gì, đọc bàn giao của bước nào, và **ai duyệt sản phẩm của ai** (bước duyệt).
    Họ **chỉ được giao việc cho người trực thuộc mình** (trực tiếp hoặc gián tiếp). Thiếu thông tin quan trọng thì họ hỏi bạn trước.
 3. Kế hoạch hiện ra để bạn duyệt. Bạn có thể đổi người làm, sửa nội dung, đổi thứ tự, thêm hoặc xoá bước. Xong thì bấm **Chạy kế hoạch**.
+   Phía trên các bước có **ước tính chi phí**: trung vị chi phí các bước cùng người, cùng loại (làm hay duyệt) ở các dự án trước, và cả dự án thường tốn gấp mấy lần (vòng duyệt–sửa, lập kế hoạch, nghiệm thu). Đổi người làm thì số tính lại ngay; vượt ngân sách `planTokenBudget` thì có nhắc. Deep Research và tạo ảnh dao động nhiều, nên đây là số tham khảo.
 4. Máy chủ tự chạy từng bước. Mỗi người nhận brief, **bảng dự án** `du-an/<mã>/bang.md` (tiến độ, kết luận duyệt, câu trả lời của bạn) và bàn giao cần đọc.
    Mỗi người tự kiểm sản phẩm theo tiêu chí trong brief trước khi bàn giao, và áp dụng những bài học máy chủ chọn sẵn cho bước đó (xem "Nhóm tự học thế nào").
 5. **Vòng duyệt:** người duyệt kết thúc bàn giao bằng `KẾT LUẬN: ĐẠT` hoặc `KẾT LUẬN: CẦN SỬA`. Cần sửa thì máy chủ tự chèn bước sửa và duyệt lại (người duyệt), tối đa `maxReviewRounds` vòng.
@@ -127,6 +128,7 @@ Chỉnh trong form **Sửa agent → Chrome & Gemini**, hoặc trong `config.jso
 Agent Deep Research không dùng WebSearch và WebFetch của Claude, kể cả ở bước sửa (trừ khi bạn tự đặt `tools` hoặc `drChiGemini: false`): cần thêm nguồn thì hỏi Gemini, kiểm link bằng `kiem_link`, để khỏi tốn token Claude. Mặc định agent này có 150 lượt (chat: 60, tạo ảnh: 150). Gemini hết hạn mức thì agent ghi "HẾT HẠN MỨC GEMINI: đặt lại lúc HH:MM" rồi dừng lượt; máy chủ chờ tới giờ đó (không tốn token) rồi giao lại bước, không chạy lại ngay hay lập lại kế hoạch. Hết hạn mức lần thứ ba, hoặc phải chờ quá 12 giờ, thì dự án tạm dừng chờ bạn.
 
 **Deep Research hai pha** (`deepResearchTwoPhase: true` trong `config.json`): ở bước làm của dự án, agent chỉ khởi chạy Deep Research, ghi link cuộc chat vào `agents/<id>/<chu-de>-deep-research.md` với dòng "Trạng thái: đang chạy" rồi kết thúc lượt. Máy chủ chờ (bằng nửa `maxWaitMinutes`, ít nhất 10 phút; không tốn token), rồi gọi agent một lượt nữa để lấy báo cáo. Gemini chưa xong thì máy chủ kiểm lại, giãn dần 10 → 15 → 20 phút, tới khi tổng thời gian chờ chạm `drChoToiDa` (mặc định 150 phút). Lượt 1 không khởi chạy được (Gemini báo lỗi, kẹt ở bước lập kế hoạch) mà chưa có file nguồn thì bước báo lỗi và được chạy lại, không chuyển cho người duyệt. Trong lúc chờ, bảng dự án ghi "Chờ Gemini Deep Research tới <giờ>".
+Bước Deep Research có nút **🔗 Mở chat Gemini** (link agent ghi trong file Deep Research) để bạn tự xem tiến độ. Trong lúc máy chủ chờ (Deep Research hoặc hạn mức Gemini), cửa sổ Dự án và Bảng việc có nút **Kiểm ngay**: thấy Gemini xong rồi thì bấm để gọi lượt tiếp theo luôn, không chờ tới giờ hẹn.
 Với `drTongHopRieng` (mặc định bật), lượt 2 chỉ lưu nguyên văn báo cáo rồi dừng. Việc tổng hợp sang file nguồn và kiểm link chạy ở **lượt 3 không có Chrome**: không nạp công cụ Chrome nên mỗi lượt đọc lại ít ngữ cảnh hơn, và agent không lạc sang duyệt web bằng Chrome. Agent dùng Chrome cũng được dặn dán prompt vào Gemini bằng một lệnh (không gõ từng phím) và gộp thao tác nối tiếp vào một lần `browser_batch`.
 
 **Tạo ảnh (`image`)**: agent đọc "Danh sách hình" trong `output/<chủ đề>/thiet-ke.md`, tạo từng ảnh trong một cuộc chat Gemini, tự xem lại rồi bấm tải ảnh kích thước đầy đủ. Chrome lưu ảnh vào thư mục Downloads (đổi bằng `downloadsDir` trong `config.json`). Mỗi lần tải, agent ghi tên dự kiến vào `agents/<id>/anh-gemini.txt`. Xong lượt, máy chủ ghép các file `Gemini_*` tải về trong lượt đó (theo thứ tự thời gian) với danh sách tên này, rồi chép vào `output/<chủ đề>/hinh/`, giống ảnh của agy: bản cũ chuyển vào `cac-ban/`, ảnh AI cho hình y khoa bị để riêng, không dùng. Trước khi chạy: trong Chrome, tắt "Hỏi nơi lưu từng tệp" và cho gemini.google.com tải nhiều file.
@@ -270,6 +272,8 @@ Chạm vào một agent đang làm việc để xem:
 - **Thời gian so với thường lệ**: thanh chạy theo trung vị các lượt trước của chính agent đó; vàng khi quá giờ, đỏ khi lâu gấp đôi (có thể đang kẹt).
 - Số file đã đọc, lần tìm web, file đã ghi (bấm để mở) và **diễn biến** từng thao tác kèm thời điểm.
 Khi agent rảnh, ô giao việc lên đầu, kèm kết quả lần gần nhất và lịch sử 5 lượt trước.
+
+Khi bạn sang tab khác: **tiêu đề tab** hiện "⏳ 3/8" (bước đã xong của dự án đang chạy) hoặc "❗ Cần bạn" (chờ duyệt kế hoạch, chờ trả lời, tạm dừng). Lần đầu bạn giao việc hay lập kế hoạch, trình duyệt hỏi quyền **thông báo**; cho phép thì máy báo khi kế hoạch chờ duyệt, nhóm có câu hỏi, dự án tạm dừng hay xong, và khi việc lẻ xong (chỉ khi tab đang ẩn).
 
 ## Bảng việc (nút 📋 Bảng việc)
 

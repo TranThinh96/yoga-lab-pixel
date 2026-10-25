@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Yoga Lab</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪷</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Pixelify+Sans:wght@500;700&display=swap" rel="stylesheet">
@@ -236,6 +237,8 @@ textarea{resize:vertical; min-height:96px}
 .plan-head .meta{font-size:12.5px; color:var(--muted)}
 .plan-note{margin:0 0 12px; padding:8px 10px; border:2px solid var(--line); background:var(--paper-2); font-size:13.5px}
 .plan-note.err{border-color:var(--err)}
+.plan-note.est{border-style:dashed; font-size:13px}
+.plan-note.est.warn{border-color:var(--gold)}
 .plan-note .dx{margin-top:8px; padding-top:8px; border-top:1px dashed var(--line)}
 .plan-note .dx p{margin:0 0 6px}
 .flow{display:flex; flex-direction:column}
@@ -249,6 +252,7 @@ textarea{resize:vertical; min-height:96px}
 .node .who small{font-weight:500; color:var(--muted)}
 .node .txt{grid-column:2 / 4; font-size:13.5px; white-space:pre-wrap; overflow-wrap:anywhere}
 .node .txt.clamp{white-space:normal}
+.node .gem-row{white-space:normal; gap:6px; align-items:center; margin-top:4px}
 .node .st{font-size:12px; font-weight:600; white-space:nowrap; display:flex; align-items:center; gap:5px}
 .node select{padding:4px 6px; font-size:14px; width:auto; max-width:100%}
 .node textarea{grid-column:2 / 4; min-height:56px; font-size:14px; padding:6px 8px}
@@ -882,6 +886,11 @@ function shade(hex, f){
 }
 const shortTxt = (t, n) => { t = String(t || ''); return t.length > n ? t.slice(0, n - 1).trimEnd() + '…' : t; };
 const whenTxt = ms => new Date(ms).toLocaleString('vi-VN', { hour:'2-digit', minute:'2-digit', day:'2-digit', month:'2-digit' });
+// Ảnh chân dung tuỳ chọn (assets/portrait-<id>.png). Người chưa có ảnh: nhớ lại sau lần thử đầu, không xin lại ở mỗi lần vẽ danh sách
+// (danh sách vẽ lại theo từng thao tác của agent, trước đây mỗi lần là một lỗi 404)
+const noPortrait = new Set();
+const portraitImg = a => noPortrait.has(a.id) ? '' : `<img class="portrait-img" src="assets/portrait-${encodeURIComponent(a.id)}.png" alt="" data-pid="${esc(a.id)}">`;
+document.addEventListener('error', e => { const t = e.target; if (t && t.classList && t.classList.contains('portrait-img')){ noPortrait.add(t.dataset.pid); t.remove(); } }, true);
 function ago(ms){
   const s = (Date.now() - ms) / 1000;
   if (s < 50) return 'vừa xong';
@@ -970,6 +979,7 @@ const live = {
   planStop: id => http('POST', '/api/plan/stop', { id }),
   planAnswer: (id, answers, skip) => http('POST', '/api/plan/answer', { id, answers, skip }),
   planSlide: id => http('POST', '/api/plan/slide', { id }),
+  planCheckNow: id => http('POST', '/api/plan/kiem-ngay', { id }),
   deXuat: (id, hanhDong, moi) => http('POST', '/api/de-xuat', { id, hanhDong, moi }),
   limitsRefresh: () => http('POST', '/api/limits/refresh', {})
 };
@@ -1239,6 +1249,7 @@ function handleEvent(e){
       if (was && was.status === 'working' && e.run.status === 'done' && !e.run.planId){
         const f = (e.run.files || []).find(x => /^output\//.test(x)) || e.run.handoff;
         toast(`${e.run.agentName} đã xong việc.`, f ? { label: 'Xem kết quả', fn: () => viewFile(f) } : { label: 'Xem', fn: () => select(e.run.agentId) });
+        notify(`${e.run.agentName} đã xong việc`, e.run.summary || e.run.task);
       }
       S.runs = [e.run, ...S.runs.filter(r => r.id !== e.run.id)].slice(0, 120);
       renderStats(); renderTeam(); if (e.run.agentId === S.selected) renderPanel(); if (S.tab === 'log') renderBook();
@@ -1256,14 +1267,19 @@ function handleEvent(e){
       break;
     case 'plan': {
       const prev = S.plans.find(p => p.id === e.plan.id);
+      if (e.uocTinh) S.uocTinh = e.uocTinh;
       S.plans = [e.plan, ...S.plans.filter(p => p.id !== e.plan.id)].slice(0, 10);
       if (prev && prev.status !== e.plan.status){
-        if (e.plan.status === 'draft'){ S.sub = 'plan'; if (S.tab !== 'plan') setTab('plan'); openWin('book'); toast('Kế hoạch đã sẵn sàng, mời bạn duyệt.'); }
-        else if (e.plan.status === 'done') toast('Dự án đã xong.', { label: 'Xem kết quả dự án', fn: () => openProject(e.plan.id) });
-        else if (e.plan.status === 'asking'){ S.sub = 'plan'; if (S.tab !== 'plan') setTab('plan'); openWin('book'); toast('Nhóm có câu hỏi cho bạn.'); }
-        else if (e.plan.status === 'paused' || e.plan.status === 'error')
+        const goal = e.plan.goal.length > 90 ? e.plan.goal.slice(0, 88) + '…' : e.plan.goal;
+        if (e.plan.status === 'draft'){ S.sub = 'plan'; if (S.tab !== 'plan') setTab('plan'); openWin('book'); toast('Kế hoạch đã sẵn sàng, mời bạn duyệt.'); notify('Kế hoạch chờ bạn duyệt', goal); }
+        else if (e.plan.status === 'done'){ toast('Dự án đã xong.', { label: 'Xem kết quả dự án', fn: () => openProject(e.plan.id) }); notify('Dự án đã xong', (e.plan.score != null ? `Nghiệm thu ${e.plan.score}/100 · ` : '') + goal); }
+        else if (e.plan.status === 'asking'){ S.sub = 'plan'; if (S.tab !== 'plan') setTab('plan'); openWin('book'); toast('Nhóm có câu hỏi cho bạn.'); notify('Nhóm có câu hỏi cho bạn', goal); }
+        else if (e.plan.status === 'paused' || e.plan.status === 'error'){
           toast(e.plan.note || 'Kế hoạch tạm dừng.', e.plan.resumeAt ? { label: 'Xem', fn: () => { openWin('board'); renderBoard(); } } : { label: '▶ Chạy tiếp', fn: () => resumeProject(e.plan.id) });
+          notify(e.plan.resumeAt ? 'Dự án tạm dừng, sẽ tự chạy tiếp' : 'Dự án tạm dừng, cần bạn', e.plan.note || goal);
+        }
       }
+      syncWins();
       if (S.tab === 'plan') renderBook();
       renderBoard();
       if (projDlg.open && PRJ.id === e.plan.id) openProject(e.plan.id);
@@ -1303,6 +1319,8 @@ function applyState(st){
   if (st.limits) S.limits = st.limits;
   S.coordinatorId = st.coordinatorId || '';
   if (st.config && st.config.maxPlanSteps) S.maxPlanSteps = st.config.maxPlanSteps;
+  if (st.config) S.planBudget = st.config.planTokenBudget || 0;
+  if (st.uocTinh) S.uocTinh = st.uocTinh;
   for (const id of st.running || []) if (!S.status[id] || S.status[id].state !== 'working') S.status[id] = { state:'working', since: performance.now() };
   for (const id of Object.keys(S.status)) if (S.status[id].state === 'working' && !(st.running || []).includes(id)) S.status[id] = { state:'idle', since: performance.now() };
   if (S.selected && !agentById(S.selected)) S.selected = null;
@@ -2526,7 +2544,7 @@ function renderTeam(){
     return `<li class="arow ${a.id === S.selected ? 'sel' : ''}" style="--d:${depth}">
       ${depth ? '<span class="branch" aria-hidden="true"></span>' : ''}
       <button class="ohit" data-sel="${esc(a.id)}" aria-label="Chọn ${esc(a.name)}"></button>
-      <span class="portrait-box"><canvas class="portrait tcv" data-id="${esc(a.id)}" width="28" height="30" aria-hidden="true"></canvas><img class="portrait-img" src="assets/portrait-${encodeURIComponent(a.id)}.png" alt="" onerror="this.remove()"></span>
+      <span class="portrait-box"><canvas class="portrait tcv" data-id="${esc(a.id)}" width="28" height="30" aria-hidden="true"></canvas>${portraitImg(a)}</span>
       <span class="nm"><b>${subs ? '<span class="star" aria-hidden="true">★</span> ' : ''}${esc(a.name)}</b><small>${esc(a.role)}</small></span>
       <span class="rep">${boss ? `<small>Báo cáo cho</small><span>${esc(boss.name)}</span>` : '<small>Cấp cao nhất</small>'}${subs ? `<span>${subs} người trực thuộc</span>` : ''}</span>
       <span class="now"><span class="st"><span class="dot ${st}"></span>${STATUS_TXT[st]}</span><small>${esc(now)}</small></span>
@@ -2574,7 +2592,7 @@ function renderPanel(){
   const attRow = (path, label, sub) => `<label class="att"><input type="checkbox" data-att="${esc(path)}" ${S.attach.has(path) ? 'checked' : ''}><span>${label}${sub ? ` <small>· ${sub}</small>` : ''}</span></label>`;
   const head = `
     <div class="ag-head">
-      <div class="portrait-box"><canvas class="portrait" width="28" height="30" aria-hidden="true"></canvas><img class="portrait-img" src="assets/portrait-${encodeURIComponent(a.id)}.png" alt="" onerror="this.remove()"></div>
+      <div class="portrait-box"><canvas class="portrait" width="28" height="30" aria-hidden="true"></canvas>${portraitImg(a)}</div>
       <div class="ag-meta">
         <h2>${esc(a.name)}</h2>
         <p class="role">${esc(a.role)}${agentById(a.reportsTo) ? ` · báo cáo cho <b>${esc(agentById(a.reportsTo).name)}</b>` : ''}</p>
@@ -2739,6 +2757,7 @@ async function runTask(){
   const a = agentById(S.selected), ta = $('#task'); if (!a || !ta) return;
   const task = ta.value.trim();
   if (!task){ toast('Viết việc cần làm trước đã.'); ta.focus(); return; }
+  askNotify();
   const btn = $('#panel [data-run]'); if (btn) btn.disabled = true;
   try {
     S.draft[a.id] = ''; ta.value = '';
@@ -2775,6 +2794,23 @@ function syncWins(){
   $('#dockBusy').textContent = busy || '';
   const ap = activePlan(); $('#dockFix').textContent = ap && ['draft', 'asking', 'paused'].includes(ap.status) ? '!' : '';
   $('#dockDx').textContent = S.deXuat.some(d => d.trang_thai === 'cho') ? '!' : '';
+  syncTitle();
+}
+// Dự án chạy hàng giờ: tiêu đề tab cho biết đang ở bước mấy hay đang cần bạn, kể cả khi bạn ở tab khác
+function syncTitle(){
+  const p = activePlan(), base = 'Yoga Lab';
+  const need = p && (['draft', 'asking', 'paused'].includes(p.status) || p.status === 'error' && !p.steps.length);
+  const prog = p && p.status === 'running' && p.steps.length ? `${p.steps.filter(s => s.status === 'done').length}/${p.steps.length}` : '';
+  document.title = need ? `❗ Cần bạn · ${base}` : prog ? `⏳ ${prog} · ${base}` : base;
+}
+// Thông báo của máy khi tab đang ẩn. Xin quyền lúc bạn giao việc (trình duyệt chỉ cho xin khi bạn bấm nút)
+function askNotify(){ try { if (!S.demo && 'Notification' in window && Notification.permission === 'default') Notification.requestPermission().catch(() => {}); } catch {} }
+function notify(title, body){
+  try {
+    if (S.demo || !document.hidden || !('Notification' in window) || Notification.permission !== 'granted') return;
+    const n = new Notification(title, { body: String(body || '').slice(0, 180), tag: 'yogalab-' + title });
+    n.onclick = () => { window.focus(); n.close(); };
+  } catch {}
 }
 function openWin(w){ S.win = w; store.set('yl-win', w || ''); if (w && cramped()) S.panelOpen = false; syncWins(); }
 $('.dock').addEventListener('click', e => {
@@ -2954,7 +2990,7 @@ function orgView(){
     const st = statusOf(a.id), subs = kids(a.id), n = subsOf(a.id).length;
     return `<li><div class="onode ${st}${a.id === S.selected ? ' sel' : ''}">
         <button class="ohit" data-sel="${esc(a.id)}" aria-label="Chọn ${esc(a.name)}"></button>
-        <span class="portrait-box opb"><canvas class="portrait ocv" data-id="${esc(a.id)}" width="28" height="30" aria-hidden="true"></canvas><img class="portrait-img" src="assets/portrait-${encodeURIComponent(a.id)}.png" alt="" onerror="this.remove()"></span>
+        <span class="portrait-box opb"><canvas class="portrait ocv" data-id="${esc(a.id)}" width="28" height="30" aria-hidden="true"></canvas>${portraitImg(a)}</span>
         <b>${esc(a.name)}</b><small>${esc(a.role)}</small>
         <span class="ometa"><span class="dot ${st}"></span>${esc(engLabel(a))}</span>
         ${n ? `<button class="btn sm primary" data-plan-for="${esc(a.id)}">Giao dự án · ${n} người</button>` : ''}
@@ -2997,6 +3033,35 @@ function planForm(){
   </div>
   ${past.length ? `<div class="past"><div class="lbl-sm">Dự án trước</div><div class="files">${past.map(x => `<button class="file" data-plan-open="${esc(x.id)}"><span class="dot ${planDot(x.status)}"></span><span class="name">${esc(x.goal)}</span><time>${PLAN_TXT[x.status]} · ${ago(new Date(x.createdAt).getTime())}</time></button>`).join('')}</div></div>` : ''}`;
 }
+// Ước tính chi phí kế hoạch nháp (cùng cách tính với lib/uoc-tinh.js): trung vị chi phí mỗi bước cùng người, cùng loại
+// ở các dự án trước; thiếu số liệu của người đó thì lấy trung vị cả nhóm. Cả dự án nhân hệ số vòng duyệt–sửa và nghiệm thu.
+function uocTinhKeHoach(steps, tk){
+  if (!tk) return null;
+  let usd = 0, wtok = 0, coSo = 0, doan = 0;
+  for (const s of steps){
+    const loai = s.checks ? 'review' : 'work', rieng = (tk.buoc[s.agent] || {})[loai], x = rieng || tk.chung[loai];
+    if (!x) continue;
+    usd += x.usd; wtok += x.wtok; coSo++; if (!rieng) doan++;
+  }
+  return coSo ? { usd, wtok, thieu: steps.length - coSo, doan, caDuAn: tk.heSo ? { usd: usd * tk.heSo, wtok: wtok * tk.heSo } : null } : null;
+}
+function uocTinhHtml(steps){
+  const u = uocTinhKeHoach(steps, S.uocTinh);
+  if (!u) return '';
+  const tk = S.uocTinh, tong = u.caDuAn || u, vuot = S.planBudget > 0 && tong.wtok > S.planBudget;
+  return `<p class="plan-note est${vuot ? ' warn' : ''}"><b>Ước tính:</b> các bước đã chia ~${u.usd.toFixed(2)} USD (${fmtTok(u.wtok)} token quy đổi)${u.caDuAn ? `; cả dự án thường ~${u.caDuAn.usd.toFixed(2)} USD, tính cả vòng duyệt–sửa, lập kế hoạch và nghiệm thu (×${String(tk.heSo).replace('.', ',')}, từ ${tk.soDuAn} dự án trước)` : ''}.
+    <small class="muted">Trung vị các bước cùng người, cùng loại${u.doan ? `; ${u.doan} bước lấy số chung của nhóm vì người đó chưa làm loại bước này` : ''}${u.thieu ? `; ${u.thieu} bước chưa có số liệu` : ''}. Deep Research và tạo ảnh dao động nhiều.</small>
+    ${vuot ? `<br><small>Vượt ngân sách ${fmtTok(S.planBudget)} token quy đổi: dự án sẽ tạm dừng giữa chừng chờ bạn cho thêm.</small>` : ''}</p>`;
+}
+// Bước Deep Research đang chờ Gemini (máy chủ hẹn giờ, không tốn token): mở cuộc chat để tự xem, thấy xong thì gọi lượt tiếp ngay
+const choGemini = (p, s) => p.status === 'running' && s.status === 'pending' && s.henLuc && new Date(s.henLuc).getTime() > Date.now();
+function geminiRow(p, s){
+  const cho = choGemini(p, s);
+  if (!cho && !s.geminiLink) return '';
+  return `<span class="txt row gem-row">${cho ? `<small class="muted">${s.henLyDo === 'han-muc' ? 'Chờ Gemini làm mới hạn mức' : 'Chờ Gemini Deep Research'} tới ${whenTxt(new Date(s.henLuc).getTime())}</small>
+    <button class="btn sm primary" data-plan-check title="Không chờ tới giờ hẹn: gọi ngay lượt tiếp theo (lấy báo cáo, hoặc thử lại khi hạn mức đã làm mới)">Kiểm ngay</button>` : ''}
+    ${s.geminiLink && !S.demo ? `<a class="btn sm" href="${esc(s.geminiLink)}" target="_blank" rel="noopener noreferrer" title="Mở cuộc chat Deep Research trên Gemini để xem tiến độ">🔗 Mở chat Gemini</a>` : ''}</span>`;
+}
 function planView(p){
   const coord = agentById(p.coordinatorId);
   const draft = p.status === 'draft';
@@ -3024,7 +3089,7 @@ function planView(p){
     ${waitName ? `<p class="plan-note">Đang chờ ${esc(waitName)} làm xong việc khác.</p>` : ''}
     ${p.status === 'asking' ? askBox(p) : ''}
     ${p.planRunId ? `<div class="row" style="margin:-4px 0 12px;gap:6px"><button class="btn sm" data-view="du-an/${esc(p.id)}/brief.md">Brief</button><button class="btn sm" data-view="du-an/${esc(p.id)}/bang.md">Bảng dự án</button>${p.acceptFile ? `<button class="btn sm" data-view="${esc(p.acceptFile)}">Nghiệm thu</button>` : ''}</div>` : ''}
-    ${draft ? '<p class="hint">Sửa người làm hoặc nội dung từng bước nếu cần, rồi bấm <b>Chạy kế hoạch</b>.</p>' : ''}
+    ${draft ? '<p class="hint">Sửa người làm hoặc nội dung từng bước nếu cần, rồi bấm <b>Chạy kế hoạch</b>.</p>' + uocTinhHtml(S.planEdit.steps) : ''}
     <div class="flow">
       <div class="node coord ${coordSt}">${avatar(coord)}
         <span class="who">${esc(coord ? coord.name : '?')} <small>· điều phối viên</small></span>
@@ -3051,6 +3116,7 @@ function planView(p){
         <span class="st"><span class="dot ${s.status === 'pending' ? '' : s.status}"></span>${STEP_TXT[s.status] || s.status}${s.verdict ? ' · ' + (VERDICT_TXT[s.verdict] || s.verdict) : ''}${s.tokens ? ' · ' + fmtTok(s.tokens) : ''}</span>
         ${s.status === 'error' && canResume(p) ? `<span class="txt"><button class="btn sm primary" data-plan-resume>▶ Chạy tiếp từ bước này</button></span>` : ''}
         <span class="txt${s.error ? '' : ' clamp'}" title="${esc(taskText(s.task))}">${s.checks ? `<b>[Duyệt bước ${s.checks}]</b> ` : s.fixOf ? `<b>[Sửa bước ${s.fixOf}]</b> ` : ''}${esc(gist(s.task))}${s.error ? `\n<span style="color:var(--err)">${esc(s.error)}</span>` : ''}</span>
+        ${geminiRow(p, s)}
       </div>`;
     }
   });
@@ -3093,18 +3159,19 @@ $('#book').addEventListener('click', async e => {
   const p = shownPlan();
   if (b.hasAttribute('data-plan-new')){
     const goal = $('#goal').value.trim(); if (!goal){ toast('Viết mục tiêu trước đã.'); return $('#goal').focus(); }
-    b.disabled = true;
+    b.disabled = true; askNotify();
     return planAction(async () => {
       await api.plan({ goal, coordinatorId: $('#coord').value, autoStart: $('#autoStart').checked, review: $('#review').checked, ...($('#tiepNoi') && $('#tiepNoi').value ? { tiepNoiTu: $('#tiepNoi').value } : {}) });
       S.goalDraft = ''; S.planView = null; S.sub = 'plan'; S._planKey = null; renderBook();
     }).finally(() => { b.disabled = false; });
   }
-  if (b.hasAttribute('data-plan-start') && p) return planAction(() => api.planStart(p.id, S.planEdit.steps, S.planEdit.review));
+  if (b.hasAttribute('data-plan-start') && p){ askNotify(); return planAction(() => api.planStart(p.id, S.planEdit.steps, S.planEdit.review)); }
   if (b.hasAttribute('data-plan-stop') && p){
     if (p.status !== 'draft' && !confirm('Dừng kế hoạch? Bước đang chạy sẽ bị dừng, các bước đã xong vẫn giữ nguyên.')) return;
     return planAction(() => api.planStop(p.id));
   }
   if (b.hasAttribute('data-plan-resume') && p) return planAction(() => api.planResume(p.id));
+  if (b.hasAttribute('data-plan-check') && p){ b.disabled = true; return planAction(() => api.planCheckNow(p.id), 'Đang gọi lượt tiếp theo, không chờ tới giờ hẹn.').finally(() => { b.disabled = false; }); }
   if (b.hasAttribute('data-plan-slide') && p){
     b.disabled = true; b.textContent = 'Đang dựng…';
     return planAction(() => api.planSlide(p.id), 'Đã dựng xong, xem dòng cuối nhật ký dự án.').finally(() => { b.disabled = false; });
@@ -3266,9 +3333,11 @@ function renderBoard(){
   const idle = !cards.some(c => c.col === 'working' || c.col === 'review') && !(p && PLAN_ACTIVE.includes(p.status));
   const pick = S.boardPick ? `<p class="hint" style="margin:6px 0 4px">Chọn người nhận việc:</p><div class="kpick">${S.agents.map(a => `<button type="button" data-sel="${esc(a.id)}">${avatar(a)}${esc(a.name)}</button>`).join('')}</div>` : '';
   const resumable = canResume(p);
+  const gemStep = p && p.steps.find(s => choGemini(p, s));
   const note = needYou || resumable ? `<div class="bd-note${['paused', 'error', 'stopped'].includes(p.status) ? ' err' : ''}"><span>${p.status === 'draft' ? '<b>Kế hoạch chờ bạn duyệt.</b> Xem, sửa các bước rồi bấm Chạy kế hoạch.' : p.status === 'asking' ? '<b>Nhóm cần bạn trả lời</b> trước khi làm tiếp.' : `<b>${PLAN_TXT[p.status]}.</b> ${esc(p.note || '')}${p.resumeAt ? ` <small class="muted">(tự chạy tiếp lúc ${whenTxt(new Date(p.resumeAt).getTime())})</small>` : ''}`}</span>
       ${resumable ? `<button class="btn sm primary" type="button" data-bd-resume="${esc(p.id)}">▶ ${p.steps.length ? 'Chạy tiếp' : 'Lập lại kế hoạch'}</button><button class="btn sm" type="button" data-bd-plan="${esc(p.id)}">Xem dự án</button>`
-        : `<button class="btn sm primary" type="button" data-bd-plan="${esc(p.id)}">${p.status === 'draft' ? 'Duyệt kế hoạch' : p.status === 'asking' ? 'Trả lời nhóm' : 'Mở dự án'}</button>`}</div>` : '';
+        : `<button class="btn sm primary" type="button" data-bd-plan="${esc(p.id)}">${p.status === 'draft' ? 'Duyệt kế hoạch' : p.status === 'asking' ? 'Trả lời nhóm' : 'Mở dự án'}</button>`}</div>`
+    : gemStep ? `<div class="bd-note"><span><b>Đang chờ Gemini.</b> ${esc(p.note || '')} <small class="muted">Máy chủ chờ, không tốn token.</small></span>${geminiRow(p, gemStep).replace(/data-plan-check/, `type="button" data-bd-check="${esc(p.id)}"`)}</div>` : '';
   const empty = { wait: p && !['planning', 'replanning'].includes(p.status) ? 'Không còn việc chờ.' : '', working: 'Chưa ai đang làm.', review: 'Không có gì đang duyệt.', fix: 'Không có gì cần sửa.', done: 'Chưa xong sản phẩm nào.' };
   $('#board').innerHTML = KCOLS.map(([k, t]) => `<section class="kcol" data-col="${k}" aria-label="${t}">
       <h3><span>${t}</span><span class="n">${by[k].length}</span></h3>
@@ -3371,6 +3440,7 @@ $('#boardWin').addEventListener('click', e => {
   if (b.dataset.presult) return openProject(b.dataset.presult);
   if (b.dataset.sel){ S.boardPick = false; return select(b.dataset.sel); }
   if (b.dataset.bdResume) return resumeProject(b.dataset.bdResume, b);
+  if (b.dataset.bdCheck){ b.disabled = true; return planAction(() => api.planCheckNow(b.dataset.bdCheck), 'Đang gọi lượt tiếp theo, không chờ tới giờ hẹn.').finally(() => { b.disabled = false; }); }
   if (b.hasAttribute('data-bd-new')){
     if (activePlan()){ toast('Đang có một dự án chưa xong. Mỗi lúc chỉ chạy một dự án.'); S.planView = null; }
     else S.planView = '__new';

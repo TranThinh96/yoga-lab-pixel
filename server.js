@@ -27,6 +27,7 @@ const { docCauHoi: parseQuestions, laCauHoiMoiTruong, locBaiHocMoi, phanLoaiCauH
 const { chuDeTriThuc, docBangTriThuc, hopNhatMenhDe, hopNhatNguon, capNhatTruyCap, hopNhatTuThe, maHinh, hopNhatHinh, cacChuDe, vietMocChuDe, vietBanDoTriThuc, docThuatNgu, dienThuatNgu, timTriThuc, goiNguCanh, slug, KIEU_MAU, trichMauTot, taoMauTot, chonMauTot } = require('./lib/tri-thuc');
 const { docGhiChu } = require('./lib/ghi-chu');
 const { chonBuocChay, choBuocChen, hetHanMucGemini, buocSauDr } = require('./lib/lich');
+const { thongKeChiPhi } = require('./lib/uoc-tinh');
 const { chiSoTriNao } = require('./lib/chi-so');
 const { soMa, docBaiHoc, noiDungBaiHoc, suaBaiHoc, banXemKinhNghiem, nhanBuoc, chonBaiHoc, maTrong, bangChungBaiHoc, daNhanTheoBuocCua, danhGiaBaiHoc, themLoHong, demLoHongMo, thongKeHoc, hocTuJson, apDungHoc, apDungSuaHuongDan, hoanTacSuaHuongDan, themTuTranh } = require('./lib/bai-hoc');
 
@@ -1049,6 +1050,9 @@ async function loadPlans() {
   }
   // Dự án đang chờ hạn mức làm mới: hẹn lại giờ tự chạy tiếp
   for (const p of plans) if (p.status === 'paused' && p.resumeAt) scheduleResume(p);
+  // Kế hoạch lưu từ bản trước chưa có link cuộc chat Gemini của bước Deep Research. Chỉ dự án chưa kết thúc:
+  // dự án sau cùng chủ đề ghi đè file Deep Research, nên link trong file không còn là của dự án cũ
+  for (const p of plans) if (PLAN_ACTIVE.has(p.status)) for (const s of p.steps || []) if (s.drFile && !s.geminiLink) s.geminiLink = linkGemini(readWs(s.drFile));
 }
 
 // ── Sổ quyết định: .yogalab/quyet-dinh.json là bản gốc, tri-thuc/quyet-dinh.md để xem trong Obsidian ──
@@ -1347,7 +1351,7 @@ function henBanDoTriThuc() {
 
 let planSave = Promise.resolve();
 function emitPlan(plan) {
-  broadcast({ type: 'plan', plan });
+  broadcast({ type: 'plan', plan, ...(plan.status === 'draft' ? { uocTinh: thongKeChiPhi(plans, runs, weightOf) } : {}) }); // kế hoạch nháp: số liệu mới để ước tính chi phí
   if (plans.length > 30) plans = plans.slice(-30);
   const data = JSON.stringify(plans, null, 1);
   const board = boardText(plan);
@@ -1709,6 +1713,8 @@ const haiPha = (agent, kind) => !!config.deepResearchTwoPhase && kind === 'work'
 const drFileOf = (plan, agent) => { const t = planTopic(plan); return t ? `agents/${agent.id}/${t}-deep-research.md` : null; };
 // Giá trị dòng "Trạng thái:" (agent hay in đậm hoặc gạch đầu dòng)
 const trangThaiDr = text => { const m = /^[\s>*_-]*Trạng thái[\s*_]*:[\s*_]*(.*)$/imu.exec(text || ''); return m ? m[1].trim() : ''; };
+// Link cuộc chat Gemini agent ghi trong file Deep Research: nút "Mở chat Gemini" ở bước để bạn tự xem tiến độ
+const linkGemini = text => (/https:\/\/gemini\.google\.com\/(?:u\/\d+\/)?app\/[\w-]+/.exec(text || '') || [])[0] || null;
 const gioPhut = d => new Date(d).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 const henTimers = new Map(); // id kế hoạch → hẹn chạy tiếp bước đang chờ Gemini
 // Bước có henLuc ở tương lai: chưa chạy, hẹn gọi lại pumpPlan đúng lúc đó
@@ -1839,6 +1845,7 @@ function startStep(plan, idx) {
         if (pha) {
           // Agent có thể đặt tên chủ đề khác máy chủ: lấy file *-deep-research.md nó vừa ghi
           s.drFile = (run.files || []).find(f => f.startsWith(`agents/${agent.id}/`) && f.endsWith('-deep-research.md')) || s.drFile || drFileOf(plan, agent);
+          s.geminiLink = linkGemini(readWs(s.drFile)) || s.geminiLink || null;
           if (pha === 1 || !s.drBatDau) s.drBatDau = run.startedAt; // mốc tính hạn chờ Gemini
           const choToiDa = cfgNum('drChoToiDa', 150);
           // Chỉ xét file của chính lượt này: file nguồn từ lượt trước (vd lượt dự phòng khi Gemini chậm) chưa có báo cáo Gemini
@@ -3310,7 +3317,8 @@ function publicState() {
     demo: false,
     workspace: workspaceDir(),
     obsidianVault: config.obsidianVault || path.basename(workspaceDir()),
-    config: { maxTurns: config.maxTurns, skipMcp: config.skipMcp, maxPlanSteps: config.maxPlanSteps || 6 },
+    config: { maxTurns: config.maxTurns, skipMcp: config.skipMcp, maxPlanSteps: config.maxPlanSteps || 6, planTokenBudget: cfgNum('planTokenBudget', 0) },
+    uocTinh: thongKeChiPhi(plans, runs, weightOf), // ước tính chi phí kế hoạch nháp
     agents: config.agents,
     coordinatorId: config.coordinatorId || '',
     running: [...running.keys()],
@@ -3460,6 +3468,14 @@ const server = http.createServer(async (req, res) => {
       } else if (action === 'retry') {
         if (PLAN_ACTIVE.has(plan.status)) return send(res, 409, { error: 'Kế hoạch này chưa kết thúc: dùng Chạy tiếp hoặc Dừng trước' });
         return send(res, 200, { ok: true, plan: await retryPlan(plan) });
+      } else if (action === 'kiem-ngay') {
+        // Bạn đã thấy Gemini xong (hoặc hạn mức đã làm mới): không chờ hết giờ hẹn, gọi ngay lượt tiếp theo
+        const s = plan.status === 'running' && plan.steps.find(x => x.status === 'pending' && x.henLuc && new Date(x.henLuc) > Date.now());
+        if (!s) return send(res, 409, { error: 'Không có bước nào đang chờ Gemini' });
+        clearTimeout(henTimers.get(plan.id)); henTimers.delete(plan.id);
+        s.henLuc = new Date().toISOString(); // startStep xoá giờ hẹn và dòng "Chờ Gemini…"
+        plan.log.push(`Bước ${plan.steps.indexOf(s) + 1}: bạn bấm "Kiểm ngay", không chờ tới giờ hẹn`);
+        emitPlan(plan); pumpPlan(plan);
       } else if (action === 'answer') {
         answerPlan(plan, b.answers, !!b.skip);
       } else if (action === 'slide') {

@@ -507,7 +507,7 @@ function buildPrompt(agent, task, handoffPath, attachments, kind, lab = [], goi 
     ...(lab.includes('tra_cuu') ? ['- tra_cuu(tu_khoa): tìm trong bộ não chung (ý đã kiểm chứng, nguồn, tư thế, hình). Tra trước khi tìm web: mục nào đã có ý đã duyệt còn hạn thì dùng lại, không tìm lại.'] : []),
     ...(lab.includes('hoi_dong_nghiep') ? ['- hoi_dong_nghiep(ai, cau_hoi): hỏi nhanh một đồng nghiệp (mã người), nhận 3–6 câu trả lời. Mỗi dự án tối đa 3 lần; chỉ dùng khi tra_cuu và file bàn giao không đủ.'] : []),
     '- Không có Bash: đừng thử chạy lệnh, script hay python. Việc máy móc thì dùng công cụ trên.');
-  if (agent.instructions && agent.instructions.trim()) {
+  if (agent.instructions && agent.instructions.trim() && !luotKiemDr(pha)) { // lượt kiểm pha 2 không cần hướng dẫn vai (vd "tra cứu trước khi tìm")
     lines.push('', 'HƯỚNG DẪN RIÊNG CHO VAI CỦA BẠN:', agent.instructions.trim());
   }
   if (attachments && attachments.length) {
@@ -645,12 +645,14 @@ async function hoiDongNghiep(lab, { ai, cauHoi }) {
   return { text: String(r.summary || '').slice(0, 1500) };
 }
 
-// opts: { prompt (thay prompt mặc định), maxTurns, effort, planId, step, pha, drFile, chiDoc (chỉ Read/Glob/Grep), khongGoi (không soạn BỐI CẢNH), onDone(run) }
+// opts: { prompt (thay prompt mặc định), maxTurns, effort, planId, step, pha, drFile, chiDoc (chỉ Read/Glob/Grep), onDone(run) }
 async function startRun(agent, task, attachments = [], opts = {}) {
   if (running.has(agent.id)) throw Object.assign(new Error(`${agent.name} đang bận`), { status: 409 });
   running.set(agent.id, null); // giữ chỗ ngay, tránh hai việc cùng lúc chen vào trong lúc chờ
   try { await ensureWorkspace(); } catch (e) { running.delete(agent.id); throw e; }
-  const lab = opts.chiDoc ? [] : labToolsFor(agent, opts.kind, !!opts.planId && !!opts.kind);
+  // Lượt kiểm Deep Research pha 2 chỉ mở Gemini rồi ghi trạng thái: không công cụ máy chủ, không BỐI CẢNH
+  const chiKiem = luotKiemDr(opts.pha);
+  const lab = opts.chiDoc || chiKiem ? [] : labToolsFor(agent, opts.kind, !!opts.planId && !!opts.kind);
 
   const startedAt = new Date();
   let labKey = null, mcpFile = null;
@@ -666,7 +668,7 @@ async function startRun(agent, task, attachments = [], opts = {}) {
   }
   const handoffRel = `handoff/${stamp(startedAt)}-${agent.id}.md`;
   let goi = '', checklist = [], daNhan = [];
-  if (!opts.prompt && config.brain !== false && !opts.khongGoi) {
+  if (!opts.prompt && config.brain !== false && !chiKiem) {
     try { ({ text: goi, checklist, baiHoc: daNhan } = goiChoLuot(agent, task, { ...opts, files: [...attachments, ...(opts.files || [])] })); }
     catch (e) { console.error('Bộ não: không soạn được gói ngữ cảnh:', e.message); }
   }
@@ -1701,6 +1703,8 @@ function handleReview(plan, idx, text, banGhi = '') {
 }
 
 // ── Deep Research hai pha: lượt 1 khởi chạy trên Gemini, máy chủ chờ (không tốn token), lượt 2 lấy kết quả ──
+// Lượt kiểm pha 2 khi tổng hợp chạy ở pha 3 (drTongHopRieng): chỉ xem Gemini xong chưa và lưu báo cáo
+const luotKiemDr = pha => pha === 2 && config.drTongHopRieng !== false;
 const haiPha = (agent, kind) => !!config.deepResearchTwoPhase && kind === 'work' && (geminiWebOf(agent) || {}).mode === 'deep-research';
 const drFileOf = (plan, agent) => { const t = planTopic(plan); return t ? `agents/${agent.id}/${t}-deep-research.md` : null; };
 // Giá trị dòng "Trạng thái:" (agent hay in đậm hoặc gạch đầu dòng)
@@ -1817,11 +1821,10 @@ function startStep(plan, idx) {
   for (const x of srcs) if (x.handoff && x.agentId !== agent.id) broadcast({ type: 'handoff', from: x.agentId, to: agent.id, file: x.handoff, planId: plan.id });
   // Lượt kiểm pha 2 (tổng hợp để pha 3) chỉ mở Gemini rồi ghi trạng thái: không đính kèm brief, bàn giao, không soạn BỐI CẢNH.
   // Dự án thử 25/10: mỗi lượt kiểm vẫn đọc lại brief và bàn giao cũ, 12–15 lượt, khoảng $0,30
-  const chiKiem = pha === 2 && config.drTongHopRieng !== false;
+  const chiKiem = luotKiemDr(pha);
   const viec = chiKiem ? `${task.split(/\r?\n/)[0]}\nLượt lấy báo cáo Deep Research: làm đúng phần PHA 2/2 ở trên; lượt này không cần đọc brief, bảng dự án hay bàn giao.` : task;
   startRun(agent, viec, chiKiem ? [] : att, {
     planId: plan.id, step: idx + 1, kind, maxTurns: pha === 1 ? 40 : chiKiem ? 20 : pha === 3 ? 60 : stepTurns(agent, kind), effort: stepEffort(agent, kind), files: s.fileSua || [],
-    khongGoi: chiKiem,
     ...(pha ? { pha, drFile: s.drFile || drFileOf(plan, agent) } : {}),
     onDone: (run, full) => {
       idx = plan.steps.indexOf(s); // chạy song song: bước khác có thể đã chèn bước phía trước bước này

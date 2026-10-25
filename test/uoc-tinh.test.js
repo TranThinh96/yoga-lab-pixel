@@ -25,9 +25,9 @@ const runs = [
 
 test('thongKeChiPhi: cộng mọi lượt của một bước, tách theo người và loại bước', () => {
   const tk = thongKeChiPhi(plans, runs);
-  assert.deepEqual(tk.buoc.mai.work, { usd: 0.8, wtok: 125, n: 2 }); // trung vị của 1,0 (hai pha) và 0,6
-  assert.deepEqual(tk.buoc.mai.fix, { usd: 0.4, wtok: 40, n: 1 });
-  assert.deepEqual(tk.buoc.an.review, { usd: 0.6, wtok: 60, n: 1 }); // bước lỗi của p2 không tính
+  assert.deepEqual(tk.buoc.mai.work, { usd: 0.8, cao: 1, wtok: 125, n: 2 }); // trung vị của 1,0 (hai pha) và 0,6
+  assert.deepEqual(tk.buoc.mai.fix, { usd: 0.4, cao: 0.4, wtok: 40, n: 1 });
+  assert.deepEqual(tk.buoc.an.review, { usd: 0.6, cao: 0.6, wtok: 60, n: 1 }); // bước lỗi của p2 không tính
   assert.equal(tk.buoc.an.rereview.usd, 0.2);
   assert.equal(tk.chung.work.n, 2);
 });
@@ -48,7 +48,19 @@ test('uocTinhKeHoach: thiếu số liệu của người đó thì lấy trung v
   assert.equal(u.usd, 2.8);
   assert.equal(u.doan, 2);
   assert.equal(u.thieu, 0);
-  assert.deepEqual(u.caDuAn, { usd: 5.32, wtok: Math.round(u.wtok * 1.9) });
+  assert.deepEqual(u.caDuAn, { usd: 5.32, cao: 6.08, wtok: Math.round(u.wtok * 1.9) });
   assert.equal(uocTinhKeHoach([{ agent: 'mai', checks: 1 }], { buoc: {}, chung: {}, heSo: null }), null);
   assert.equal(uocTinhKeHoach([{ agent: 'mai' }], null), null);
+});
+
+test('mức trường hợp tốn: 9/10 bước thấp hơn mức này, cộng theo bước và nhân hệ số cả dự án', () => {
+  const ps = [{ id: 'q', status: 'done', costUsd: 15, steps: Array.from({ length: 10 }, () => ({ agentId: 'mai', status: 'done' })) }];
+  const rs = [0.5, 0.6, 0.7, 0.7, 0.8, 0.9, 1, 1, 1.2, 7.6].map((usd, i) => ({ planId: 'q', step: i + 1, costUsd: usd, tokens: 10 }));
+  const tk = thongKeChiPhi(ps, rs);
+  assert.equal(tk.buoc.mai.work.usd, 0.85);
+  assert.equal(tk.buoc.mai.work.cao, 1.2); // lần $7,6 nằm ngoài 9/10
+  assert.equal(tk.heSo, 1);
+  const u = uocTinhKeHoach([{ agent: 'mai' }, { agent: 'mai' }], tk);
+  assert.equal(u.cao, 2.4);
+  assert.equal(u.caDuAn.cao, 2.4);
 });

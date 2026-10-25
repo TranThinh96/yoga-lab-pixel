@@ -3037,19 +3037,19 @@ function planForm(){
 // ở các dự án trước; thiếu số liệu của người đó thì lấy trung vị cả nhóm. Cả dự án nhân hệ số vòng duyệt–sửa và nghiệm thu.
 function uocTinhKeHoach(steps, tk){
   if (!tk) return null;
-  let usd = 0, wtok = 0, coSo = 0, doan = 0;
+  let usd = 0, cao = 0, wtok = 0, coSo = 0, doan = 0;
   for (const s of steps){
     const loai = s.checks ? 'review' : 'work', rieng = (tk.buoc[s.agent] || {})[loai], x = rieng || tk.chung[loai];
     if (!x) continue;
-    usd += x.usd; wtok += x.wtok; coSo++; if (!rieng) doan++;
+    usd += x.usd; cao += x.cao || x.usd; wtok += x.wtok; coSo++; if (!rieng) doan++;
   }
-  return coSo ? { usd, wtok, thieu: steps.length - coSo, doan, caDuAn: tk.heSo ? { usd: usd * tk.heSo, wtok: wtok * tk.heSo } : null } : null;
+  return coSo ? { usd, cao, wtok, thieu: steps.length - coSo, doan, caDuAn: tk.heSo ? { usd: usd * tk.heSo, cao: cao * tk.heSo, wtok: wtok * tk.heSo } : null } : null;
 }
 function uocTinhHtml(steps){
   const u = uocTinhKeHoach(steps, S.uocTinh);
   if (!u) return '';
   const tk = S.uocTinh, tong = u.caDuAn || u, vuot = S.planBudget > 0 && tong.wtok > S.planBudget;
-  return `<p class="plan-note est${vuot ? ' warn' : ''}"><b>Ước tính:</b> các bước đã chia ~${u.usd.toFixed(2)} USD (${fmtTok(u.wtok)} token quy đổi)${u.caDuAn ? `; cả dự án thường ~${u.caDuAn.usd.toFixed(2)} USD, tính cả vòng duyệt–sửa, lập kế hoạch và nghiệm thu (×${String(tk.heSo).replace('.', ',')}, từ ${tk.soDuAn} dự án trước)` : ''}.
+  return `<p class="plan-note est${vuot ? ' warn' : ''}"><b>Ước tính:</b> các bước đã chia ~${u.usd.toFixed(2)} USD (${fmtTok(u.wtok)} token quy đổi)${u.caDuAn ? `; cả dự án thường ~${u.caDuAn.usd.toFixed(2)} USD, tính cả vòng duyệt–sửa, lập kế hoạch và nghiệm thu (×${String(tk.heSo).replace('.', ',')}, từ ${tk.soDuAn} dự án trước)` : ''}.${tong.cao > tong.usd * 1.3 ? ` Lần tốn có thể tới ~${tong.cao.toFixed(2)} USD (9/10 lần thấp hơn mức này).` : ''}
     <small class="muted">Trung vị các bước cùng người, cùng loại${u.doan ? `; ${u.doan} bước lấy số chung của nhóm vì người đó chưa làm loại bước này` : ''}${u.thieu ? `; ${u.thieu} bước chưa có số liệu` : ''}. Deep Research và tạo ảnh dao động nhiều.</small>
     ${vuot ? `<br><small>Vượt ngân sách ${fmtTok(S.planBudget)} token quy đổi: dự án sẽ tạm dừng giữa chừng chờ bạn cho thêm.</small>` : ''}</p>`;
 }

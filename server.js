@@ -380,12 +380,12 @@ function chromePrompt(agent, kind, pha, file) {
       `- Dùng lại báo cáo đã lưu trong agents/${agent.id}/ (file *-deep-research.md của chủ đề).`,
       `- Không có WebFetch, WebSearch: mọi việc tìm hay kiểm nguồn đều nhờ Gemini. Mở https://gemini.google.com trong một tab mới, chat thường (KHÔNG bật Deep Research), gộp các ý cần tìm hoặc cần kiểm vào MỘT prompt (dán bằng một lệnh như dưới), yêu cầu link nguồn và câu trích nguyên văn tiếng Anh, rồi lấy câu trả lời bằng get_page_text. Muốn biết link còn mở được thì dùng kiem_link (nếu có).`,
       DAN_PROMPT,
-      `- Gặp trang đăng nhập, CAPTCHA hoặc hết quota: dừng, ghi nguyên văn vào Vướng mắc.`] : [
+      `- Gặp trang đăng nhập, CAPTCHA: dừng, ghi nguyên văn vào Vướng mắc; hết hạn mức thì ghi dòng "HẾT HẠN MỨC GEMINI: …" như trên.`] : [
     `- Dùng lại báo cáo đã lưu trong agents/${agent.id}/ (file *-deep-research.md của chủ đề) và mở link nguồn bằng WebFetch để kiểm.`,
     kind === 'fix'
       ? `- Cần tìm nguồn thay thế cho vài ý: dùng WebSearch, rồi mở link bằng WebFetch để xác minh trước khi ghi. Chỉ khi WebSearch không ra mới hỏi Gemini trên https://gemini.google.com trong một tab mới (chat thường, KHÔNG bật Deep Research).`
       : `- Cần tìm nguồn thay thế cho vài ý: hỏi Gemini trên https://gemini.google.com trong một tab mới, chat thường (KHÔNG bật Deep Research), rồi mở link nó đưa bằng WebFetch để xác minh trước khi ghi.`,
-    `- Gặp trang đăng nhập, CAPTCHA hoặc hết quota: dừng, ghi nguyên văn vào Vướng mắc.`]));
+    `- Gặp trang đăng nhập, CAPTCHA: dừng, ghi nguyên văn vào Vướng mắc; hết hạn mức thì ghi dòng "HẾT HẠN MỨC GEMINI: …" như trên.`]));
   const f = file || raw;
   if (deep && pha === 1) return L.concat('',
     `CÁCH LÀM: GEMINI DEEP RESEARCH, PHA 1/2 (KHỞI CHẠY). Lượt này chỉ khởi chạy, không chờ kết quả.`,
@@ -395,7 +395,7 @@ function chromePrompt(agent, kind, pha, file) {
     DAN_PROMPT,
     `- Gemini hiện kế hoạch nghiên cứu: ${g.checkPlan ? 'đối chiếu với brief, thiếu mục nào thì bấm sửa kế hoạch và bổ sung; ' : ''}bấm "Start research"/"Bắt đầu nghiên cứu".`,
     `- Ngay khi Gemini bắt đầu nghiên cứu: ghi ${f} với 3 dòng đầu "Link: <URL cuộc chat dạng /app/…>", "Trạng thái: đang chạy", "Bắt đầu: <giờ>". Rồi ghi bàn giao ngắn và KẾT THÚC lượt. Không chờ kết quả: máy chủ sẽ chờ (không tốn token) rồi gọi lại bạn để lấy báo cáo.`,
-    `- Gặp trang đăng nhập, CAPTCHA, hết quota: dừng, ghi nguyên văn vào Vướng mắc.`);
+    `- Gặp trang đăng nhập, CAPTCHA: dừng, ghi nguyên văn vào Vướng mắc; hết hạn mức thì ghi dòng "HẾT HẠN MỨC GEMINI: …" như trên.`);
   if (deep && pha === 2) return L.concat('',
     `CÁCH LÀM: GEMINI DEEP RESEARCH, PHA 2/2 (LẤY KẾT QUẢ).`,
     `- VIỆC ĐẦU TIÊN, trước khi đọc brief, bảng dự án hay bàn giao: đọc ${f}, lấy dòng "Link:". Mở link đó trong một tab mới, kiểm tra Gemini đã xong chưa bằng find (nút Xuất/Export; dòng tiến độ kiểu "Researching…"). Không chụp màn hình để kiểm.`,
@@ -403,7 +403,7 @@ function chromePrompt(agent, kind, pha, file) {
     config.drTongHopRieng !== false
       ? `- ĐÃ XONG: lấy toàn văn báo cáo và danh sách nguồn bằng MỘT lần get_page_text với max_chars: 200000. Ghi nguyên bản vào ${f} (giữ dòng Link, đổi thành "Trạng thái: xong"), ghi bàn giao một dòng rồi KẾT THÚC lượt. KHÔNG tổng hợp, không mở link nguồn trong lượt này: máy chủ giao bạn một lượt riêng (không cần Chrome) để tổng hợp sang file nguồn.`
       : `- ĐÃ XONG: lấy toàn văn báo cáo và danh sách nguồn bằng get_page_text với max_chars: 200000. Ghi nguyên bản vào ${f} (giữ dòng Link, đổi thành "Trạng thái: xong"). Rồi tổng hợp sang file nguồn theo hướng dẫn riêng; nguồn chỉ có trong báo cáo mà bạn chưa mở thì ghi "chưa kiểm".`,
-    `- Gemini báo lỗi hoặc hết quota: ghi nguyên văn vào Vướng mắc.`);
+    `- Gemini báo lỗi: ghi nguyên văn vào Vướng mắc; hết hạn mức thì ghi dòng "HẾT HẠN MỨC GEMINI: …" như trên.`);
   L.push('',
     deep ? `CÁCH NGHIÊN CỨU: GEMINI DEEP RESEARCH (bắt buộc)` : `CÁCH LÀM: HỎI GEMINI TRÊN WEB (bắt buộc)`,
     `- Việc chính chạy trên https://gemini.google.com trong tab đó, bằng tài khoản Gemini của chủ dự án. Không dùng Antigravity, không dùng API.${deep ? (chiGemini(agent) ? ' Không có WebSearch, WebFetch: cần kiểm thêm nguồn nào thì hỏi Gemini trong chat thường.' : ' Không tự tìm bằng WebSearch; WebFetch chỉ để mở lại link nguồn khi cần kiểm.') : ''}`,
@@ -422,7 +422,7 @@ function chromePrompt(agent, kind, pha, file) {
     `- Xong: lấy toàn văn${deep ? ' báo cáo và danh sách nguồn' : ' câu trả lời'} bằng get_page_text với max_chars: 200000 (mặc định chỉ 50.000 ký tự sẽ cắt mất phần cuối; đừng lấy từng đoạn bằng javascript_tool).${g.saveRaw ? ` Lưu nguyên bản vào ${raw} (đầu file ghi link cuộc chat Gemini, model, ngày); bỏ phần công thức bị lặp nếu có.` : ' Ghi link cuộc chat Gemini vào bàn giao.'} Rồi tự tổng hợp sang sản phẩm theo hướng dẫn riêng; ${chiGemini(agent) ? 'link chưa kiểm được bằng kiem_link' : 'nguồn chỉ có trong báo cáo mà bạn chưa mở'} thì ghi "chưa kiểm".`
   );
   if (g.exportDocs) L.push(`- Bấm "Export to Docs"/"Xuất sang Tài liệu" để lưu báo cáo vào Google Docs; ghi link Docs vào bàn giao.`);
-  L.push(`- Hết quota hoặc Gemini báo lỗi: ghi nguyên văn thông báo vào Vướng mắc, không thử lại liên tục.`);
+  L.push(`- Gemini báo lỗi: ghi nguyên văn thông báo vào Vướng mắc, không thử lại liên tục; hết hạn mức thì ghi dòng "HẾT HẠN MỨC GEMINI: …" như trên.`);
   return L;
 }
 
@@ -440,7 +440,7 @@ function geminiImagePrompt(agent, g) {
     `- Mỗi ảnh: gửi prompt, chờ ảnh hiện (tối đa ${g.maxWaitMinutes} phút cho cả lượt; chờ bằng javascript_tool await new Promise(r => setTimeout(r, 20000)) thay vì nhiều lần wait; trang không tự cập nhật thì navigate lại URL cuộc chat). Gộp gửi prompt + chờ + zoom vào MỘT browser_batch. Xem mỗi ảnh MỘT lần bằng zoom đúng vùng ảnh (không chụp cả màn hình nhiều lần): sai số tay chân, tư thế sai hướng dẫn an toàn (cổ gập, gối bị ép), thiếu đạo cụ, có chữ, khác người mẫu → yêu cầu tạo lại, tối đa ${g.retries} lần mỗi ảnh. Soát kỹ góc độ, tỉ lệ là việc của người duyệt ảnh sau bạn.`,
     `- Ảnh đạt: bấm nút tải ảnh kích thước đầy đủ của Gemini (biểu tượng tải xuống / "Download full size image"), đợi vài giây cho tải xong, rồi NGAY LẬP TỨC thêm một dòng vào cuối ${list}: tên file dự kiến không đuôi (vd trang-16-supta-baddha-konasana). Thứ tự dòng phải đúng thứ tự tải; chỉ tải bản đạt, mỗi ảnh một lần.`,
     `- Không chép, di chuyển hay đổi tên file trong thư mục Downloads; không chạy lệnh shell. Máy chủ tự chép ảnh vào output/<chu-de>/hinh/ khi bạn xong và ghi danh sách vào cuối bàn giao.`,
-    `- Chrome hỏi nơi lưu, chặn tải nhiều file, hoặc Gemini báo hết lượt tạo ảnh: dừng, ghi nguyên văn vào Vướng mắc.`,
+    `- Chrome hỏi nơi lưu hoặc chặn tải nhiều file: dừng, ghi nguyên văn vào Vướng mắc. Gemini báo hết lượt tạo ảnh: ghi dòng "HẾT HẠN MỨC GEMINI: …" như trên.`,
     `- Bàn giao: bảng trang · tên ảnh · đạt / chưa đạt (lý do) · số lần tạo; kèm link cuộc chat Gemini.`
   ];
 }
@@ -474,7 +474,10 @@ function buildPrompt(agent, task, handoffPath, attachments, kind, lab = [], goi 
     `   Nếu phải có câu trả lời thì mới làm xong phần của chính bạn (vd chờ kết quả để lấy tiếp, cần làm lại một phần), ghi "(làm tiếp sau khi trả lời)" ở cuối câu hỏi đó: trả lời xong, máy chủ giao ngay bạn một lượt làm tiếp, trước người sau.`,
     ``,
     `QUY TẮC TIẾT KIỆM (bắt buộc):`,
-    `1. Đọc index.md trước. Chỉ mở những file thật sự cần cho việc này, không quét cả folder.`,
+    // Bước trong dự án đã có brief, bàn giao cần đọc và BỐI CẢNH: đọc index.md chỉ tốn thêm một lượt
+    kind
+      ? `1. Việc giao đã ghi brief và các file cần đọc; index.md chỉ mở khi cần tìm file khác. Chỉ mở những file thật sự cần cho việc này, không quét cả folder.`
+      : `1. Đọc index.md trước. Chỉ mở những file thật sự cần cho việc này, không quét cả folder.`,
     `2. sources/ là tài liệu gốc, templates/ là mẫu chung — chỉ đọc. Nháp của bạn để trong agents/${agent.id}/. Sản phẩm cuối để trong output/.`,
     `3. Không sửa file nháp của agent khác (trừ khi nhiệm vụ yêu cầu rõ).`,
     `4. Khi xong, ghi bản bàn giao (tối đa ~350 chữ) vào đúng file: ${handoffPath}`,
@@ -642,7 +645,7 @@ async function hoiDongNghiep(lab, { ai, cauHoi }) {
   return { text: String(r.summary || '').slice(0, 1500) };
 }
 
-// opts: { prompt (thay prompt mặc định), maxTurns, effort, planId, step, pha, drFile, chiDoc (chỉ Read/Glob/Grep), onDone(run) }
+// opts: { prompt (thay prompt mặc định), maxTurns, effort, planId, step, pha, drFile, chiDoc (chỉ Read/Glob/Grep), khongGoi (không soạn BỐI CẢNH), onDone(run) }
 async function startRun(agent, task, attachments = [], opts = {}) {
   if (running.has(agent.id)) throw Object.assign(new Error(`${agent.name} đang bận`), { status: 409 });
   running.set(agent.id, null); // giữ chỗ ngay, tránh hai việc cùng lúc chen vào trong lúc chờ
@@ -663,7 +666,7 @@ async function startRun(agent, task, attachments = [], opts = {}) {
   }
   const handoffRel = `handoff/${stamp(startedAt)}-${agent.id}.md`;
   let goi = '', checklist = [], daNhan = [];
-  if (!opts.prompt && config.brain !== false) {
+  if (!opts.prompt && config.brain !== false && !opts.khongGoi) {
     try { ({ text: goi, checklist, baiHoc: daNhan } = goiChoLuot(agent, task, { ...opts, files: [...attachments, ...(opts.files || [])] })); }
     catch (e) { console.error('Bộ não: không soạn được gói ngữ cảnh:', e.message); }
   }
@@ -701,7 +704,7 @@ async function startRun(agent, task, attachments = [], opts = {}) {
 
   broadcast({ type: 'run', run: liveRun(run) }); // để giao diện biết việc đang làm và giờ bắt đầu
   broadcast({ type: 'status', agentId: agent.id, status: 'working' });
-  broadcast({ type: 'activity', agentId: agent.id, kind: 'think', text: 'Nhận việc, đọc index.md' });
+  broadcast({ type: 'activity', agentId: agent.id, kind: 'think', text: opts.kind ? 'Nhận việc, đọc brief' : 'Nhận việc, đọc index.md' });
 
   const g = geminiWebOf(agent);
   // Gemini trên web phải chờ: cho thêm 20 phút ngoài thời gian chờ tối đa
@@ -1797,8 +1800,13 @@ function startStep(plan, idx) {
   if (s.henLuc) { s.henLuc = null; s.henLyDo = null; if (/^Chờ Gemini/.test(plan.note || '')) plan.note = ''; }
   s.status = 'working'; s.error = '';
   for (const x of srcs) if (x.handoff && x.agentId !== agent.id) broadcast({ type: 'handoff', from: x.agentId, to: agent.id, file: x.handoff, planId: plan.id });
-  startRun(agent, task, att, {
-    planId: plan.id, step: idx + 1, kind, maxTurns: pha === 1 ? 40 : pha === 3 ? 60 : stepTurns(agent, kind), effort: stepEffort(agent, kind), files: s.fileSua || [],
+  // Lượt kiểm pha 2 (tổng hợp để pha 3) chỉ mở Gemini rồi ghi trạng thái: không đính kèm brief, bàn giao, không soạn BỐI CẢNH.
+  // Dự án thử 25/10: mỗi lượt kiểm vẫn đọc lại brief và bàn giao cũ, 12–15 lượt, khoảng $0,30
+  const chiKiem = pha === 2 && config.drTongHopRieng !== false;
+  const viec = chiKiem ? `${task.split(/\r?\n/)[0]}\nLượt lấy báo cáo Deep Research: làm đúng phần PHA 2/2 ở trên; lượt này không cần đọc brief, bảng dự án hay bàn giao.` : task;
+  startRun(agent, viec, chiKiem ? [] : att, {
+    planId: plan.id, step: idx + 1, kind, maxTurns: pha === 1 ? 40 : chiKiem ? 20 : pha === 3 ? 60 : stepTurns(agent, kind), effort: stepEffort(agent, kind), files: s.fileSua || [],
+    khongGoi: chiKiem,
     ...(pha ? { pha, drFile: s.drFile || drFileOf(plan, agent) } : {}),
     onDone: (run, full) => {
       idx = plan.steps.indexOf(s); // chạy song song: bước khác có thể đã chèn bước phía trước bước này

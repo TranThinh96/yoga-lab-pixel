@@ -50,3 +50,20 @@ test('soChuThietKe: ước lượng chữ trên slide từ dòng Bố cục', ()
   const nho = '## Trang 1 · X\n- Bố cục: nền `#3E5F45`. Tiêu đề: "Vận động là nền tảng [3][6]"\n- Prompt: "woman on a yoga mat"\n';
   assert.deepEqual(soChuThietKe(nho), [{ trang: 1, chu: 5 }]);
 });
+
+test('soatVanBan: mã màu hex trong prompt ảnh của thiet-ke.md', () => {
+  const t = [
+    '- Bảng màu: Xô thơm (nền `#E4ECDF`). Mã màu chỉ dùng khi dựng Canva, không đưa vào prompt ảnh.',
+    '| Nền chính | `#E4ECDF` |',
+    '## Trang 2 · Thở',
+    '- Prompt: Photorealistic photo, sage green top (#9FB49A), no text',
+    '```',
+    'thin strokes (#3E5F45) on sage',
+    '```',
+    '- Ghi chú: màu #C2654F cho cảnh báo'
+  ].join('\n');
+  const ra = soatVanBan('output/x/thiet-ke.md', t, {}).filter(x => /mã màu/.test(x));
+  assert.deepEqual(ra.map(x => x.split(': ')[0]), ['output/x/thiet-ke.md:4 (Trang 2)', 'output/x/thiet-ke.md:6 (Trang 2)']);
+  // Chỉ soát thiet-ke.md
+  assert.equal(soatVanBan('output/x/slides.md', t, {}).filter(x => /mã màu/.test(x)).length, 0);
+});

@@ -13,4 +13,7 @@ trang_thai: moi
 ngay: 2026-10-16
 tu_van_de: []
 ---
-Luôn gắn mức bằng chứng (Mạnh / Trung bình / Sơ bộ / Ý kiến) cho từng mục để An dễ kiểm chứng và Lam viết kịch bản đúng mực, không nói quá.
+Luôn gắn mức bằng chứng (Mạnh / Vừa / Sơ bộ / Ý kiến) cho từng mục để An dễ kiểm chứng và Lam viết kịch bản đúng mực, không nói quá.
+
+## Ghi chú
+- sửa 2026-10-25: cùng tên mức với bảng "Danh sách đã duyệt" của An

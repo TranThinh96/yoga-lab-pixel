@@ -2,10 +2,10 @@
 
 > Máy chủ tự sinh từ tri-thuc/bai-hoc/. Sửa bài học trong Obsidian (note BH-…), không sửa ở đây.
 
-- [BH-5] Luôn mở và đối chiếu bài báo gốc trên PubMed/PMC trước khi trích số liệu (ví dụ Baishya 2024 PMC10966165, Tele-Yoga 2025 PMC12246764); không tin tưởng trích dẫn thứ cấp.
+- [BH-5] Số liệu phải lấy từ bài báo gốc trên PubMed/PMC: nhờ Gemini trích nguyên văn câu chứa số liệu từ chính bài gốc, ghi kèm PMCID (ví dụ Baishya 2024 PMC10966165, Tele-Yoga 2025 PMC12246764); không tin tưởng trích dẫn thứ cấp.
 - [BH-6] Không dùng link bài báo giả hoặc gán nhầm PMCID cho nội dung khác (như bài Cramer 2013 PMC3797727 về chấn thương cột sống cổ khi tập yoga đảo ngược, không gán cho sinh lý học phục hồi).
 - [BH-7] Phải đề xuất hình giải phẫu có giấy phép mở rõ ràng (OpenStax CC BY, Wikimedia CC0/CC BY, Servier CC BY) kèm link cụ thể để người thiết kế dùng ngay mà không cần tìm lại.
-- [BH-8] Luôn gắn mức bằng chứng (Mạnh / Trung bình / Sơ bộ / Ý kiến) cho từng mục để An dễ kiểm chứng và Lam viết kịch bản đúng mực, không nói quá.
+- [BH-8] Luôn gắn mức bằng chứng (Mạnh / Vừa / Sơ bộ / Ý kiến) cho từng mục để An dễ kiểm chứng và Lam viết kịch bản đúng mực, không nói quá.
 - [BH-10] Không phóng đại cơ chế sinh học (hạ cortisol, kích hoạt phế vị, giảm liều thuốc) và không lặp lại lỗi cũ (PPI làm giảm hấp thu do đổi pH không thể chỉ cách giờ, hạch Brazil biến thiên selen); định vị đúng bằng chứng yoga ở mức sơ bộ.
 - [BH-11] Tuyệt đối không gán nguồn cho ý mà nguồn không trực tiếp nói (ví dụ ATA không nhắc thừa i-ốt thì không dẫn nguồn ATA cho thừa i-ốt; Baishya không phải hướng dẫn pranayama thì không gán mức bằng chứng cho hơi thở; body scan/giảm tự trách là hướng dẫn thực hành của Yoga Lab chứ không gán cho NHS/NIDDK).
 - [BH-12] Tránh mọi từ ngữ mang tính hứa hẹn ("mẹ và bé đều khỏe mạnh", "tối đa", "rõ rệt"); dùng từ chừng mực ("giảm đi", "thường cải thiện", "có thể giúp").

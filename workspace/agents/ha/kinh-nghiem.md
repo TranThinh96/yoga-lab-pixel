@@ -3,7 +3,7 @@
 > Máy chủ tự sinh từ tri-thuc/bai-hoc/. Sửa bài học trong Obsidian (note BH-…), không sửa ở đây.
 
 - [BH-62] Duyệt thiết kế thì đối chiếu chéo slides.md ↔ thiet-ke.md theo từng trang tư thế: dòng Hình, thời gian giữ, đạo cụ phải giống nhau (tr.21 lệch "khăn che mắt").
-- [BH-63] Duyệt ảnh: so danh sách hinh/ với bảng Danh sách hình trước (tr.24, 25 thiếu cả file); ảnh nguồn y khoa thô còn nhãn tiếng Anh nên ghi rõ việc che nhãn.
+- [BH-63] Duyệt ảnh: xem cột "Có file (máy chủ ghi)" của Danh sách hình để biết ảnh nào chưa có, rồi mở từng ảnh đã có; ảnh nguồn y khoa thô còn nhãn tiếng Anh thì kiểm dòng "Dựng" đã che nhãn chưa.
 - [BH-64] Khi duyệt ảnh tư thế, so từng chi tiết đạo cụ với 'Quyết định đã chốt' trong brief (gạch nằm phẳng thấp nhất, bắp chân nằm trên mặt ghế); ảnh v6 tr.18 có gạch dựng đứng và tr.17 chỉ có gót đặt lên ghế mà vẫn bị chấm đạt.
 - [BH-66] Khi duyệt ảnh tư thế, đối chiếu từng đạo cụ với dòng 'Trên slide' (vd tr.18 chăn phải dưới vai, ảnh lại đặt dưới đầu), không chỉ kiểm tư thế chính.
 - [BH-68] Duyệt ảnh tư thế bằng cách đối chiếu từng cụm đạo cụ trong prompt (vd 'hai bắp chân nằm trọn trên bolster'); ảnh có bolster dưới khoeo, bàn chân chạm thảm là tư thế khác, phải trả lại.

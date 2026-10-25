@@ -63,8 +63,8 @@ Không để danh sách thành chữ trơn có gạch đầu dòng. Mỗi ý là
 ### A. Minh hoạ nét mảnh (khái niệm, biểu tượng KHÔNG phải y khoa: năng lượng, nghỉ ngơi, hơi thở…)
 Tạo bằng AI. **Không** dùng cho cơ thể, cơ quan, cơ chế bệnh, triệu chứng, thuốc, xét nghiệm: những hình đó là loại C. Prompt tiếng Anh theo khuôn:
 ```
-Minimal fine line illustration of <chủ thể>, thin dark green strokes (#3E5F45) on a soft sage background (#E4ECDF),
-subtle beige watercolor accents (#E3CFAE), a few botanical leaves, lots of empty space on the <left/right>,
+Minimal fine line illustration of <chủ thể>, thin dark moss green strokes on a soft pale sage background,
+subtle sand beige watercolor accents, a few botanical leaves, lots of empty space on the <left/right>,
 calm and gentle mood, no text, no letters, no labels, 16:9
 ```
 
@@ -72,11 +72,12 @@ calm and gentle mood, no text, no letters, no labels, 16:9
 Tạo bằng AI, **dùng cùng một người mẫu cho cả bộ**. Mô tả người mẫu viết một lần ở đầu file thiết kế rồi chép y nguyên vào mọi prompt:
 ```
 Photorealistic photo of the same Vietnamese woman in her early 30s, shoulder-length black hair,
-sage green sports bra and high-waist shorts (#9FB49A), practicing <tư thế, mô tả vị trí tay chân>,
-supported by <teal foam yoga blocks / a round bolster / folded blankets>, on a dark grey yoga mat,
+sage green sports bra and high-waist shorts, practicing <tư thế, mô tả vị trí tay chân>,
+supported by <cork yoga blocks / a round bolster / folded cream blankets>, on a dark grey yoga mat,
 warm beige wall, monstera plants in the background, soft natural window light from the left,
 <side view / three-quarter view>, full body in frame, calm relaxed face, no text, 16:9
 ```
+Đạo cụ tả bằng hình dạng kiểm được (vd "cork block lying flat on its widest face", "both calves fully resting on the chair seat"), không chỉ gọi tên.
 Kiểm tra trước khi dùng: đúng tư thế, khớp gối và cổ không bị vặn sai, đủ ngón tay chân, đạo cụ đặt hợp lý.
 Mô tả người mẫu trên **khớp người mẫu trong slide mẫu suy giáp**: không đổi tuổi hay trang phục (vd sang áo dài tay, người trung niên) trừ khi chủ dự án yêu cầu. Ảnh tư thế là ảnh ngang, thấy trọn người và đạo cụ, đặt như mẫu (tr.19–22).
 
@@ -98,6 +99,7 @@ Nhãn tiếng Việt thêm bằng chữ trong Canva. **Không dùng ảnh scan t
 ## Quy tắc chung cho ảnh AI
 
 - **Không có chữ trong ảnh** (AI viết sai tiếng Việt). Mọi chữ thêm trong Canva.
+- **Không ghi mã màu hex trong prompt** (AI có thể vẽ thành chữ số hoặc bỏ qua): gọi màu bằng tên trong bảng màu (moss green, sage, sand beige, cream, terracotta); không dùng màu ngoài bảng (vd teal).
 - Cùng ánh sáng, cùng góc nhìn, cùng phông nền trong một loạt ảnh tư thế.
 - Không vẽ máu, vết mổ, cảnh bệnh nặng gây sợ. Diễn tả bệnh bằng biểu tượng hoặc nét mặt mệt mỏi nhẹ.
 - Tên file gợi ý: `trang-07-truc-giap.png`, để trong `output/<chu-de>/hinh/`.

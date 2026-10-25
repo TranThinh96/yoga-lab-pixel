@@ -1864,6 +1864,13 @@ function startStep(plan, idx) {
             s.status = 'error'; s.error = s.lastError = sau.lyDo;
             if (sau.khongChayLai) s.retries = Math.max(s.retries || 0, cfgNum('stepRetries', 1));
             if (plan.status !== 'running') return emitPlan(plan);
+            if (sau.tamDung) {
+              // Dự án thử 25/10: Gemini chậm → bước lỗi → lập lại kế hoạch (một lượt điều phối viên) mà Gemini vẫn chưa xong
+              plan.status = 'paused'; plan.waiting = null;
+              plan.note = `Bước ${idx + 1}: ${sau.lyDo}. Mở cuộc chat Gemini để xem; xong rồi thì bấm "Chạy tiếp": ${agent.name} chỉ lấy báo cáo, không chạy lại Deep Research.`;
+              plan.log.push(`Bước ${idx + 1}: ${sau.lyDo} → tạm dừng chờ bạn (không lập lại kế hoạch)`);
+              return emitPlan(plan);
+            }
             return onStepError(plan, idx);
           }
           if (sau.loai !== 'xong') {

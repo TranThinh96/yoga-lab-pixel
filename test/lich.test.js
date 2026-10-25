@@ -106,7 +106,7 @@ test('buocSauDr: chuyển pha Deep Research', () => {
   // Dự án thử 24/10: Gemini chạy quá 60 phút, cách cũ (3 lần kiểm) bỏ cuộc ở phút 60 rồi chạy lại ngay
   assert.equal(buocSauDr({ pha: 2, trangThai: 'đang chạy', lanKiem: 3, phutDaCho: 61 }).loai, 'kiem-lai');
   const het = buocSauDr({ pha: 2, trangThai: 'đang chạy', lanKiem: 8, phutDaCho: 151 });
-  assert.equal(het.loai, 'loi'); assert.equal(het.khongChayLai, true); assert.match(het.lyDo, /151 phút/);
+  assert.equal(het.loai, 'loi'); assert.equal(het.khongChayLai, true); assert.equal(het.tamDung, true); assert.match(het.lyDo, /151 phút/);
   assert.equal(buocSauDr({ pha: 2, trangThai: 'đang chạy', phutDaCho: 50, choToiDa: 45 }).loai, 'loi', 'hạn chờ theo cấu hình');
   // Pha 1 không khởi chạy được, chưa có file nguồn → lỗi bước
   assert.equal(buocSauDr({ pha: 1, trangThai: 'lỗi: hết quota' }).loai, 'loi');

@@ -259,6 +259,8 @@ textarea{resize:vertical; min-height:96px}
 .cd-row small{display:block; color:var(--muted); font-size:12px; margin-top:2px}
 .cd-so{justify-content:space-between}
 .cd-so input, .cd-so select{width:9.5em; flex:none}
+.cd-ds{flex-direction:column}
+.cd-ds textarea{width:100%; font:inherit; font-size:13px}
 .cd-md{border:0; background:none; padding:0 0 0 4px; font:inherit; font-size:11.5px; color:var(--gold); cursor:pointer; text-decoration:underline dotted}
 .ag-meta .cost{font-size:12px; color:var(--muted); margin-top:2px}
 .node .gem-row{white-space:normal; gap:6px; align-items:center; margin-top:4px}
@@ -3012,9 +3014,11 @@ function renderPlan(el){
 function caiDatView(){
   const nhom = [...new Set(S.caiDat.map(m => m.nhom))];
   // Mục khác mặc định: dấu "đã đổi" và nút trả về mặc định
-  const doi = m => m.giaTri !== m.macDinh ? ` <button type="button" class="cd-md" data-cd-md="${esc(m.key)}" title="Trả về mặc định: ${esc(m.macDinh === '' ? '(mặc định)' : m.macDinh === true ? 'bật' : m.macDinh === false ? 'tắt' : String(m.macDinh))}">đã đổi · ↺</button>` : '';
+  const doi = m => JSON.stringify(m.giaTri) !== JSON.stringify(m.macDinh) ? ` <button type="button" class="cd-md" data-cd-md="${esc(m.key)}" title="Trả về mặc định: ${esc(m.macDinh === '' ? '(mặc định)' : m.macDinh === true ? 'bật' : m.macDinh === false ? 'tắt' : Array.isArray(m.macDinh) ? m.macDinh.join(', ') : String(m.macDinh))}">đã đổi · ↺</button>` : '';
   return `<div class="cai-dat"><p class="hint">Đổi ở đây thay vì sửa config.json. Mỗi lần đổi, máy chủ giữ bản config.json cũ trong workspace/.yogalab/config-cu/. Dự án đang chạy dùng thiết lập mới từ bước sau.</p>
-    ${nhom.map(n => `<fieldset><legend>${esc(n)}</legend>${S.caiDat.filter(m => m.nhom === n).map(m => m.loai === 'chon'
+    ${nhom.map(n => `<fieldset><legend>${esc(n)}</legend>${S.caiDat.filter(m => m.nhom === n).map(m => m.loai === 'ds'
+      ? `<label class="cd-row cd-ds"><span>${esc(m.ten)}${doi(m)}${m.mo ? `<small>${esc(m.mo)}</small>` : ''}</span><textarea data-cd="${esc(m.key)}" rows="${Math.min(8, Math.max(3, m.giaTri.length + 1))}">${esc(m.giaTri.join('\n'))}</textarea></label>`
+      : m.loai === 'chon'
       ? `<label class="cd-row cd-so"><span>${esc(m.ten)}${doi(m)}${m.mo ? `<small>${esc(m.mo)}</small>` : ''}</span><select data-cd="${esc(m.key)}">${m.chon.map(o => `<option value="${esc(o)}" ${o === m.giaTri ? 'selected' : ''}>${o ? esc(o) : '(mặc định)'}</option>`).join('')}</select></label>`
       : m.loai === 'bat'
       ? `<label class="att cd-row"><input type="checkbox" data-cd="${esc(m.key)}" ${m.giaTri ? 'checked' : ''}><span>${esc(m.ten)}${doi(m)}${m.mo ? `<small>${esc(m.mo)}</small>` : ''}</span></label>`
@@ -3022,7 +3026,7 @@ function caiDatView(){
 }
 $('#book').addEventListener('change', async e => {
   const k = e.target.dataset && e.target.dataset.cd; if (!k) return;
-  const v = e.target.type === 'checkbox' ? e.target.checked : e.target.tagName === 'SELECT' ? e.target.value : Number(e.target.value);
+  const v = e.target.type === 'checkbox' ? e.target.checked : e.target.tagName === 'SELECT' ? e.target.value : e.target.tagName === 'TEXTAREA' ? e.target.value.split('\n') : Number(e.target.value);
   try { const r = await api.caiDat({ [k]: v }); S.caiDat = r.caiDat; toast('Đã lưu.'); }
   catch (err) { toast(err.message); S._planKey = null; renderBook(); } // trả ô về giá trị đang dùng
 });

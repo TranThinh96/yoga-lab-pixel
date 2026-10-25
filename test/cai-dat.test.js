@@ -32,6 +32,13 @@ test('kiemCaiDat: từ chối mục lạ, sai kiểu, ngoài khoảng', () => {
   assert.equal(kiemCaiDat({ maxParallel: 2, passScore: 200 }).moi, undefined);
 });
 
+test('danh sách cụm từ: bỏ dòng trống, bỏ trùng; từ chối sai kiểu, quá dài', () => {
+  assert.deepEqual(kiemCaiDat({ lintBanned: [' chữa khỏi ', '', 'thải độc', 'chữa khỏi'] }), { moi: { lintBanned: ['chữa khỏi', 'thải độc'] } });
+  assert.match(kiemCaiDat({ lintBanned: 'chữa khỏi' }).loi, /danh sách/);
+  assert.match(kiemCaiDat({ lintBanned: ['x'.repeat(61)] }).loi, /60 ký tự/);
+  assert.deepEqual(docCaiDat({}).find(m => m.key === 'lintBanned').giaTri, []);
+});
+
 test('mục lồng: đọc, kiểm, ghi stepModel / stepEffort; để trống thì bỏ khoá', () => {
   const config = { stepModel: { rereview: 'haiku' }, stepEffort: { rereview: 'medium', fix: 'medium' } };
   const lay = k => docCaiDat(config).find(m => m.key === k).giaTri;

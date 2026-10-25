@@ -221,7 +221,7 @@ Nâng cấp từ bản trước Đợt 3: chạy một lần `node scripts/chuye
 
 ## config.json
 
-Các mục hay đổi (ngân sách, số bước chạy cùng lúc, vòng duyệt, điểm đạt, Deep Research hai pha, công cụ máy chủ, model và mức suy nghĩ theo loại bước…) đổi được ngay trong **Dự án → ⚙ Cài đặt**, không cần sửa file. Mỗi lần đổi, máy chủ giữ bản `config.json` cũ trong `workspace/.yogalab/config-cu/`. Khi lưu, máy chủ chỉ ghi các mục đã có trong file hoặc khác mặc định, nên mặc định mới trong các bản cập nhật vẫn có tác dụng.
+Các mục hay đổi (ngân sách, số bước chạy cùng lúc, vòng duyệt, điểm đạt, Deep Research hai pha, công cụ máy chủ, model và mức suy nghĩ theo loại bước, từ cần tránh…); mục nào khác mặc định có dấu "đã đổi · ↺" để trả về mặc định) đổi được ngay trong **Dự án → ⚙ Cài đặt**, không cần sửa file. Mỗi lần đổi, máy chủ giữ bản `config.json` cũ trong `workspace/.yogalab/config-cu/`. Khi lưu, máy chủ chỉ ghi các mục đã có trong file hoặc khác mặc định, nên mặc định mới trong các bản cập nhật vẫn có tác dụng.
 
 | Mục | Ý nghĩa |
 |---|---|

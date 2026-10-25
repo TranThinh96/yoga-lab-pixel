@@ -11,7 +11,7 @@ Xong việc họ ra hồ sen ăn mừng, gặp lỗi thì ra ghế đá ngồi. 
 ghé Phòng trà, Thư viện, Lầu mây, đi dạo vườn hoặc sang nói chuyện với nhau, thỉnh thoảng buông vài câu
 (bong bóng nghiêng màu xanh). Đây chỉ là hoạt cảnh trên trình duyệt, không gọi AI nên không tốn token. Phía sau, Claude Code hoặc Gemini CLI
 chạy ngầm trên folder trong máy bạn, nên bạn không phải gõ lệnh hay nhìn terminal.
-Giao diện chạy như một màn hình game: bản đồ luôn phủ kín cửa sổ, thanh trên cùng hiện số liệu, thanh dưới cùng có 5 nút **Đội ngũ, Bảng việc, Dự án, Sản phẩm, Lịch sử** (Lịch sử gồm cả Bàn giao và Nhật ký). Khi một việc xong, thông báo dưới màn hình có nút **Xem kết quả** để mở ngay file vừa làm. Chạm vào nhân vật để mở bảng giao việc bên phải. **Esc** hoặc **✕** đóng cửa sổ; nút **⛶** (phím **F**) ẩn luôn thanh trình duyệt. Trên điện thoại cửa sổ trượt lên từ dưới và vuốt ngang để xem hết bản đồ.
+Giao diện chạy như một màn hình game: bản đồ luôn phủ kín cửa sổ, thanh trên cùng hiện số liệu, thanh dưới cùng có 5 nút **Đội ngũ, Bảng việc, Dự án, Sản phẩm, Lịch sử** (Lịch sử gồm cả Bàn giao và Nhật ký). Khi một việc xong, thông báo dưới màn hình có nút **Xem kết quả** để mở ngay file vừa làm. Chạm vào nhân vật để mở bảng giao việc bên phải. **Esc** hoặc **✕** đóng cửa sổ; phím **1–5** mở năm nút ở thanh dưới theo thứ tự; nút **⛶** (phím **F**) ẩn luôn thanh trình duyệt. Trên điện thoại cửa sổ trượt lên từ dưới và vuốt ngang để xem hết bản đồ.
 
 - Agent **chỉ thức dậy khi được giao việc**. Không có heartbeat, nên không tốn token khi rảnh.
 - Mỗi việc là **một lượt ngắn**. Xong việc, agent để lại một **bàn giao** ngắn trong `handoff/`.
@@ -308,7 +308,7 @@ Bấm **📊 Báo cáo** ở đầu trang (hoặc mở `http://127.0.0.1:4321/#u
 - **Biểu đồ** token theo ngày (hoặc theo giờ khi xem hôm nay), chia 4 loại token. Rê chuột lên cột để xem số.
 - **Bảng theo agent**: lượt, lỗi, từng loại token, tỉ lệ trúng cache, trung bình mỗi lượt, công cụ dùng nhiều.
   Bấm một dòng để lọc theo agent đó.
-- **Bảng theo dự án**: token cả dự án và phần điều phối viên dùng.
+- **Bảng theo dự án**: token cả dự án, phần điều phối viên dùng, chi phí và ước tính lúc dự án bắt đầu chạy (trung vị · lần tốn).
 - **Trí não**: các chỉ số so với mục tiêu của kế hoạch nâng cấp (chữ xanh là đã đạt):
   - thẻ số: tỉ lệ lần chạy có gọi Bash (mục tiêu dưới 5%), bài học tái phạm trong 30 ngày (0), số dòng `index.md` (dưới 30), số ý đã duyệt, số nguồn bị chặn;
   - theo dự án: token quy đổi theo loại bước (làm, duyệt, duyệt lại, sửa, điều phối), vòng duyệt–sửa so với bước làm (dưới 0,6), số vấn đề BẮT BUỘC (rê chuột để xem theo loại và theo gốc), vấn đề không rõ người sửa (0), số lần giao ban, điểm nghiệm thu lần đầu (từ 85), token bước nguồn ở dự án tiếp nối (dưới 0,8 triệu), câu hỏi trùng (0), tỉ lệ trang An mở lại mà người khác đã mở trước (dưới 10%), ảnh ghi ra ngoài `output/<chủ đề>/` (0);

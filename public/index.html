@@ -771,11 +771,11 @@ main{display:block; max-width:none; margin:0; padding:0}
   </aside>
 
   <nav class="dock" aria-label="Các cửa sổ">
-    <button type="button" data-dock="team" title="Đội ngũ"><span class="ico" aria-hidden="true">👥</span>Đội ngũ<span class="n" id="dockBusy"></span></button>
-    <button type="button" data-dock="board" title="Bảng việc: ai đang làm gì, sản phẩm nào đang duyệt"><span class="ico" aria-hidden="true">📋</span>Bảng việc<span class="n" id="dockFix"></span></button>
-    <button type="button" data-dock="plan" title="Giao dự án cho cả nhóm, duyệt kế hoạch, xem sơ đồ tổ chức"><span class="ico" aria-hidden="true">🗺️</span>Dự án<span class="n" id="dockDx"></span></button>
-    <button type="button" data-dock="output" title="Sản phẩm"><span class="ico" aria-hidden="true">📦</span>Sản phẩm</button>
-    <button type="button" data-dock="log" title="Lịch sử các lượt làm việc và bàn giao"><span class="ico" aria-hidden="true">📓</span>Lịch sử</button>
+    <button type="button" data-dock="team" title="Đội ngũ (phím 1)"><span class="ico" aria-hidden="true">👥</span>Đội ngũ<span class="n" id="dockBusy"></span></button>
+    <button type="button" data-dock="board" title="Bảng việc: ai đang làm gì, sản phẩm nào đang duyệt (phím 2)"><span class="ico" aria-hidden="true">📋</span>Bảng việc<span class="n" id="dockFix"></span></button>
+    <button type="button" data-dock="plan" title="Giao dự án cho cả nhóm, duyệt kế hoạch, xem sơ đồ tổ chức (phím 3)"><span class="ico" aria-hidden="true">🗺️</span>Dự án<span class="n" id="dockDx"></span></button>
+    <button type="button" data-dock="output" title="Sản phẩm (phím 4)"><span class="ico" aria-hidden="true">📦</span>Sản phẩm</button>
+    <button type="button" data-dock="log" title="Lịch sử các lượt làm việc và bàn giao (phím 5)"><span class="ico" aria-hidden="true">📓</span>Lịch sử</button>
   </nav>
 </main>
 
@@ -2443,6 +2443,7 @@ document.addEventListener('fullscreenchange', () => {
 document.addEventListener('keydown', e => {
   if (e.ctrlKey || e.metaKey || e.altKey || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable || document.querySelector('dialog[open]')) return;
   if ((e.key === 'f' || e.key === 'F') && fsOK){ e.preventDefault(); toggleFull(); }
+  else if (/^[1-5]$/.test(e.key)){ const b = document.querySelectorAll('.dock [data-dock]')[+e.key - 1]; if (b){ e.preventDefault(); b.click(); } } // 1–5: Đội ngũ, Bảng việc, Dự án, Sản phẩm, Lịch sử
   else if (e.key === 'Escape'){ if (S.win === 'board' && S.boardCard){ S.boardCard = null; renderBoard(); } else if (S.panelOpen && agentById(S.selected)){ S.panelOpen = false; syncWins(); } else if (S.win) openWin(null); }
 });
 
@@ -4125,9 +4126,9 @@ function projectTable(){
   const runs = (U.data.runs || []).map(normRun).filter(r => r.planId);
   const plans = (U.data.plans || []).filter(p => runs.some(r => r.planId === p.id));
   if (!plans.length) return '';
-  return `<section class="box u-card"><h3>Theo dự án <small>bấm một dòng để chỉ xem các lượt của dự án đó</small></h3><div class="tscroll"><table class="utable"><thead><tr><th>Dự án</th><th>Trạng thái</th><th>Điều phối</th><th class="num">Bước</th><th class="num">Lượt</th><th class="num">Lỗi</th><th class="num">Tổng token</th><th class="num dt">Điều phối dùng</th><th class="num">Chi phí</th><th>Bắt đầu</th></tr></thead><tbody>
+  return `<section class="box u-card"><h3>Theo dự án <small>bấm một dòng để chỉ xem các lượt của dự án đó</small></h3><div class="tscroll"><table class="utable"><thead><tr><th>Dự án</th><th>Trạng thái</th><th>Điều phối</th><th class="num">Bước</th><th class="num">Lượt</th><th class="num">Lỗi</th><th class="num">Tổng token</th><th class="num dt">Điều phối dùng</th><th class="num">Chi phí</th><th class="num" title="Ước tính lúc dự án bắt đầu chạy (trung vị · lần tốn)">Ước tính</th><th>Bắt đầu</th></tr></thead><tbody>
     ${plans.map(p => { const rs = runs.filter(r => r.planId === p.id), s = sumRuns(rs), c = sumRuns(rs.filter(r => !r.step));
-      return `<tr data-uplan="${esc(p.id)}"><td class="wrap"><span class="clamp2" title="${esc(p.goal)}">${esc(p.goal)}</span></td><td>${PLAN_TXT[p.status] || p.status}</td><td>${esc(uAgentName(p.coordinatorId))}</td><td class="num">${p.steps.length}</td><td class="num">${s.n}</td><td class="num">${s.err || ''}</td><td class="num">${fmtTok(s.total)}</td><td class="num dt">${fmtTok(c.total)} <small class="muted">${pct(c.total, s.total)}</small></td><td class="num">${s.hasCost ? fmtUsd(s.cost) : '—'}</td><td>${fmtTime(p.createdAt)}</td></tr>`; }).join('')}
+      return `<tr data-uplan="${esc(p.id)}"><td class="wrap"><span class="clamp2" title="${esc(p.goal)}">${esc(p.goal)}</span></td><td>${PLAN_TXT[p.status] || p.status}</td><td>${esc(uAgentName(p.coordinatorId))}</td><td class="num">${p.steps.length}</td><td class="num">${s.n}</td><td class="num">${s.err || ''}</td><td class="num">${fmtTok(s.total)}</td><td class="num dt">${fmtTok(c.total)} <small class="muted">${pct(c.total, s.total)}</small></td><td class="num">${s.hasCost ? fmtUsd(s.cost) : '—'}</td><td class="num">${p.uocTinh ? `${fmtUsd(p.uocTinh.usd)} <small class="muted">· ${fmtUsd(p.uocTinh.cao)}</small>` : '—'}</td><td>${fmtTime(p.createdAt)}</td></tr>`; }).join('')}
   </tbody></table></div></section>`;
 }
 // ── Trí não: chỉ số so với mục tiêu ở mục 5 của docs/ke-hoach-tri-nao.md (ghi cứng ở đây) ──

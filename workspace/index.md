@@ -12,9 +12,9 @@
 - tri-thuc/ — bộ não chung, bắt đầu từ tri-thuc/00-ban-do.md
 
 ## Dự án gần đây
+- plan-20261025-195326 · tho-bung-thu-gian · Tạm dừng · brief: du-an/plan-20261025-195326/brief.md
 - plan-20261023-214835 · thoat-vi-dia-dem · Xong, 92/100 · nghiệm thu: du-an/plan-20261023-214835/nghiem-thu.md
 - plan-20261022-203403 · thoai-hoa-khop-goi-v2 · Xong, 85/100 · nghiệm thu: du-an/plan-20261022-203403/nghiem-thu.md
-- plan-20261021-195355 · thoai-hoa-khop-goi · Xong, 88/100 · nghiệm thu: du-an/plan-20261021-195355/nghiem-thu.md
 
 ## Sản phẩm mới nhất
 - output/thoat-vi-dia-dem/: thiet-ke.md (Vy), slides.md (Lam)

@@ -7777,5 +7777,193 @@
   ],
   "mauTotDaGhi": 1,
   "slideFile": "output/thoat-vi-dia-dem/thoat-vi-dia-dem.pptx"
+ },
+ {
+  "id": "plan-20261025-195326",
+  "goal": "Bộ slide ngắn 4 trang (khoảng 10 phút) cho học viên yoga mới: Thở bụng (thở cơ hoành) để thư giãn. Gồm: (1) thở bụng là gì, cơ hoành hoạt động thế nào khi hít vào và thở ra; (2) cách tập từng bước khi nằm ngửa; (3) một tư thế nằm hỗ trợ có đạo cụ (gối dưới gối, chăn dưới đầu); (4) an toàn, khi nào nên dừng, và nguồn tham khảo. Đây là dự án thử nhỏ: giữ gọn, đủ các bước làm và duyệt.",
+  "coordinatorId": "chef",
+  "team": [
+   "mai",
+   "an",
+   "lam",
+   "vy",
+   "ha",
+   "nhi"
+  ],
+  "autoStart": false,
+  "review": true,
+  "status": "paused",
+  "steps": [
+   {
+    "agentId": "mai",
+    "task": "Đọc brief du-an/plan-20261025-195326/brief.md và handoff/20261025-195732-mai.md. Hạn mức Gemini đặt lại lúc 20:01 ngày 25/10: nếu Deep Research còn mờ thì chờ qua 20:01, tải lại trang rồi thử lại (không đổi tài khoản, không WebFetch). Chạy một lượt Deep Research cho cả 4 trang. Ghi agents/mai/tho-bung-thu-gian-nguon.md: mỗi ý có link, mức bằng chứng, câu trích tiếng Anh, số [n]; có bảng '## Hình & sơ đồ trong nguồn' cho hình cơ hoành lúc hít vào/thở ra (link Special:FilePath, giấy phép). Chú ý tiêu chí 3, 6, 7, 10.",
+    "from": [],
+    "status": "error",
+    "runId": "20261025-211237-mai",
+    "handoff": "handoff/20261025-211237-mai.md",
+    "summary": "Gemini Deep Research vẫn đang chạy lúc ~21:13: trang hiện \"Researching 43 websites...\", chưa có nút Xuất. Vì vậy chưa có báo cáo và chưa tạo `agents/mai/tho-bung-thu-gian-nguon.md`.\n\nTôi không chạy lại Deep Research và không dùng WebFetch/WebSearch. Đã cập nhật dòng \"Trạng thái\" và ghi bàn giao vào `handoff/20261025-211237-mai.md`. Đề nghị máy chủ gọi lại Mai sau khoảng 20–30 phút để lấy báo cáo.",
+    "error": "Gemini chưa xong sau 3 lần kiểm",
+    "tokens": 3487916,
+    "boiCanh": "du-an/plan-20261025-195326/boi-canh/20261025-211237-mai.md",
+    "baiHocDaNhan": [
+     "BH-21",
+     "BH-22",
+     "BH-17",
+     "BH-19",
+     "BH-10",
+     "BH-11",
+     "BH-12",
+     "BH-15",
+     "BH-16",
+     "BH-5",
+     "BH-6",
+     "BH-7"
+    ],
+    "prevFiles": null,
+    "files": [
+     "agents/mai/tho-bung-thu-gian-deep-research.md"
+    ],
+    "images": [],
+    "drFile": "agents/mai/tho-bung-thu-gian-deep-research.md",
+    "pha": 2,
+    "lanKiem": 3,
+    "henLuc": null,
+    "lastError": "Gemini chưa xong sau 3 lần kiểm",
+    "retries": 1
+   },
+   {
+    "agentId": "an",
+    "task": "Đọc brief du-an/plan-20261025-195326/brief.md. Duyệt agents/mai/tho-bung-thu-gian-nguon.md: mở link và đối chiếu từng câu trích, kiểm mức bằng chứng, chiều chuyển động của cơ hoành, dấu hiệu dừng và nhóm cần lưu ý; kiểm hình cơ hoành có giấy phép và đúng hai trạng thái. Ghi agents/an/tho-bung-thu-gian-duyet-nguon.md với từng ý Đúng/Sửa/Bỏ, kết luận ĐẠT/CẦN SỬA. Tiêu chí 3, 6, 7, 10.",
+    "from": [
+     1
+    ],
+    "checks": 1,
+    "status": "pending",
+    "runId": null,
+    "handoff": null,
+    "summary": "",
+    "error": "",
+    "tokens": 0
+   },
+   {
+    "agentId": "lam",
+    "task": "Đọc brief du-an/plan-20261025-195326/brief.md, agents/mai/tho-bung-thu-gian-nguon.md và biên bản của An. Viết output/tho-bung-thu-gian/slides.md theo templates/kich-ban-slide.md: đúng 4 trang theo Khung trang; đầu file có bảng mục tiêu → trang và bảng phút (tổng 10); [n] đặt ngay sau đúng cụm; ý nào không có câu trích thì bỏ; cuối file có Nguồn tham khảo và Việc còn mở. Tiêu chí 1–8.",
+    "from": [
+     1,
+     2
+    ],
+    "status": "pending",
+    "runId": null,
+    "handoff": null,
+    "summary": "",
+    "error": "",
+    "tokens": 0
+   },
+   {
+    "agentId": "an",
+    "task": "Đọc brief du-an/plan-20261025-195326/brief.md. Duyệt output/tho-bung-thu-gian/slides.md so với agents/mai/tho-bung-thu-gian-nguon.md: từng [n] trỏ đúng câu trích, lợi ích ghi đúng mức nguồn, tr.2 có câu 'không nín thở', tr.4 đủ dấu hiệu dừng, không có từ cấm, đếm chữ trên slide. Ghi agents/an/tho-bung-thu-gian-duyet-kich-ban.md, sửa theo trang có mức BẮT BUỘC/NÊN, kết luận ĐẠT/CẦN SỬA. Tiêu chí 1–8.",
+    "from": [
+     3
+    ],
+    "checks": 3,
+    "status": "pending",
+    "runId": null,
+    "handoff": null,
+    "summary": "",
+    "error": "",
+    "tokens": 0
+   },
+   {
+    "agentId": "vy",
+    "task": "Đọc brief du-an/plan-20261025-195326/brief.md, output/tho-bung-thu-gian/slides.md, bảng hình của Mai, sources/slide-mau-suy-giap.md. Viết output/tho-bung-thu-gian/thiet-ke.md theo templates/thiet-ke.md: mỗi trang ghi 'Theo kiểu mẫu tr.x'; tr.1 dùng hình C có giấy phép kèm dòng Dựng (che nhãn Anh, thêm nhãn Việt); 2 prompt B dùng chung một mô tả người mẫu, có phương án dự phòng; tr.4 ghi lý do không có ảnh; cuối file có '## Danh sách hình'. Tiêu chí 9–11.",
+    "from": [
+     3,
+     4
+    ],
+    "status": "pending",
+    "runId": null,
+    "handoff": null,
+    "summary": "",
+    "error": "",
+    "tokens": 0
+   },
+   {
+    "agentId": "ha",
+    "task": "Đọc brief du-an/plan-20261025-195326/brief.md. Duyệt output/tho-bung-thu-gian/thiet-ke.md cùng slides.md: đối chiếu kiểu trang với ảnh mẫu, mở hình cơ hoành trong hinh-nguon/ và hinh/ để xem có khớp câu tr.1 không, kiểm giấy phép, prompt B dùng chung người mẫu, không mã hex; biên tập chữ (≤ ~90 chữ, cỡ ≥ 20, giọng văn). Ghi agents/ha/tho-bung-thu-gian-duyet-thiet-ke.md, kết luận ĐẠT/CẦN SỬA. Tiêu chí 8–11.",
+    "from": [
+     5
+    ],
+    "checks": 5,
+    "status": "pending",
+    "runId": null,
+    "handoff": null,
+    "summary": "",
+    "error": "",
+    "tokens": 0
+   },
+   {
+    "agentId": "nhi",
+    "task": "Đọc brief du-an/plan-20261025-195326/brief.md và output/tho-bung-thu-gian/thiet-ke.md. Tạo bằng Gemini 2 ảnh B: trang-02 (nằm ngửa co gối, một tay ngực, một tay bụng) và trang-03 (bolster dưới gối, chăn gấp dưới đầu, cổ không ngửa), chép y nguyên mô tả người mẫu, ảnh ngang, không chữ. Lưu vào output/tho-bung-thu-gian/hinh/ đúng tên trong Danh sách hình. Ảnh lỗi thì tạo lại tối đa 2 lần theo phương án dự phòng. Không vẽ hình y khoa. Tiêu chí 11.",
+    "from": [
+     5,
+     6
+    ],
+    "status": "pending",
+    "runId": null,
+    "handoff": null,
+    "summary": "",
+    "error": "",
+    "tokens": 0
+   },
+   {
+    "agentId": "ha",
+    "task": "Đọc brief du-an/plan-20261025-195326/brief.md. Mở từng file trong output/tho-bung-thu-gian/hinh/ và đối chiếu với thiet-ke.md: cùng một người mẫu, thấy trọn người và đạo cụ, tay đặt đúng chỗ (tr.2), bolster dưới gối và chăn dưới đầu, cổ trung tính (tr.3), không chữ, dòng Hình trong slides.md khớp. Ghi agents/ha/tho-bung-thu-gian-duyet-anh.md, kết luận ĐẠT/CẦN SỬA. Tiêu chí 10–11.",
+    "from": [
+     7
+    ],
+    "checks": 7,
+    "status": "pending",
+    "runId": null,
+    "handoff": null,
+    "summary": "",
+    "error": "",
+    "tokens": 0
+   }
+  ],
+  "replans": 1,
+  "log": [
+   "Bước 1 lỗi (Không tạo được sản phẩm nào (xem Vướng mắc trong handoff/20261025-195600-mai.md). Tôi c…) → chạy lại lần 1",
+   "Bước 1 lỗi (Không tạo được sản phẩm nào (xem Vướng mắc trong handoff/20261025-195732-mai.md). Tôi chưa khởi chạy được Deep Research nên chưa có nguồn nào cho dự án này. Trên Gemini, mục \"Deep research\" bị mờ và không bấm được. Ba model mạnh hơn ghi \"Limit resets Oct 25, 8:01 PM\", nên có vẻ tài khoản đã hết hạn mức (đây là suy đoán của tôi).\n\nTôi không tự dùng WebSearch hay WebFetch thay thế,) → Chef Yoga lập lại kế hoạch",
+   "Bước 1: Deep Research đang chạy trên Gemini; máy chủ chờ tới 20:38 (không tốn token) rồi gọi Mai lấy kết quả",
+   "Bước 1: Gemini chưa xong (lần kiểm 1/3); máy chủ chờ tới 20:49",
+   "Bước 1: Gemini chưa xong (lần kiểm 2/3); máy chủ chờ tới 21:00",
+   "Bước 1: Gemini chưa xong (lần kiểm 3/3); máy chủ chờ tới 21:11",
+   "Bước 1 lỗi (Gemini chưa xong sau 3 lần kiểm) → chạy lại lần 1"
+  ],
+  "note": "Bước 1 lỗi: Gemini chưa xong sau 3 lần kiểm",
+  "waiting": null,
+  "tokens": 4839040,
+  "questions": [],
+  "answers": [],
+  "afterAnswer": null,
+  "askRounds": 0,
+  "fixRounds": 0,
+  "wtokens": 1090429,
+  "costUsd": 4.38,
+  "score": null,
+  "acceptFile": null,
+  "reviewDone": false,
+  "resumeAt": null,
+  "budgetX": 1,
+  "createdAt": "2026-10-25T12:53:26.320Z",
+  "endedAt": null,
+  "planRunId": "20261025-195326-chef",
+  "replanRunIds": [
+   "20261025-195838-chef"
+  ],
+  "reviewRunId": null,
+  "reviewHandoff": null,
+  "summary": "",
+  "topic": "tho-bung-thu-gian"
  }
 ]

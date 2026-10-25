@@ -124,7 +124,7 @@ Chỉnh trong form **Sửa agent → Chrome & Gemini**, hoặc trong `config.jso
 | `geminiWeb.exportDocs` | Xuất báo cáo sang Google Docs. | tắt |
 | `geminiWeb.language` | Ngôn ngữ yêu cầu Gemini trả lời. | tiếng Việt |
 
-Agent Deep Research không dùng WebSearch của Claude (trừ khi bạn tự đặt `tools`), và mặc định có 150 lượt (chat: 60, tạo ảnh: 150).
+Agent Deep Research không dùng WebSearch và WebFetch của Claude, kể cả ở bước sửa (trừ khi bạn tự đặt `tools`): cần thêm nguồn thì hỏi Gemini, kiểm link bằng `kiem_link`, để khỏi tốn token Claude. Mặc định agent này có 150 lượt (chat: 60, tạo ảnh: 150). Gemini hết hạn mức thì agent ghi "HẾT HẠN MỨC GEMINI: đặt lại lúc HH:MM" rồi dừng lượt; máy chủ chờ tới giờ đó (không tốn token) rồi giao lại bước, không chạy lại ngay hay lập lại kế hoạch. Hết hạn mức lần thứ ba, hoặc phải chờ quá 12 giờ, thì dự án tạm dừng chờ bạn.
 
 **Deep Research hai pha** (`deepResearchTwoPhase: true` trong `config.json`): ở bước làm của dự án, agent chỉ khởi chạy Deep Research, ghi link cuộc chat vào `agents/<id>/<chu-de>-deep-research.md` với dòng "Trạng thái: đang chạy" rồi kết thúc lượt. Máy chủ chờ (bằng nửa `maxWaitMinutes`, ít nhất 10 phút; không tốn token), rồi gọi agent một lượt nữa để lấy báo cáo. Gemini chưa xong thì máy chủ chờ thêm 10 phút, tối đa 3 lần kiểm. Lượt 1 không khởi chạy được (Gemini báo lỗi, kẹt ở bước lập kế hoạch) mà chưa có file nguồn thì bước báo lỗi và được chạy lại, không chuyển cho người duyệt. Trong lúc chờ, bảng dự án ghi "Chờ Gemini Deep Research tới <giờ>".
 

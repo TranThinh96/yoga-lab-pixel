@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { gocBuoc, chonBuocChay, choBuocChen } = require('../lib/lich');
+const { gocBuoc, chonBuocChay, choBuocChen, hetHanMucGemini } = require('../lib/lich');
 
 // Sau một bước duyệt (3) có lỗi của cả Vy (thiết kế, bước 2) và Lam (kịch bản, bước 1)
 const B = () => [
@@ -77,4 +77,19 @@ test('chonBuocChay: bước dùng sản phẩm chờ lượt làm tiếp sau câ
   ];
   assert.equal(gocBuoc(b, 2), 1);
   assert.deepEqual(chonBuocChay(b, { max: 2 }), [1]);
+});
+
+test('hetHanMucGemini: đọc giờ làm mới hạn mức Gemini từ bàn giao', () => {
+  const now = new Date(2026, 9, 25, 19, 57);
+  const gio = r => [r.at.getDate(), r.at.getHours(), r.at.getMinutes()];
+  // Giờ 24h theo mẫu dòng trong prompt, cộng 2 phút dự phòng
+  assert.deepEqual(gio(hetHanMucGemini('## Vướng mắc\n- HẾT HẠN MỨC GEMINI: đặt lại lúc 20:01 (Limit resets Oct 25, 8:01 PM)', now)), [25, 20, 3]);
+  // Agent quên đổi giờ: đọc được giờ am/pm của Gemini
+  assert.deepEqual(gio(hetHanMucGemini('HẾT HẠN MỨC GEMINI: Limit resets Oct 25, 8:01 PM', now)), [25, 20, 3]);
+  // Giờ đã qua lâu: sang hôm sau; vừa qua ít phút: chạy lại ngay
+  assert.deepEqual(gio(hetHanMucGemini('HẾT HẠN MỨC GEMINI: đặt lại lúc 9:00', now)), [26, 9, 2]);
+  assert.deepEqual(gio(hetHanMucGemini('HẾT HẠN MỨC GEMINI: đặt lại lúc 19:50', now)), [25, 19, 59]);
+  // Không có giờ: vẫn nhận ra hết hạn mức, máy chủ tự chọn giờ chờ
+  assert.deepEqual(hetHanMucGemini('HẾT HẠN MỨC GEMINI: Deep Research bị mờ', now), { dong: 'Deep Research bị mờ', at: null });
+  assert.equal(hetHanMucGemini('Gemini báo lỗi, không rõ lý do', now), null);
 });

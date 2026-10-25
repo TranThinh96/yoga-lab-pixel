@@ -252,6 +252,7 @@ textarea{resize:vertical; min-height:96px}
 .node .who small{font-weight:500; color:var(--muted)}
 .node .txt{grid-column:2 / 4; font-size:13.5px; white-space:pre-wrap; overflow-wrap:anywhere}
 .node .txt.clamp{white-space:normal}
+.ag-meta .cost{font-size:12px; color:var(--muted); margin-top:2px}
 .node .gem-row{white-space:normal; gap:6px; align-items:center; margin-top:4px}
 .node .st{font-size:12px; font-weight:600; white-space:nowrap; display:flex; align-items:center; gap:5px}
 .node select{padding:4px 6px; font-size:14px; width:auto; max-width:100%}
@@ -2576,6 +2577,13 @@ function select(id){
 // ════════════════════════ bảng giao việc ════════════════════════
 const STATUS_TXT = { idle:'Đang thiền', working:'Đang làm việc', done:'Vừa xong', error:'Gặp lỗi' };
 const KIND_ICON = { read:'📖', write:'✎', web:'🌐', think:'…' };
+// Chi phí thường gặp của một người theo loại bước trong dự án (cùng số liệu với ước tính kế hoạch): để chọn model, mức suy nghĩ
+function chiPhiThuong(a){
+  const x = S.uocTinh && S.uocTinh.buoc[a.id]; if (!x) return '';
+  const ten = { work: 'làm', review: 'duyệt', rereview: 'duyệt lại', fix: 'sửa' };
+  const ds = Object.keys(ten).filter(k => x[k]).map(k => `${ten[k]} ~$${x[k].usd.toFixed(2)}${x[k].cao > x[k].usd * 1.3 ? ` (lần tốn ~$${x[k].cao.toFixed(2)})` : ''}`);
+  return ds.length ? `<p class="role cost" title="Trung vị mỗi bước trong các dự án trước, cộng mọi lượt của bước; lần tốn: 9/10 lần thấp hơn mức này">Mỗi bước: ${ds.join(' · ')}</p>` : '';
+}
 function renderPanel(){
   syncWins();
   const el = $('#panel'), a = agentById(S.selected);
@@ -2599,6 +2607,7 @@ function renderPanel(){
       <div class="ag-meta">
         <h2>${esc(a.name)}</h2>
         <p class="role">${esc(a.role)}${agentById(a.reportsTo) ? ` · báo cáo cho <b>${esc(agentById(a.reportsTo).name)}</b>` : ''}</p>
+        ${chiPhiThuong(a)}
         <div class="badges"><span class="badge ${a.engine}">${esc(engLabel(a))}</span><span class="pill ${st}">${STATUS_TXT[st]}${busy ? ' · <span data-el>0:00</span>' : ''}</span></div>
       </div>
       <button class="btn sm icon-btn" data-edit aria-label="Sửa ${esc(a.name)}" title="Sửa agent">✎</button>

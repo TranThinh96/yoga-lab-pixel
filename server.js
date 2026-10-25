@@ -28,6 +28,7 @@ const { chuDeTriThuc, docBangTriThuc, hopNhatMenhDe, hopNhatNguon, capNhatTruyCa
 const { docGhiChu } = require('./lib/ghi-chu');
 const { chonBuocChay, choBuocChen, hetHanMucGemini, buocSauDr, loiMoiTruong } = require('./lib/lich');
 const { thongKeChiPhi, uocTinhKeHoach } = require('./lib/uoc-tinh');
+const { docCaiDat, kiemCaiDat } = require('./lib/cai-dat');
 const { chiSoTriNao } = require('./lib/chi-so');
 const { soMa, docBaiHoc, noiDungBaiHoc, suaBaiHoc, banXemKinhNghiem, nhanBuoc, chonBaiHoc, maTrong, bangChungBaiHoc, daNhanTheoBuocCua, danhGiaBaiHoc, themLoHong, demLoHongMo, thongKeHoc, hocTuJson, apDungHoc, apDungSuaHuongDan, hoanTacSuaHuongDan, themTuTranh } = require('./lib/bai-hoc');
 
@@ -96,15 +97,24 @@ const DEFAULT_CONFIG = {
   agents: []
 };
 
+let configKeys = new Set(), configEol = '\n'; // các mục có sẵn trong config.json (theo thứ tự trong file), kiểu xuống dòng của file
 function loadConfig() {
   let raw = {};
-  try { raw = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8')); }
+  try { const txt = fs.readFileSync(CONFIG_PATH, 'utf8'); raw = JSON.parse(txt); if (txt.includes('\r\n')) configEol = '\r\n'; }
   catch (e) { console.warn('⚠️  Không đọc được config.json, dùng cấu hình mặc định:', e.message); }
+  configKeys = new Set(Object.keys(raw));
   return { ...DEFAULT_CONFIG, ...raw, agents: Array.isArray(raw.agents) ? raw.agents : [] };
 }
 
+// Chỉ ghi mục có sẵn trong file hoặc khác mặc định: ghi cả bộ mặc định thì sau này đổi mặc định trong code, máy bạn không nhận.
+// Giữ thứ tự mục và kiểu xuống dòng của file để mỗi lần lưu chỉ đổi đúng chỗ đã đổi
 async function saveConfig() {
-  await fsp.writeFile(CONFIG_PATH, JSON.stringify(config, null, 2) + '\n', 'utf8');
+  const out = {};
+  for (const k of new Set([...configKeys, ...Object.keys(config)])) {
+    if (!(k in config)) continue;
+    if (k === 'agents' || configKeys.has(k) || JSON.stringify(config[k]) !== JSON.stringify(DEFAULT_CONFIG[k])) { out[k] = config[k]; configKeys.add(k); }
+  }
+  await fsp.writeFile(CONFIG_PATH, (JSON.stringify(out, null, 2) + '\n').replace(/\n/g, configEol), 'utf8');
 }
 
 let config = loadConfig();
@@ -3347,6 +3357,7 @@ function publicState() {
     obsidianVault: config.obsidianVault || path.basename(workspaceDir()),
     config: { maxTurns: config.maxTurns, skipMcp: config.skipMcp, maxPlanSteps: config.maxPlanSteps || 6, planTokenBudget: cfgNum('planTokenBudget', 0) },
     uocTinh: thongKeChiPhi(plans, runs, weightOf), // ước tính chi phí kế hoạch nháp
+    caiDat: docCaiDat(config), // cửa sổ Dự án → Cài đặt
     agents: config.agents,
     coordinatorId: config.coordinatorId || '',
     running: [...running.keys()],
@@ -3441,6 +3452,19 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, { ok: true, plan });
     }
 
+    if (req.method === 'POST' && p === '/api/cai-dat') {
+      const kq = kiemCaiDat((await readBody(req)).patch);
+      if (kq.loi) return send(res, 400, { error: kq.loi });
+      // Giữ bản config.json trước mỗi lần đổi, như khi duyệt đề xuất sửa hướng dẫn
+      const cuDir = path.join(stateDir(), 'config-cu');
+      await fsp.mkdir(cuDir, { recursive: true });
+      await fsp.copyFile(CONFIG_PATH, path.join(cuDir, `${stamp()}.json`)).catch(() => {});
+      Object.assign(config, kq.moi);
+      await saveConfig();
+      const caiDat = docCaiDat(config);
+      broadcast({ type: 'cai-dat', caiDat, planTokenBudget: cfgNum('planTokenBudget', 0) });
+      return send(res, 200, { ok: true, caiDat });
+    }
     if (req.method === 'GET' && p === '/api/de-xuat') return send(res, 200, { list: deXuat });
     if (req.method === 'POST' && p === '/api/de-xuat') {
       const b = await readBody(req);

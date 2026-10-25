@@ -2342,7 +2342,7 @@ function henHetHanMucGemini(plan, idx) {
 // Chạy tiếp dự án đang tạm dừng / đã dừng / lỗi lúc lập kế hoạch (dùng cho nút "Chạy tiếp" và tự chạy tiếp)
 function resumePlan(plan) {
   const cur = activePlan();
-  if (cur && cur !== plan) throw Object.assign(new Error('Đang có một kế hoạch khác chưa xong'), { status: 409 });
+  if (cur && cur !== plan) throw Object.assign(new Error(`Đang có dự án khác chưa xong: "${snippet(cur.goal)}" (${cur.id}). Mỗi lúc chỉ chạy một dự án: huỷ hoặc chạy xong dự án đó trước.`), { status: 409 });
   clearTimeout(resumeTimers.get(plan.id)); resumeTimers.delete(plan.id);
   plan.resumeAt = null; plan.note = ''; plan.endedAt = null; plan.waiting = null;
   if (overBudget(plan)) { plan.budgetX = usedOf(plan) / cfgNum('planTokenBudget', 1) + 0.5; plan.log.push(`Bạn cho thêm ngân sách: tới ${fmtTok(budgetOf(plan))}`); }

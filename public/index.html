@@ -1210,7 +1210,7 @@ function demoPump(p){
     demo.run(coord.id, `Tổng kết dự án "${p.goal}"`, p.steps.map(s => s.handoff).filter(Boolean), { planId: p.id,
       steps: [['read', 'Đọc các bàn giao'], ['read', 'Tìm trong folder: output/'], ['write', 'Ghi tổng kết']],
       summary: `(Xem thử) Đã xong ${p.steps.length} bước. Sản phẩm chính nằm trong output/. Nên đọc lại phần lưu ý an toàn trước khi dùng.`,
-      onDone: run => { p.tokens += run.tokens; p.summary = run.summary; p.reviewHandoff = run.handoff; if (p.status === 'reviewing'){ p.status = 'done'; p.endedAt = new Date().toISOString(); } demoEmit(p); } });
+      onDone: run => { p.tokens += run.tokens; p.costUsd = +((p.costUsd || 0) + (run.costUsd || 0)).toFixed(2); p.summary = run.summary; p.reviewHandoff = run.handoff; if (p.status === 'reviewing'){ p.status = 'done'; p.endedAt = new Date().toISOString(); } demoEmit(p); } });
     return;
   }
   const s = p.steps[idx];
@@ -1221,7 +1221,7 @@ function demoPump(p){
   for (const x of srcs) if (x.handoff && x.agentId !== s.agentId) handleEvent({ type: 'handoff', from: x.agentId, to: s.agentId, file: x.handoff, planId: p.id });
   s.status = 'working'; demoEmit(p);
   demo.run(s.agentId, `(Dự án: ${p.goal} — bước ${idx + 1}/${p.steps.length})\n\n${s.task}`, srcs.map(x => x.handoff).filter(Boolean), { planId: p.id, step: idx + 1,
-    onDone: run => { s.handoff = run.handoff; s.summary = run.summary; s.tokens = run.tokens; p.tokens += run.tokens; s.status = 'done'; demoEmit(p); demoPump(p); } });
+    onDone: run => { s.handoff = run.handoff; s.summary = run.summary; s.tokens = run.tokens; s.costUsd = run.costUsd || 0; p.tokens += run.tokens; p.costUsd = +((p.costUsd || 0) + (run.costUsd || 0)).toFixed(2); s.status = 'done'; demoEmit(p); demoPump(p); } });
 }
 let api = live;
 

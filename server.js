@@ -87,6 +87,7 @@ const DEFAULT_CONFIG = {
   maxParallel: 1, // số bước của dự án chạy cùng lúc (1 = tuần tự); từ 2: các bước độc lập, vd nhiều người sửa sau một lần duyệt
   consultTool: false, // thử nghiệm: công cụ hoi_dong_nghiep (cần labTools), mỗi dự án tối đa 3 lần hỏi nhanh
   deepResearchTwoPhase: false, // Deep Research hai lượt ngắn: lượt 1 khởi chạy, máy chủ chờ (không tốn token), lượt 2 lấy kết quả
+  drChoToiDa: 150, // Deep Research hai pha: chờ Gemini tối đa bấy nhiêu phút kể từ lúc khởi chạy (kiểm lại cách 10 → 15 → 20 phút)
   drTongHopRieng: true, // với Deep Research hai pha: lượt 2 chỉ lưu báo cáo, việc tổng hợp sang file nguồn chạy ở lượt 3 không có Chrome (ngữ cảnh nhỏ hơn)
   machineGate: true, // cổng soát: bước vừa ghi slides.md / thiet-ke.md còn trang quá chữ hoặc lệch hai file thì máy chủ trả về sửa ngay, trước khi tới người duyệt
   buildSlides: true, // dự án xong: máy chủ dựng output/<chủ đề>/<chủ đề>.pptx từ slides.md, thiet-ke.md và hinh/ (không tốn token)
@@ -1791,10 +1792,14 @@ function startStep(plan, idx) {
         if (pha) {
           // Agent có thể đặt tên chủ đề khác máy chủ: lấy file *-deep-research.md nó vừa ghi
           s.drFile = (run.files || []).find(f => f.startsWith(`agents/${agent.id}/`) && f.endsWith('-deep-research.md')) || s.drFile || drFileOf(plan, agent);
-          const sau = buocSauDr({ pha, trangThai: trangThaiDr(readWs(s.drFile)), coFileKhac: s.files.some(f => f !== s.drFile),
-            lanKiem: s.lanKiem || 0, tongHopRieng: config.drTongHopRieng !== false });
+          if (pha === 1 || !s.drBatDau) s.drBatDau = run.startedAt; // mốc tính hạn chờ Gemini
+          const choToiDa = cfgNum('drChoToiDa', 150);
+          // Chỉ xét file của chính lượt này: file nguồn từ lượt trước (vd lượt dự phòng khi Gemini chậm) chưa có báo cáo Gemini
+          const sau = buocSauDr({ pha, trangThai: trangThaiDr(readWs(s.drFile)), coFileKhac: (run.files || []).filter(isProductFile).some(f => f !== s.drFile),
+            lanKiem: s.lanKiem || 0, phutDaCho: (Date.now() - new Date(s.drBatDau).getTime()) / 60e3, choToiDa, tongHopRieng: config.drTongHopRieng !== false });
           if (sau.loai === 'loi') {
             s.status = 'error'; s.error = s.lastError = sau.lyDo;
+            if (sau.khongChayLai) s.retries = Math.max(s.retries || 0, cfgNum('stepRetries', 1));
             if (plan.status !== 'running') return emitPlan(plan);
             return onStepError(plan, idx);
           }
@@ -1806,8 +1811,8 @@ function startStep(plan, idx) {
               plan.log.push(`Bước ${idx + 1}: Deep Research đang chạy trên Gemini; máy chủ chờ tới ${gioPhut(s.henLuc)} (không tốn token) rồi gọi ${agent.name} lấy kết quả`);
             } else if (sau.loai === 'kiem-lai') {
               s.lanKiem = sau.lanKiem;
-              s.henLuc = new Date(Date.now() + 10 * 60e3).toISOString();
-              plan.log.push(`Bước ${idx + 1}: Gemini chưa xong (lần kiểm ${s.lanKiem}/3); máy chủ chờ tới ${gioPhut(s.henLuc)}`);
+              s.henLuc = new Date(Date.now() + sau.phut * 60e3).toISOString();
+              plan.log.push(`Bước ${idx + 1}: Gemini chưa xong (lần kiểm ${s.lanKiem}, đã chờ ${Math.round((Date.now() - new Date(s.drBatDau).getTime()) / 60e3)}/${choToiDa} phút); máy chủ chờ tới ${gioPhut(s.henLuc)}`);
             } else {
               s.pha = 3; // tổng hợp ở lượt riêng không có Chrome
               plan.log.push(`Bước ${idx + 1}: đã lấy báo cáo Gemini; ${agent.name} tổng hợp sang file nguồn ở lượt riêng, không cần Chrome`);

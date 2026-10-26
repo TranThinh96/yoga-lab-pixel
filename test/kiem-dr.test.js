@@ -12,6 +12,13 @@ test('promptKiemDr: có link, chỉ dặn dùng Chrome, không chép lại kết
   assert.match(p, /get_page_text MỘT lần/);
   assert.match(p, /KHÔNG chép lại/);
   assert.match(p, /ĐANG CHẠY/);
+  // Lượt kiểm thật 26/10: find không thấy gì mà vẫn trả "ĐANG CHẠY" → không đoán, đọc trang hoặc trả KHÔNG RÕ
+  assert.match(p, /KHÔNG đoán/);
+  assert.match(p, /bấm mở thẻ/);
+});
+
+test('ketLuanKiem: "KHÔNG RÕ" là không rõ (máy chủ giao agent kiểm như thường)', () => {
+  assert.equal(ketLuanKiem('KHÔNG RÕ: trang chỉ có khung chat trống').loai, 'khong-ro');
 });
 
 test('taoBoBatTrang: chỉ lấy kết quả của get_page_text, giữ bản dài nhất, bỏ kết quả lỗi', () => {

@@ -220,6 +220,8 @@ textarea{resize:vertical; min-height:96px}
 .muted{color:var(--muted)}
 .log-row .step{font-size:12px; font-weight:700; padding:0 5px; border:1px solid var(--line); margin-right:6px; background:var(--paper)}
 .log-row .role{font-size:12px; font-weight:700; color:var(--gemini)}
+.hist .role{font-size:12px; color:var(--gemini)}
+.hagent{margin:0 0 8px; padding:6px 10px; border:2px solid var(--gemini); background:var(--paper-2); font-size:13.5px; display:flex; gap:10px; align-items:center; flex-wrap:wrap}
 .log-row .e{display:block; color:var(--err); font-size:12.5px; margin-top:2px}
 .log-row .meta u{color:var(--gemini); text-decoration:none}
 .hist-bar{display:flex; align-items:center; justify-content:space-between; gap:10px; margin:0 0 8px; flex-wrap:wrap}
@@ -2674,9 +2676,11 @@ function renderPanel(){
         <button class="btn sm" data-pass="${esc(last.handoff)}">Tiếp tục →</button></div>` : ''}
     </div>` : '';
   const hist = done.slice(1, 6);
-  const histHtml = hist.length ? `<div class="sec"><div class="lbl-sm">Lịch sử</div><ul class="hist">${hist.map(r => `<li><button type="button" ${r.handoff ? `data-view="${esc(r.handoff)}"` : 'disabled'} title="${esc(r.status === 'done' ? r.summary || '' : r.error || '')}">
-      <span class="dot ${r.status === 'stopped' ? 'error' : r.status}"></span><span class="t">${esc(gist(r.task))}</span>
-      <small>${r.endedAt ? dur(r.startedAt, r.endedAt) + ' · ' : ''}${ago(new Date(r.startedAt).getTime())}</small></button></li>`).join('')}</ul></div>` : '';
+  // Vai trò (sửa, duyệt…) đứng trước: việc sửa do máy chủ giao mở đầu bằng "Máy chủ soát file…", đọc riêng thì khó hiểu
+  const histHtml = hist.length ? `<div class="sec"><div class="lbl-sm">Lịch sử</div><ul class="hist">${hist.map(r => { const role = runRole(r, r.planId && S.plans.find(p => p.id === r.planId)), txt = r.planId && !r.step ? dieuPhoiTxt(r.summary) || '' : gist(r.task); return `<li><button type="button" ${r.handoff ? `data-view="${esc(r.handoff)}"` : 'disabled'} title="${esc(r.status === 'done' ? r.summary || '' : r.error || '')}">
+      <span class="dot ${r.status === 'stopped' ? 'error' : r.status}"></span><span class="t">${role && role !== 'Làm' && !txt.toLowerCase().startsWith(role.toLowerCase()) ? `<b class="role">${role}</b> ` : ''}${esc(txt)}</span>
+      <small>${r.endedAt ? dur(r.startedAt, r.endedAt) + ' · ' : ''}${r.costUsd ? '$' + r.costUsd.toFixed(2) + ' · ' : ''}${ago(new Date(r.startedAt).getTime())}</small></button></li>`; }).join('')}</ul>
+      ${done.length > 1 ? `<button class="linkbtn" type="button" data-hist-agent="${esc(a.id)}">Xem mọi lượt của ${esc(a.name)} trong Lịch sử →</button>` : ''}</div>` : '';
   el.innerHTML = busy
     ? head + `<section class="live" id="live" aria-label="Tiến độ"></section><div class="row"><button class="btn" data-stop>Dừng</button><span class="muted" style="font-size:13px">Giao việc mới khi ${esc(a.name)} làm xong.</span></div>` + histHtml
     : head + assign + lastCard + histHtml;
@@ -2775,6 +2779,7 @@ $('#panel').addEventListener('click', async e => {
   if (t.hasAttribute('data-retry')) return retryRun(lastDone(S.selected), t);
   if (t.hasAttribute('data-edit')) return openAgentDlg(agentById(S.selected));
   if (t.dataset.view) return viewFile(t.dataset.view);
+  if (t.dataset.histAgent){ S.histAgent = t.dataset.histAgent; S.histQ = ''; S.histOpen = null; setTab('log'); return openWin('book'); }
   if (t.hasAttribute('data-liveall')){ S.liveAll = S.liveAll === S.selected ? null : S.selected; return renderLive(); }
   if (t.dataset.pass){ const to = $('#passTo').value; passTo(to, t.dataset.pass, agentById(S.selected)); }
 });
@@ -2872,7 +2877,7 @@ $('.dock').addEventListener('click', e => {
   if (d === 'board'){ if (S.win !== 'board') S.panelOpen = false; openWin(S.win === 'board' ? null : 'board'); return renderBoard(); }
   if (S.win === 'book' && (S.tab === d || d === 'log' && S.tab === 'handoff')) return openWin(null);
   if (d === 'plan'){ S.sub = 'plan'; S._planKey = null; }
-  if (d === 'log') S.histOpen = null;
+  if (d === 'log'){ S.histOpen = null; S.histAgent = ''; }
   setTab(d); openWin('book');
 });
 document.addEventListener('click', e => { if (e.target.closest('[data-win-close]')) openWin(null); });
@@ -2935,11 +2940,11 @@ function runRole(r, p){
   return st ? (st.checks ? 'Duyệt' : st.fixOf ? 'Sửa' : 'Làm') : 'Làm';
 }
 // Ô tìm: khớp tên agent, việc giao, tóm tắt, lỗi. Dự án không có lượt nào khớp mà mục tiêu khớp thì giữ mọi lượt của dự án đó
-S.histQ = '';
+S.histQ = ''; S.histAgent = ''; // histAgent: chỉ xem lượt của một người (từ nút "Xem mọi lượt" trong bảng giao việc)
 const histKhop = (q, ...ts) => ts.some(t => String(t || '').toLowerCase().includes(q));
 function histGroups(){
   const q = S.histQ.trim().toLowerCase(), planOf = id => S.plans.find(p => p.id === id);
-  let runs = S.runs.filter(r => S.histF === 'err' ? ['error', 'stopped'].includes(r.status) : S.histF === 'solo' ? !r.planId : true);
+  let runs = S.runs.filter(r => (S.histF === 'err' ? ['error', 'stopped'].includes(r.status) : S.histF === 'solo' ? !r.planId : true) && (!S.histAgent || r.agentId === S.histAgent));
   if (q){
     const trung = runs.filter(r => histKhop(q, r.agentName, taskText(r.task), r.summary, r.error)), co = new Set(trung.map(r => r.planId));
     runs = runs.filter(r => trung.includes(r) || (r.planId && !co.has(r.planId) && histKhop(q, (planOf(r.planId) || {}).goal)));
@@ -2983,18 +2988,19 @@ function renderHistory(el){
       <input type="search" id="histQ" placeholder="Tìm agent, việc, lỗi… (phím /)" aria-label="Tìm trong lịch sử">
       <button class="linkbtn" type="button" data-histall></button></div><div id="histList"></div>`;
     $('#histQ').value = S.histQ;
-  }
+  } else if (document.activeElement !== $('#histQ') && $('#histQ').value !== S.histQ) $('#histQ').value = S.histQ;
   el.querySelectorAll('[data-histf]').forEach(b => b.setAttribute('aria-pressed', b.dataset.histf === S.histF));
-  const list = $('#histList'), groups = histGroups(), q = S.histQ.trim();
+  const list = $('#histList'), groups = histGroups(), q = S.histQ.trim(), ag = S.histAgent && agentById(S.histAgent);
+  const chip = S.histAgent ? `<p class="hagent">Chỉ lượt của <b>${esc(ag ? ag.name : S.histAgent)}</b> <button class="linkbtn" type="button" data-histagent-x>✕ Bỏ lọc</button></p>` : '';
   if (!S.histOpen){ S.histOpen = new Set(groups.filter((g, i) => i === 0 || g.runs.some(r => r.status === 'working')).map(g => g.key)); }
   const isOpen = g => q || S.histOpen.has(g.key); // đang tìm thì mở mọi khối khớp
   const all = el.querySelector('[data-histall]');
   all.textContent = groups.every(isOpen) ? 'Thu gọn tất cả' : 'Mở tất cả'; all.hidden = !groups.length || !!q;
   if (!groups.length){
-    list.innerHTML = `<p class="muted">${q ? `Không có lượt nào khớp "${esc(q)}".` : S.histF === 'err' ? 'Không có lượt nào bị lỗi trong lịch sử gần đây.' : S.histF === 'solo' ? 'Chưa có việc giao lẻ nào.' : 'Chưa có lượt làm việc nào. Chạm vào một nhân vật trên bản đồ để giao việc đầu tiên.'}</p>`;
+    list.innerHTML = chip + `<p class="muted">${q ? `Không có lượt nào khớp "${esc(q)}".` : S.histF === 'err' ? 'Không có lượt nào bị lỗi trong lịch sử gần đây.' : S.histF === 'solo' ? 'Chưa có việc giao lẻ nào.' : 'Chưa có lượt làm việc nào. Chạm vào một nhân vật trên bản đồ để giao việc đầu tiên.'}</p>`;
     return;
   }
-  list.innerHTML = `<p class="hint">${q ? `${groups.reduce((n, g) => n + g.runs.length, 0)} lượt khớp "${esc(q)}".` : 'Mỗi khối là một dự án, các lượt xếp theo thứ tự đã làm. Bấm một dòng để mở kết quả của lượt đó.'}</p>` + groups.map(g => {
+  list.innerHTML = chip + `<p class="hint">${q ? `${groups.reduce((n, g) => n + g.runs.length, 0)} lượt khớp "${esc(q)}".` : 'Mỗi khối là một dự án, các lượt xếp theo thứ tự đã làm. Bấm một dòng để mở kết quả của lượt đó.'}</p>` + groups.map(g => {
     const p = g.plan, err = g.runs.filter(r => ['error', 'stopped'].includes(r.status)).length;
     const tok = g.runs.reduce((n, r) => n + (r.tokens || 0), 0), live = g.runs.some(r => r.status === 'working');
     const usd = g.runs.reduce((n, r) => n + (r.costUsd || 0), 0);
@@ -3025,6 +3031,7 @@ $('#book').addEventListener('toggle', e => {
 $('#book').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   if (b.dataset.histf){ S.histF = b.dataset.histf; store.set('yl-histf', S.histF); S.histOpen = null; return renderBook(); }
+  if (b.hasAttribute('data-histagent-x')){ S.histAgent = ''; S.histOpen = null; return renderBook(); }
   if (b.hasAttribute('data-histall')){ const gs = histGroups(), all = gs.every(g => S.histOpen.has(g.key)); S.histOpen = new Set(all ? [] : gs.map(g => g.key)); return renderBook(); }
   if (b.dataset.hboard){ S.boardSrc = b.dataset.hboard; store.set('yl-bsrc', S.boardSrc); S.boardCard = null; S._boardKey = null; openWin('board'); return renderBoard(); }
   if (b.dataset.hresume) return resumeProject(b.dataset.hresume, b);

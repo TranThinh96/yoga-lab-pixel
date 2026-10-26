@@ -834,7 +834,7 @@ main{display:block; max-width:none; margin:0; padding:0}
       <div class="field"><label for="fName">Tên</label><input type="text" id="fName" maxlength="24" required placeholder="Ví dụ: Sen"></div>
       <div class="field"><label for="fRole">Vai trò</label><input type="text" id="fRole" maxlength="60" placeholder="Ví dụ: Thiết kế chuỗi tư thế"></div>
       <div class="field"><label for="fBoss">Báo cáo cho</label><select id="fBoss"></select><small>Người nhận báo cáo sẽ lập kế hoạch và điều phối agent này khi bạn giao dự án.</small></div>
-      <div class="field"><label for="fInstr">Hướng dẫn riêng</label><textarea id="fInstr" rows="4" placeholder="Agent này cần làm gì, ghi vào đâu, chú ý điều gì…"></textarea><small>Giữ ngắn — mỗi chữ ở đây bị đọc lại mỗi lần agent làm việc.</small></div>
+      <div class="field"><label for="fInstr">Hướng dẫn riêng</label><textarea id="fInstr" rows="4" placeholder="Agent này cần làm gì, ghi vào đâu, chú ý điều gì…"></textarea><small id="fInstrN">Giữ ngắn — mỗi chữ ở đây bị đọc lại mỗi lần agent làm việc.</small></div>
       <div class="field"><label>Ngoại hình</label>
         <div class="look"><canvas id="lookPreview" width="28" height="30"></canvas><div id="lookPick"></div></div>
       </div>
@@ -3512,7 +3512,7 @@ function renderBoard(){
   const needYou = p && ['draft', 'asking', 'paused'].includes(p.status) || p && p.status === 'error' && !p.steps.length;
   $('#boardHead').innerHTML = `<h2 id="boardTitle">Bảng việc</h2>
     <select id="bdSrc" aria-label="Xem bảng của">${opts.join('')}</select>
-    <span class="meta">${p ? `<span class="dot ${planDot(p.status)}" style="display:inline-block;margin-right:5px"></span>${PLAN_TXT[p.status] || p.status} · ${done}/${cards.length} sản phẩm xong${p.tokens ? ' · ' + fmtTok(p.tokens) + ' token' : ''}${p.score != null ? ' · nghiệm thu ' + p.score + '/100' : ''}` : `${S.boardSrc === '__solo' ? '' : 'Chưa có dự án nào · '}${cards.length} việc lẻ gần đây`}</span>
+    <span class="meta">${p ? `<span class="dot ${planDot(p.status)}" style="display:inline-block;margin-right:5px"></span>${PLAN_TXT[p.status] || p.status} · ${done}/${cards.length} sản phẩm xong${p.tokens ? ' · ' + fmtTok(p.tokens) + ' token' : ''}${p.costUsd ? ' · $' + Number(p.costUsd).toFixed(2) : ''}${p.score != null ? ' · nghiệm thu ' + p.score + '/100' : ''}` : `${S.boardSrc === '__solo' ? '' : 'Chưa có dự án nào · '}${cards.length} việc lẻ gần đây`}</span>
     <span class="sp"></span>
     ${p ? `<button class="btn sm" type="button" data-bd-plan="${esc(p.id)}">🗺️ Chi tiết dự án</button>` : ''}
     <button class="btn sm primary" type="button" data-bd-new>+ Dự án mới</button>
@@ -4076,11 +4076,20 @@ agentDlg.addEventListener('change', e => {
   if (e.target.name === 'engine') setModelList(e.target.value, { claude: 'sonnet', antigravity: 'gemini-3.8-flash-high' }[e.target.value] || '');
   if (e.target.id === 'fModelSel'){ const c = e.target.value === '__custom'; $('#fModel').hidden = !c; if (c) $('#fModel').focus(); }
 });
+// Độ dài hướng dẫn riêng: phần này đi kèm mọi lượt của agent, nên hiện số chữ và token ước tính ngay khi gõ.
+// Tiếng Việt có dấu tốn token hơn tiếng Anh: ước khoảng 1 token cho mỗi 2,5 ký tự
+function demHuongDan(){
+  const t = $('#fInstr').value.trim(), chu = t ? t.split(/\s+/).length : 0, tok = Math.round(t.length / 2.5), dai = t.length > 3000; // nhóm hiện tại 1.200–2.300 ký tự
+  const n = $('#fInstrN');
+  n.textContent = t ? `${chu} chữ · khoảng ${fmtTok(tok)} token, đọc lại ở mọi lượt của agent này.${dai ? ' Hơi dài: chuyển phần quy trình chung sang templates/ hoặc brief dự án.' : ''}` : 'Giữ ngắn — mỗi chữ ở đây bị đọc lại mỗi lần agent làm việc.';
+  n.classList.toggle('warn', dai);
+}
+$('#fInstr').addEventListener('input', demHuongDan);
 function openAgentDlg(a){
   editing = a || null;
   $('#agentDlgTitle').textContent = a ? 'Sửa ' + a.name : 'Thêm agent';
   $('#fName').value = a ? a.name : ''; $('#fRole').value = a ? a.role : '';
-  $('#fInstr').value = a ? a.instructions || '' : '';
+  $('#fInstr').value = a ? a.instructions || '' : ''; demHuongDan();
   const eng = a ? a.engine : 'claude'; agentDlg.querySelector(`input[name=engine][value=${eng}]`).checked = true; setModelList(eng, a ? a.model || '' : 'sonnet');
   if (eng !== 'gemini') $('#fEffort').value = a ? a.effort || '' : '';
   const gw = (a && a.geminiWeb) || {};

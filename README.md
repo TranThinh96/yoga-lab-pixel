@@ -11,7 +11,7 @@ Xong việc họ ra hồ sen ăn mừng, gặp lỗi thì ra ghế đá ngồi. 
 ghé Phòng trà, Thư viện, Lầu mây, đi dạo vườn hoặc sang nói chuyện với nhau, thỉnh thoảng buông vài câu
 (bong bóng nghiêng màu xanh). Đây chỉ là hoạt cảnh trên trình duyệt, không gọi AI nên không tốn token. Phía sau, Claude Code hoặc Gemini CLI
 chạy ngầm trên folder trong máy bạn, nên bạn không phải gõ lệnh hay nhìn terminal.
-Giao diện chạy như một màn hình game: bản đồ luôn phủ kín cửa sổ, thanh trên cùng hiện số liệu, thanh dưới cùng có 5 nút **Đội ngũ, Bảng việc, Dự án, Sản phẩm, Lịch sử** (Lịch sử gồm cả Bàn giao và Nhật ký). Khi một việc xong, thông báo dưới màn hình có nút **Xem kết quả** để mở ngay file vừa làm. Chạm vào nhân vật để mở bảng giao việc bên phải. **Esc** hoặc **✕** đóng cửa sổ; phím **1–5** mở năm nút ở thanh dưới theo thứ tự; nút **⛶** (phím **F**) ẩn luôn thanh trình duyệt. Trên điện thoại cửa sổ trượt lên từ dưới và vuốt ngang để xem hết bản đồ.
+Giao diện chạy như một màn hình game: bản đồ luôn phủ kín cửa sổ, thanh trên cùng hiện số liệu, thanh dưới cùng có 5 nút **Đội ngũ, Bảng việc, Dự án, Sản phẩm, Lịch sử** (Lịch sử gồm cả Bàn giao và Nhật ký). Khi một việc xong, thông báo dưới màn hình có nút **Xem kết quả** để mở ngay file vừa làm. Chạm vào nhân vật để mở bảng giao việc bên phải. **Esc** hoặc **✕** đóng cửa sổ; phím **1–5** mở năm nút ở thanh dưới theo thứ tự; phím **/** tới ô tìm của cửa sổ Sản phẩm hoặc Lịch sử; nút **⛶** (phím **F**) ẩn luôn thanh trình duyệt. Trên điện thoại cửa sổ trượt lên từ dưới và vuốt ngang để xem hết bản đồ.
 
 - Agent **chỉ thức dậy khi được giao việc**. Không có heartbeat, nên không tốn token khi rảnh.
 - Mỗi việc là **một lượt ngắn**. Xong việc, agent để lại một **bàn giao** ngắn trong `handoff/`.
@@ -140,7 +140,7 @@ Một vài mẹo khác:
 - Giao việc **cụ thể, nhỏ**, ví dụ "Tìm 5 nghiên cứu về X, ghi kèm nguồn" thay vì "Nghiên cứu về X".
 - `workspace/index.md` do máy chủ tự cập nhật (dự án gần đây, sản phẩm mới nhất). Đừng sửa tay; bản cũ nằm ở `workspace/luu-tru/index-cu.md`.
 - Giữ phần "Hướng dẫn riêng" của agent ngắn, vì nó bị đọc lại ở mỗi lượt.
-- Xem số token mỗi lượt ở **Lịch sử** để biết ai đang "ăn" nhiều.
+- Xem số token mỗi lượt ở **Lịch sử** để biết ai đang "ăn" nhiều. Đầu mỗi khối dự án có tổng thời gian làm, token và chi phí; ô tìm lọc theo agent, việc giao hoặc lỗi.
 - **Hạn mức tài khoản** hiện trên thanh đầu trang. **CLAUDE**: % đã dùng của khung 5 giờ và khung tuần, lấy từ chính các lượt chạy Claude; rê chuột để xem giờ làm mới, bấm để làm mới (chạy một lượt haiku rất nhỏ). **AGY**: Antigravity không công bố % hạn mức, nên chip hiện token văn phòng đã dùng trong 5 giờ và 7 ngày qua, cùng các model đang hết hạn mức (đọc từ log của agy), ví dụ "⛔ ảnh tới 04:12".
 
 ## Làm slide workshop

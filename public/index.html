@@ -2464,6 +2464,7 @@ document.addEventListener('keydown', e => {
   if (e.ctrlKey || e.metaKey || e.altKey || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable || document.querySelector('dialog[open]')) return;
   if ((e.key === 'f' || e.key === 'F') && fsOK){ e.preventDefault(); toggleFull(); }
   else if (/^[1-5]$/.test(e.key)){ const b = document.querySelectorAll('.dock [data-dock]')[+e.key - 1]; if (b){ e.preventDefault(); b.click(); } } // 1–5: Đội ngũ, Bảng việc, Dự án, Sản phẩm, Lịch sử
+  else if (e.key === '/'){ const q = [...document.querySelectorAll('#histQ, #outQ')].find(x => x.offsetParent); if (q){ e.preventDefault(); q.focus(); q.select(); } } // /: tới ô tìm của cửa sổ đang mở
   else if (e.key === 'Escape'){ if (S.win === 'board' && S.boardCard){ S.boardCard = null; renderBoard(); } else if (S.panelOpen && agentById(S.selected)){ S.panelOpen = false; syncWins(); } else if (S.win) openWin(null); }
 });
 
@@ -2870,7 +2871,7 @@ function renderBook(){
   } else if (S.tab === 'output'){
     // Giữ nguyên ô tìm kiếm khi vẽ lại (để không mất chữ đang gõ), chỉ vẽ lại phần danh sách
     if (!el.querySelector('#outQ')){
-      el.innerHTML = `<div class="out-bar"><input type="search" id="outQ" placeholder="Tìm tên file hoặc nội dung…" aria-label="Tìm sản phẩm">
+      el.innerHTML = `<div class="out-bar"><input type="search" id="outQ" placeholder="Tìm tên file hoặc nội dung… (phím /)" aria-label="Tìm sản phẩm">
         <div class="seg-b" role="group" aria-label="Xếp theo">${[['project','Dự án'],['agent','Agent'],['folder','Thư mục']].map(([k, t]) => `<button type="button" data-oview="${k}">${t}</button>`).join('')}</div></div>
         <div id="outList"></div>`;
       $('#outQ').value = S.outQ;
@@ -2943,7 +2944,7 @@ function renderHistory(el){
   // Giữ nguyên ô tìm khi vẽ lại (không mất chữ đang gõ), chỉ vẽ lại bộ lọc và danh sách
   if (!el.querySelector('#histQ')){
     el.innerHTML = `<div class="hist-bar"><div class="seg-b" role="group" aria-label="Lọc lịch sử">${[['all', 'Tất cả'], ['err', 'Chỉ lỗi'], ['solo', 'Việc lẻ']].map(([k, t]) => `<button type="button" data-histf="${k}">${t}</button>`).join('')}</div>
-      <input type="search" id="histQ" placeholder="Tìm agent, việc, lỗi…" aria-label="Tìm trong lịch sử">
+      <input type="search" id="histQ" placeholder="Tìm agent, việc, lỗi… (phím /)" aria-label="Tìm trong lịch sử">
       <button class="linkbtn" type="button" data-histall></button></div><div id="histList"></div>`;
     $('#histQ').value = S.histQ;
   }

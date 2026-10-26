@@ -944,7 +944,7 @@ function toast(msg, act){
 const S = {
   demo: false, workspace: '', agents: [], status: {}, acts: {}, runs: [],
   handoffs: [], outputs: [], outDir: 'output', selected: store.get('yl-sel', null),
-  attach: new Set(), draft: {}, fresh: new Set(), cli: null,
+  attach: new Set(), draft: store.get("yl-drafts", {}), fresh: new Set(), cli: null,
   timeMode: store.get('yl-time', 'auto'), tab: 'plan',
   plans: [], coordinatorId: '', planView: null, sub: 'plan', planEdit: null, goalDraft: '', maxPlanSteps: 6,
   deXuat: [] // đề xuất cải tiến từ hồi cứu, chờ bạn duyệt
@@ -2769,7 +2769,10 @@ function tickLive(){
     : r > 1 ? 'Đã quá thời gian thường lệ một chút, việc này có thể nhiều hơn mọi khi.' : '';
 }
 setInterval(tickLive, 1000);
-$('#panel').addEventListener('input', e => { if (e.target.id === 'task') S.draft[e.target.dataset.agent] = e.target.value; });
+// Bản nháp giao việc của từng người: giữ qua lần tải lại trang (ghi chậm một nhịp, không ghi ở mỗi phím)
+let draftTimer;
+const saveDrafts = () => { clearTimeout(draftTimer); draftTimer = setTimeout(() => store.set('yl-drafts', Object.fromEntries(Object.entries(S.draft).filter(([, v]) => v && v.trim()))), 400); };
+$('#panel').addEventListener('input', e => { if (e.target.id === 'task'){ S.draft[e.target.dataset.agent] = e.target.value; saveDrafts(); } });
 $('#panel').addEventListener('change', e => {
   const p = e.target.dataset.att; if (p == null) return;
   e.target.checked ? S.attach.add(p) : S.attach.delete(p);
@@ -2821,11 +2824,11 @@ async function runTask(){
   askNotify();
   const btn = $('#panel [data-run]'); if (btn) btn.disabled = true;
   try {
-    S.draft[a.id] = ''; ta.value = '';
+    S.draft[a.id] = ''; ta.value = ''; saveDrafts();
     await api.run(a.id, task, [...S.attach]);
     S.attach = new Set(); S.draft[a.id] = '';
     const nt = $('#task'); if (nt) nt.value = ''; renderPanel();
-  } catch (err) { S.draft[a.id] = task; const nt = $('#task'); if (nt) nt.value = task; toast(err.message); if (btn) btn.disabled = false; }
+  } catch (err) { S.draft[a.id] = task; saveDrafts(); const nt = $('#task'); if (nt) nt.value = task; toast(err.message); if (btn) btn.disabled = false; }
 }
 
 // ════════════════════════ sổ làm việc ════════════════════════
@@ -3096,7 +3099,11 @@ function renderPlan(el){
     ${S.caiDat && !S.demo ? `<button class="sw-txt" data-sub="cai-dat" aria-pressed="${S.sub === 'cai-dat'}">⚙ Cài đặt</button>` : ''}
   </div>`;
   el.innerHTML = sw + (S.sub === 'org' ? orgView() : S.sub === 'cai-dat' && S.caiDat ? caiDatView() : dxBox() + (p ? planView(p) : planForm()));
-  if (S.sub === 'org') el.querySelectorAll('canvas.ocv').forEach(c => { const a = agentById(c.dataset.id); if (a) drawPortrait(c, a.look, statusOf(a.id), 0, 'think'); });
+  if (S.sub === 'org'){
+    el.querySelectorAll('canvas.ocv').forEach(c => { const a = agentById(c.dataset.id); if (a) drawPortrait(c, a.look, statusOf(a.id), 0, 'think'); });
+    // Sơ đồ rộng hơn khung (6 người một hàng): cuộn ra giữa để trưởng nhóm nằm chính giữa, thấy được hai bên
+    const o = el.querySelector('.org'); if (o) o.scrollLeft = (o.scrollWidth - o.clientWidth) / 2;
+  }
   const g = $('#goal'); if (g) g.value = S.goalDraft;
   const c = $('#coord'); if (c) renderTeamNote();
 }

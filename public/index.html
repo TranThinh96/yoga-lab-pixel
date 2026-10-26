@@ -3150,8 +3150,14 @@ function renderTeamNote(){
   const id = $('#coord').value, subs = subsOf(id), el = $('#teamNote'); if (!el) return;
   el.innerHTML = subs.length ? `Trực thuộc: ${subs.map(x => esc(x.agent.name)).join(', ')}` : '<span style="color:var(--err)">Chưa ai báo cáo cho người này, nên kế hoạch có thể giao cho cả văn phòng.</span>';
 }
+// Lựa chọn trong form dự án mới: giữ qua các lần vẽ lại (dự án khác cập nhật thì form vẽ lại, trước đây mất dấu tick)
+// và qua lần tải lại trang, cùng bản nháp mục tiêu
+S.goalDraft = store.get('yl-goal', '');
+S.formOpts = { autoStart: false, review: true, coord: '', tiepNoi: '', ...store.get('yl-planopts', {}) };
+const setFormOpt = (k, v) => { S.formOpts[k] = v; store.set('yl-planopts', { ...S.formOpts, tiepNoi: '' }); }; // tiếp nối: chỉ nhớ trong phiên
 function planForm(){
-  const coordId = agentById(S.coordinatorId) ? S.coordinatorId : ([...S.agents].sort((a, b) => subsOf(b.id).length - subsOf(a.id).length)[0] || {}).id;
+  const o = S.formOpts;
+  const coordId = agentById(o.coord) ? o.coord : agentById(S.coordinatorId) ? S.coordinatorId : ([...S.agents].sort((a, b) => subsOf(b.id).length - subsOf(a.id).length)[0] || {}).id;
   const past = S.plans.filter(p => !PLAN_ACTIVE.includes(p.status)).slice(0, 5);
   const xong = S.plans.filter(p => p.status === 'done');
   return `<div class="plan-form">
@@ -3168,16 +3174,16 @@ function planForm(){
       <span class="muted" id="teamNote" style="font-size:13px; align-self:center"></span>
     </div>
     ${xong.length ? `<div class="opts">
-      <label title="Bản mới bắt đầu từ sản phẩm, brief và câu trả lời của dự án cũ; chỉ làm phần còn thiếu và phần đổi">Tiếp nối từ dự án… <select id="tiepNoi"><option value="">Không</option>${xong.map(x => `<option value="${esc(x.id)}">${esc(x.goal.length > 60 ? x.goal.slice(0, 57) + '…' : x.goal)}${x.topic ? ' · ' + esc(x.topic) : ''}</option>`).join('')}</select></label>
+      <label title="Bản mới bắt đầu từ sản phẩm, brief và câu trả lời của dự án cũ; chỉ làm phần còn thiếu và phần đổi">Tiếp nối từ dự án… <select id="tiepNoi"><option value="">Không</option>${xong.map(x => `<option value="${esc(x.id)}" ${x.id === o.tiepNoi ? 'selected' : ''}>${esc(x.goal.length > 60 ? x.goal.slice(0, 57) + '…' : x.goal)}${x.topic ? ' · ' + esc(x.topic) : ''}</option>`).join('')}</select></label>
     </div>` : ''}
     <div class="opts">
-      <label><input type="checkbox" id="autoStart"> Chạy luôn, không cần tôi xem kế hoạch</label>
-      <label><input type="checkbox" id="review" checked> Nghiệm thu ở cuối</label>
+      <label><input type="checkbox" id="autoStart" ${o.autoStart ? 'checked' : ''}> Chạy luôn, không cần tôi xem kế hoạch</label>
+      <label><input type="checkbox" id="review" ${o.review ? 'checked' : ''}> Nghiệm thu ở cuối</label>
     </div>
     ${warnBox()}
     <button class="btn primary" data-plan-new ${S.agents.length ? '' : 'disabled'}>Lập kế hoạch</button>
   </div>
-  ${past.length ? `<div class="past"><div class="lbl-sm">Dự án trước</div><div class="files">${past.map(x => `<button class="file" data-plan-open="${esc(x.id)}"><span class="dot ${planDot(x.status)}"></span><span class="name">${esc(x.goal)}</span><time>${PLAN_TXT[x.status]} · ${ago(new Date(x.createdAt).getTime())}</time></button>`).join('')}</div></div>` : ''}`;
+  ${past.length ? `<div class="past"><div class="lbl-sm">Dự án trước</div><div class="files">${past.map(x => `<button class="file" data-plan-open="${esc(x.id)}"><span class="dot ${planDot(x.status)}"></span><span class="name">${esc(x.goal)}</span><time>${PLAN_TXT[x.status]}${x.score != null ? ' · ' + x.score + '/100' : ''}${x.costUsd ? ' · $' + Number(x.costUsd).toFixed(2) : ''} · ${ago(new Date(x.createdAt).getTime())}</time></button>`).join('')}</div></div>` : ''}`;
 }
 // Ước tính chi phí kế hoạch nháp (cùng cách tính với lib/uoc-tinh.js): trung vị chi phí mỗi bước cùng người, cùng loại
 // ở các dự án trước; thiếu số liệu của người đó thì lấy trung vị cả nhóm. Cả dự án nhân hệ số vòng duyệt–sửa và nghiệm thu.
@@ -3254,6 +3260,7 @@ function planView(p){
         ${p.slideFile && !S.demo ? `<a class="btn sm primary" href="/api/raw?download=1&path=${encodeURIComponent(p.slideFile)}" title="${esc(p.slideFile)}">⬇ Tải slide</a>` : ''}
         ${p.status === 'done' && !S.demo ? `<button class="btn sm" data-plan-slide title="Dựng lại file .pptx từ slides.md, thiet-ke.md và hinh/ (dùng sau khi bạn sửa tay)">${p.slideFile ? 'Dựng lại slide' : 'Dựng slide'}</button>` : ''}
         ${!isActive && p.steps.length ? `<button class="btn sm" data-plan-retry title="Tạo kế hoạch mới cùng mục tiêu và các bước đã chia (bỏ các vòng sửa), mang theo brief và câu trả lời của bạn. Bạn duyệt lại rồi mới chạy.">↻ Chạy lại</button>` : ''}
+        ${!isActive ? `<button class="btn sm" data-plan-reuse title="Chép mục tiêu này sang form dự án mới để sửa rồi lập kế hoạch mới (khác ↻ Chạy lại: không giữ các bước cũ)">✎ Dùng lại mục tiêu</button>` : ''}
         ${!isActive || S.planView ? `<button class="btn sm" data-plan-back>${activePlan() && activePlan() !== p ? '← Dự án đang chạy' : '+ Dự án mới'}</button>` : ''}
       </div>
     </div>
@@ -3310,13 +3317,15 @@ function planView(p){
   return html;
 }
 $('#book').addEventListener('input', e => {
-  if (e.target.id === 'goal') S.goalDraft = e.target.value;
+  if (e.target.id === 'goal'){ S.goalDraft = e.target.value; store.set('yl-goal', S.goalDraft); }
   const i = e.target.dataset.stepTask; if (i != null && S.planEdit) S.planEdit.steps[+i].task = e.target.value;
 });
 $('#book').addEventListener('change', e => {
   const i = e.target.dataset.stepAgent;
   if (i != null && S.planEdit){ S.planEdit.steps[+i].agent = e.target.value; S._planKey = null; renderBook(); }
-  if (e.target.id === 'coord') renderTeamNote();
+  if (e.target.id === 'coord'){ setFormOpt('coord', e.target.value); renderTeamNote(); }
+  if (['autoStart', 'review'].includes(e.target.id)) setFormOpt(e.target.id, e.target.checked);
+  if (e.target.id === 'tiepNoi') setFormOpt('tiepNoi', e.target.value);
   if (e.target.hasAttribute('data-plan-review') && S.planEdit) S.planEdit.review = e.target.checked;
 });
 // Xoá / đổi chỗ bước thì đánh số lại "from" cho khớp
@@ -3336,7 +3345,7 @@ $('#book').addEventListener('click', async e => {
     b.disabled = true; askNotify();
     return planAction(async () => {
       await api.plan({ goal, coordinatorId: $('#coord').value, autoStart: $('#autoStart').checked, review: $('#review').checked, ...($('#tiepNoi') && $('#tiepNoi').value ? { tiepNoiTu: $('#tiepNoi').value } : {}) });
-      S.goalDraft = ''; S.planView = null; S.sub = 'plan'; S._planKey = null; renderBook();
+      S.goalDraft = ''; store.set('yl-goal', ''); S.formOpts.tiepNoi = ''; S.planView = null; S.sub = 'plan'; S._planKey = null; renderBook();
     }).finally(() => { b.disabled = false; });
   }
   if (b.hasAttribute('data-plan-start') && p){ askNotify(); return planAction(() => api.planStart(p.id, S.planEdit.steps, S.planEdit.review)); }
@@ -3372,6 +3381,14 @@ $('#book').addEventListener('click', async e => {
     return planAction(() => api.deXuat(id, hd, hd === 'sua' && t ? t.value.trim() : undefined),
       { duyet: 'Đã duyệt đề xuất.', sua: 'Đã sửa và duyệt đề xuất.', bo: 'Đã bỏ đề xuất.', 'hoan-tac': 'Đã hoàn tác.' }[hd]).finally(() => { b.disabled = false; });
   }
+  if (b.hasAttribute('data-plan-reuse') && p){
+    if (S.goalDraft.trim() && S.goalDraft.trim() !== p.goal.trim() && !confirm('Thay bản nháp mục tiêu đang viết dở bằng mục tiêu của dự án này?')) return;
+    S.goalDraft = p.goal; store.set('yl-goal', S.goalDraft); setFormOpt('coord', p.coordinatorId);
+    // Còn dự án dở thì form dự án mới chưa mở được: vẫn giữ bản nháp, form sẽ có sẵn mục tiêu khi dự án kia xong hoặc bị huỷ
+    if (activePlan()){ toast('Đã chép mục tiêu vào bản nháp. Form dự án mới sẽ có sẵn khi dự án đang dở xong hoặc được huỷ.'); return; }
+    S.planView = '__new'; S._planKey = null; renderBook();
+    const g = $('#goal'); if (g){ g.focus(); g.setSelectionRange(g.value.length, g.value.length); } return;
+  }
   if (b.hasAttribute('data-plan-back')){ S.planView = activePlan() && activePlan() !== p ? null : '__new'; S._planKey = null; return renderBook(); }
   if (b.dataset.presult) return openProject(b.dataset.presult);
   if (b.dataset.planOpen){ S.planView = b.dataset.planOpen; S._planKey = null; return renderBook(); }
@@ -3380,7 +3397,7 @@ $('#book').addEventListener('click', async e => {
   if (b.dataset.sub){ S.sub = b.dataset.sub; S._planKey = null; return renderBook(); }
   if (b.dataset.planFor){
     if (activePlan()){ S.sub = 'plan'; S.planView = null; S._planKey = null; toast('Đang có một dự án chưa xong.'); return renderBook(); }
-    S.coordinatorId = b.dataset.planFor; S.sub = 'plan'; S.planView = '__new'; S._planKey = null; renderBook();
+    S.coordinatorId = b.dataset.planFor; setFormOpt('coord', b.dataset.planFor); S.sub = 'plan'; S.planView = '__new'; S._planKey = null; renderBook();
     const g = $('#goal'); if (g) g.focus(); return;
   }
   if (b.dataset.sel) return select(b.dataset.sel);

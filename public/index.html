@@ -196,6 +196,9 @@ textarea{resize:vertical; min-height:96px}
 .file .who{font-weight:700; flex:none}
 .file .name{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13.5px}
 .file time{color:var(--muted); font-size:12px; flex:none}
+.file.ho{align-items:flex-start} .file.ho .who{min-width:44px} .file.ho.err{border-color:var(--err)}
+.file.ho .name{white-space:normal; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; line-height:1.4}
+.file.ho .name small{display:block; color:var(--muted); font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap} .file.ho .herr{color:var(--err)}
 .crumbs{display:flex; gap:6px; align-items:center; margin-bottom:8px; font-size:13px}
 .imgs{margin:8px 0 4px} .imgs summary{cursor:pointer; font-weight:600; font-size:13.5px; padding:6px 0}
 .thumbs{display:grid; grid-template-columns:repeat(auto-fill, minmax(96px, 1fr)); gap:8px}
@@ -1346,10 +1349,24 @@ function applyState(st){
   for (const id of Object.keys(S.status)) if (S.status[id].state === 'working' && !(st.running || []).includes(id)) S.status[id] = { state:'idle', since: performance.now() };
   if (S.selected && !agentById(S.selected)) S.selected = null;
 }
+// Bàn giao: tên chuẩn YYYYMMDD-HHMMSS-<agent>.md. File kiểu cũ (vd suy-giap-v2-lam-slides.md): giờ sửa file, agent đoán từ tên
+// Bàn giao nói về kết quả: dòng đầu của tóm tắt (các pha Deep Research cùng một việc giao, nhìn việc giao thì giống hệt nhau)
+function hoKetQua(r){
+  if (r.planId && !r.step) return dieuPhoiTxt(r.summary) || 'Điều phối';
+  const s = plain(r.status === 'error' ? r.error || r.summary || '' : r.summary || '').split('\n').map(x => x.trim()).find(x => x && !/^#+\s*$/.test(x));
+  return s || gist(r.task);
+}
+function hoInfo(f){
+  const m = f.name.match(/^(\d{4})(\d\d)(\d\d)-(\d\d)(\d\d)(\d\d)-(.+)\.md$/i);
+  if (m) return { id: m[7], t: new Date(+m[1], m[2] - 1, +m[3], +m[4], +m[5], +m[6]).getTime() };
+  const a = S.agents.find(x => f.name.toLowerCase().split(/-|\.md$/).includes(x.id.toLowerCase()));
+  return { id: a ? a.id : '', t: new Date(f.mtime).getTime() || 0 };
+}
 async function refreshFiles(){
   try {
     const [h, o, all] = await Promise.all([api.files('handoff'), api.files(S.outDir), api.outputs().catch(() => ({ files: [] }))]);
-    S.handoffs = (h.files || []).filter(f => !f.dir && /\.md$/i.test(f.name));
+    // Mới viết trước, theo giờ trong tên file — không theo giờ sửa file (file cũ bị chạm lại từng nhảy lên đầu)
+    S.handoffs = (h.files || []).filter(f => !f.dir && /\.md$/i.test(f.name)).sort((x, y) => hoInfo(y).t - hoInfo(x).t);
     S.outputs = o.files || [];
     S.outAll = all.files || [];
   } catch {}
@@ -2640,7 +2657,7 @@ function renderPanel(){
     <textarea id="task" data-agent="${esc(a.id)}" rows="4" placeholder="Ví dụ: Tìm 5 nghiên cứu về yoga cho người suy giáp, ghi chú kèm nguồn."></textarea>
     <p class="hint" style="margin:4px 0 0">Mẹo: một việc nhỏ, nói rõ cần ra gì. Ctrl + Enter để giao nhanh.</p>
     ${hs.length || extra.length ? `<details class="attach"${S.attach.size ? ' open' : ''}><summary>📎 Đính kèm kết quả của người khác <small class="muted">· không bắt buộc${S.attach.size ? ' · đã chọn ' + S.attach.size : ''}</small></summary>
-      ${extra.map(p => attRow(p, esc(p.split('/').pop()), 'đã chọn')).join('') + hs.map(h => { const id = h.name.slice(16, -3), who = agentById(id), r = S.runs.find(x => x.handoff === h.path); return attRow(h.path, esc(who ? who.name : id) + (r ? ': ' + esc(gist(r.task).slice(0, 60)) : ''), whenTxt(h.mtime)); }).join('')}
+      ${extra.map(p => attRow(p, esc(p.split('/').pop()), 'đã chọn')).join('') + hs.map(h => { const { id, t } = hoInfo(h), who = agentById(id), r = S.runs.find(x => x.handoff === h.path); return attRow(h.path, esc(who ? who.name : id || h.name) + (r ? ': ' + esc(shortTxt(hoKetQua(r), 70)) : ''), whenTxt(t)); }).join('')}
     </details>` : ''}
     ${a.engine === 'claude' ? warnBox() : ''}
     <div class="row"><button class="btn primary" data-run>Giao việc cho ${esc(a.name)}</button></div>`;
@@ -2871,8 +2888,22 @@ function renderBook(){
   if (S.tab === 'plan') return renderPlan(el);
   S._planKey = null;
   if (S.tab === 'handoff'){
-    el.innerHTML = `<p class="hint">Mỗi lần xong việc, agent để lại một bàn giao ngắn. Đính kèm bàn giao khi giao việc tiếp — agent sau chỉ đọc file này thay vì đọc lại mọi thứ.</p>
-      <div class="files">${S.handoffs.length ? S.handoffs.map(f => { const id = f.name.slice(16, -3), who = agentById(id); return `<button class="file" data-view="${esc(f.path)}"><span class="who">${esc(who ? who.name : id)}</span><span class="name">${esc(f.name)}</span><time>${ago(f.mtime)}</time></button>`; }).join('') : '<p class="muted">Chưa có bàn giao.</p>'}</div>`;
+    // Mỗi bàn giao nối với lượt đã tạo ra nó: bước mấy, dự án nào, việc gì
+    const byPath = new Map(S.runs.filter(r => r.handoff).map(r => [r.handoff, r]));
+    const all = S.handoffs.map(f => ({ f, ...hoInfo(f) }));
+    const ids = [...new Set(all.map(x => x.id).filter(Boolean))];
+    if (S.hoAgent && !ids.includes(S.hoAgent)) S.hoAgent = '';
+    const list = all.filter(x => !S.hoAgent || x.id === S.hoAgent);
+    const row = ({ f, id, t }) => {
+      const who = agentById(id), r = byPath.get(f.path), p = r && r.planId && S.plans.find(x => x.id === r.planId);
+      const noi = r ? (r.planId ? `${r.step ? 'Bước ' + r.step + (p ? '/' + p.steps.length : '') : 'Điều phối'} · ${p ? esc(shortTxt(p.goal, 60)) : 'dự án đã xoá'}` : 'Việc lẻ') : '';
+      return `<button class="file ho${r && r.status === 'error' ? ' err' : ''}" data-view="${esc(f.path)}" title="${esc(f.name + (r ? '\nViệc giao: ' + gist(r.task) : ''))}"><span class="who">${esc(who ? who.name : id || '—')}</span>
+        <span class="name">${r ? `<small>${noi}${r.status === 'error' ? ' · <b class="herr">lỗi</b>' : ''}</small>${esc(hoKetQua(r))}` : esc(f.name)}</span>
+        <time title="${whenTxt(t)}">${ago(t)}</time></button>`;
+    };
+    el.innerHTML = `<div class="hist-bar"><p class="hint" style="margin:0; flex:1 1 260px">Mỗi lần xong việc, agent để lại một bàn giao ngắn. Đính kèm bàn giao khi giao việc tiếp — agent sau chỉ đọc file này thay vì đọc lại mọi thứ.</p>
+      ${ids.length > 1 ? `<select id="hoAgent" aria-label="Lọc theo agent"><option value="">Mọi người (${S.handoffs.length})</option>${ids.map(id => { const a = agentById(id), n = all.filter(x => x.id === id).length; return `<option value="${esc(id)}" ${S.hoAgent === id ? 'selected' : ''}>${esc(a ? a.name : id)} (${n})</option>`; }).join('')}</select>` : ''}</div>
+      <div class="files">${list.length ? list.map(row).join('') : '<p class="muted">Chưa có bàn giao.</p>'}</div>`;
   } else if (S.tab === 'output'){
     // Giữ nguyên ô tìm kiếm khi vẽ lại (để không mất chữ đang gõ), chỉ vẽ lại phần danh sách
     if (!el.querySelector('#outQ')){
@@ -2978,6 +3009,11 @@ function renderHistory(el){
     </details>`;
   }).join('');
 }
+S.hoAgent = store.get('yl-hoag', '');
+$('#book').addEventListener('change', e => {
+  if (e.target.id !== 'hoAgent') return;
+  S.hoAgent = e.target.value; store.set('yl-hoag', S.hoAgent); renderBook();
+});
 $('#book').addEventListener('input', e => {
   if (e.target.id !== 'histQ') return;
   S.histQ = e.target.value; renderBook();
@@ -3760,7 +3796,7 @@ async function viewFile(path){
     RD.path = path; RD.content = (RD.kind === 'img' || RD.kind === 'pdf') ? '' : (await api.file(path)).content;
     if (RD.kind !== 'img' && RD.kind !== 'pdf' && RD.kind !== 'text' && path.startsWith('handoff/')) RD.kind = 'md';
     $('#fileTitle').textContent = path.split('/').pop();
-    const isH = path.startsWith('handoff/'), hId = isH ? path.split('/').pop().slice(16, -3) : '';
+    const isH = path.startsWith('handoff/'), hId = isH ? hoInfo({ name: path.split('/').pop() }).id : '';
     const o = isH ? { agentId: hId, agentName: (agentById(hId) || {}).name || hId } : originOf(path);
     $('#fileMeta').innerHTML = o
       ? `✎ <b>${esc(o.agentName || o.agentId)}</b>${isH ? ' · bàn giao' : ''}${o.planId ? ` · ${o.step ? 'bước ' + o.step : 'điều phối'} dự án <span title="${esc(o.planGoal || '')}">«${esc(shortTxt(o.planGoal, 50))}»</span>` : o.task ? ' · giao lẻ' : ''}${o.at ? ' · ' + whenTxt(new Date(o.at).getTime()) : ''}`
@@ -3838,7 +3874,7 @@ fileDlg.addEventListener('click', async e => {
   if (t.dataset.fedit){ fileDlg.close(); return askTo(t.dataset.fedit, RD.path, `Sửa file ${RD.path}: `); }
   if (t.hasAttribute('data-dlgpass') && to){
     fileDlg.close();
-    if (RD.path.startsWith('handoff/')){ const fromId = RD.path.split('/').pop().slice(16, -3); return passTo(to, RD.path, agentById(fromId)); }
+    if (RD.path.startsWith('handoff/')){ const fromId = hoInfo({ name: RD.path.split('/').pop() }).id; return passTo(to, RD.path, agentById(fromId)); }
     return askTo(to, RD.path, `Tiếp tục từ ${RD.path}: `);
   }
 });

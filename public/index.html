@@ -531,6 +531,7 @@ dialog.reader[open]{display:grid; grid-template-rows:auto minmax(0,1fr) auto}
 .rd-grid div{background:var(--paper-2); border:2px solid var(--line); padding:6px 8px}
 .rd-grid small{display:block; font-size:12px; color:var(--muted); font-weight:700}
 .rd-sec{margin:12px 0 4px; font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px}
+.rd-task-d > summary{cursor:pointer; margin:12px 0 4px} .rd-task-d .rd-sec{margin:0} .rd-task-d[open] > summary small{display:none}
 .rd-text{white-space:pre-wrap; font:14px/1.55 var(--font); background:var(--paper-2); border:2px solid var(--line); padding:8px 10px; max-height:200px; overflow:auto; margin:0}
 .rd-acts{list-style:none; margin:0; padding:0; border-left:3px solid var(--line); max-height:260px; overflow:auto}
 .rd-acts li{display:flex; gap:8px; padding:3px 0 3px 10px; font-size:13px}
@@ -4486,20 +4487,22 @@ function openRun(id){
   const tools = Object.entries(r.tools || {}).filter(([, c]) => c > 0).sort((a, b) => b[1] - a[1]);
   $('#runTitle').textContent = `${r.agentName || uAgentName(r.agentId)} · ${fmtTime(r.startedAt)}`;
   const cell = (k, v) => `<div><small>${k}</small>${v}</div>`;
+  const role = r.planId && r.step ? runRole(r, (U.data.plans || []).find(p => p.id === r.planId)) : '';
+  // Kết quả lên trước nhiệm vụ: nhiệm vụ của bước dự án dài (gồm phần mở đầu của máy chủ), trước đây phải cuộn xa mới tới kết quả
   $('#runBody').innerHTML = `
     <div class="rd-grid">
       ${cell('Trạng thái', RUN_ST[r.status] || r.status)}${cell('Thời lượng', fmtMs(durMs(r)))}${cell('Model', esc([ENGINE_TXT[r.engine] || 'Claude', r.model || 'mặc định', r.effort ? 'effort ' + r.effort : ''].filter(Boolean).join(' · ')))}
       ${cell('Model thực tế', esc((r.models || []).join(', ') || '—'))}${cell('Số lượt (turns)', r.turns || '—')}${cell('Gọi công cụ', r.toolCalls || 0)}
       ${cell('Đầu vào mới', fmtTok(r.tokensIn))}${cell('Ghi cache', r.legacy ? '—' : fmtTok(r.cacheWrite))}${cell('Đọc cache', r.legacy ? '—' : fmtTok(r.cacheRead))}
       ${cell('Đầu ra', fmtTok(r.tokensOut))}${cell('Tổng', '<b>' + fmtTok(totTok(r)) + '</b>')}${cell('Chi phí tham khảo', fmtUsd(typeof r.costUsd === 'number' ? r.costUsd : null))}
-      ${r.planId ? cell('Dự án', r.step ? 'Bước ' + r.step : 'Lượt điều phối') : ''}${cell('Mã lượt', `<code style="font-size:11px">${esc(r.id)}</code>`)}
+      ${r.planId ? cell('Dự án', r.step ? 'Bước ' + r.step + (role && role !== 'Làm' ? ' · ' + role : '') : 'Lượt điều phối') : ''}${cell('Mã lượt', `<code style="font-size:11px">${esc(r.id)}</code>`)}
     </div>
     ${r.legacy ? '<p class="hint">Lượt này chạy trước khi Yoga Lab tách số token cache, nên "Đầu vào mới" đang gồm cả cache.</p>' : ''}
-    <div class="rd-sec">Nhiệm vụ</div><pre class="rd-text">${esc(r.task || '')}</pre>
-    ${(r.attachments || []).length ? `<div class="rd-sec">Đính kèm</div><div class="row">${r.attachments.map(a => `<button class="btn sm" data-view="${esc(a)}">${esc(a.split('/').pop())}</button>`).join('')}</div>` : ''}
     ${r.error ? `<div class="rd-sec">Lỗi</div><pre class="rd-text" style="border-color:var(--err)">${esc(r.error)}</pre>` : ''}
     <div class="rd-sec">Kết quả</div><pre class="rd-text">${esc(r.summary || '—')}</pre>
     ${r.handoff ? `<div class="row" style="margin-top:8px"><button class="btn sm" data-view="${esc(r.handoff)}">Xem bàn giao</button></div>` : ''}
+    <details class="rd-task-d"${(r.task || '').length <= 400 ? ' open' : ''}><summary><span class="rd-sec">Nhiệm vụ</span> <small class="muted">${esc(shortTxt(gist(r.task), 90))}</small></summary><pre class="rd-text">${esc(r.task || '')}</pre></details>
+    ${(r.attachments || []).length ? `<div class="rd-sec">Đính kèm</div><div class="row">${r.attachments.map(a => `<button class="btn sm" data-view="${esc(a)}">${esc(a.split('/').pop())}</button>`).join('')}</div>` : ''}
     ${tools.length ? `<div class="rd-sec">Công cụ đã dùng</div><p style="margin:0;font-size:13.5px">${tools.map(([t, c]) => `<span title="${esc(t)}">${esc(toolName(t))}</span> ×${c}`).join(' · ')}</p>` : ''}
     <div class="rd-sec">Diễn biến</div>
     ${(r.acts || []).length ? `<ol class="rd-acts">${r.acts.map(a => `<li><time>+${fmtMs(a.t)}</time><span aria-hidden="true">${KIND_ICON[a.kind] || '…'}</span><span>${esc(a.text)}</span></li>`).join('')}</ol>` : '<p class="muted" style="margin:0;font-size:13.5px">Lượt này không có nhật ký diễn biến (chạy trước khi tính năng được thêm).</p>'}`;

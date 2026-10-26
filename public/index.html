@@ -219,6 +219,7 @@ textarea{resize:vertical; min-height:96px}
 .log-row .e{display:block; color:var(--err); font-size:12.5px; margin-top:2px}
 .log-row .meta u{color:var(--gemini); text-decoration:none}
 .hist-bar{display:flex; align-items:center; justify-content:space-between; gap:10px; margin:0 0 8px; flex-wrap:wrap}
+.hist-bar input{flex:1; min-width:160px; padding:6px 10px; font-size:14px}
 .hgroup{margin:0 0 10px; border:2px solid var(--line); background:var(--paper)}
 .hgroup.has-err{border-color:var(--err)} .hgroup.live{border-color:var(--gold)}
 .hgroup > summary{cursor:pointer; list-style:none; display:flex; flex-direction:column; gap:4px; padding:9px 12px; background:var(--paper-2)}
@@ -2896,51 +2897,87 @@ function runRole(r, p){
   const st = p && p.steps[r.step - 1];
   return st ? (st.checks ? 'Duyệt' : st.fixOf ? 'Sửa' : 'Làm') : 'Làm';
 }
+// Ô tìm: khớp tên agent, việc giao, tóm tắt, lỗi. Dự án không có lượt nào khớp mà mục tiêu khớp thì giữ mọi lượt của dự án đó
+S.histQ = '';
+const histKhop = (q, ...ts) => ts.some(t => String(t || '').toLowerCase().includes(q));
 function histGroups(){
-  const runs = S.runs.filter(r => S.histF === 'err' ? ['error', 'stopped'].includes(r.status) : S.histF === 'solo' ? !r.planId : true);
+  const q = S.histQ.trim().toLowerCase(), planOf = id => S.plans.find(p => p.id === id);
+  let runs = S.runs.filter(r => S.histF === 'err' ? ['error', 'stopped'].includes(r.status) : S.histF === 'solo' ? !r.planId : true);
+  if (q){
+    const trung = runs.filter(r => histKhop(q, r.agentName, taskText(r.task), r.summary, r.error)), co = new Set(trung.map(r => r.planId));
+    runs = runs.filter(r => trung.includes(r) || (r.planId && !co.has(r.planId) && histKhop(q, (planOf(r.planId) || {}).goal)));
+  }
   const groups = new Map();
   for (const r of runs){
     const key = r.planId || 'solo';
-    if (!groups.has(key)) groups.set(key, { key, plan: r.planId ? S.plans.find(p => p.id === r.planId) : null, runs: [], last: 0 });
+    if (!groups.has(key)) groups.set(key, { key, plan: r.planId ? planOf(r.planId) : null, runs: [], last: 0 });
     const g = groups.get(key); g.runs.push(r); g.last = Math.max(g.last, new Date(r.startedAt).getTime());
   }
   for (const g of groups.values()) g.runs.sort((x, y) => g.key === 'solo' ? new Date(y.startedAt) - new Date(x.startedAt) : new Date(x.startedAt) - new Date(y.startedAt));
   return [...groups.values()].sort((x, y) => y.last - x.last);
 }
+// Lượt điều phối trả về JSON (kế hoạch, giao ban): tóm thành một câu thay vì hiện dòng đầu là chữ "json"
+function dieuPhoiTxt(sum){
+  const t = String(sum || ''), m = t.match(/```(?:json)?\s*([\s\S]*?)```/) || t.match(/(\{[\s\S]*\})/);
+  let j = null; try { j = m && JSON.parse(m[1]); } catch {}
+  if (!j) return plain(t).split('\n').map(s => s.trim()).find(s => s && !/^(json|[{}\[\]"])/i.test(s)) || '';
+  const n = (j.questions || []).length, ra = [];
+  if (Array.isArray(j.steps)) ra.push(`Kế hoạch ${j.steps.length} bước`);
+  if (j.score != null) ra.push(`chấm ${j.score}/100`);
+  if (Array.isArray(j.fixes) && j.fixes.length) ra.push(`giao ${j.fixes.length} việc sửa`);
+  if (Array.isArray(j.chen)) ra.push(j.chen.length ? `giao ban: chèn ${j.chen.length} việc` : typeof j.ghi_chu === 'string' && j.ghi_chu ? 'giao ban: ' + shortTxt(j.ghi_chu, 140) : 'giao ban: không chèn việc');
+  if (n) ra.push(`hỏi bạn ${n} câu`);
+  return ra.length ? ra.join(' · ').replace(/^./, c => c.toUpperCase()) : '';
+}
 function histRow(r, p){
   const out = (r.files || []).find(f => /^output\//.test(f)) || r.handoff;
   const role = runRole(r, p), stCls = r.status === 'stopped' ? 'error' : r.status;
-  const what = r.planId && !r.step ? plain(r.summary || '').split('\n')[0] || role : gist(r.task);
+  const what = r.planId && !r.step ? dieuPhoiTxt(r.summary) || role : gist(r.task);
   return `<button type="button" class="log-row" ${out ? `data-view="${esc(out)}"` : `data-sel="${esc(r.agentId)}"`} title="${esc(plain(r.status === 'done' ? r.summary || '' : r.error || r.summary || ''))}">
     <span class="st ${stCls}"><span class="dot ${stCls}"></span>${RUN_TXT[r.status] || r.status}</span>
-    <span class="task">${r.planId ? `<span class="step">${r.step ? 'Bước ' + r.step + (p ? '/' + p.steps.length : '') : 'Điều phối'}</span>` : ''}<b>${esc(r.agentName)}</b>${role && role !== 'Làm' ? ` <span class="role">${role}</span>` : ''}
-      <span class="g">${esc(what)}</span>${r.status === 'error' && r.error ? `<span class="e">${esc(plain(r.error).slice(0, 160))}</span>` : ''}</span>
+    <span class="task">${r.planId ? `<span class="step">${r.step ? 'Bước ' + r.step + (p ? '/' + p.steps.length : '') : 'Điều phối'}</span>` : ''}<b>${markQ(r.agentName, S.histQ.trim())}</b>${role && role !== 'Làm' ? ` <span class="role">${role}</span>` : ''}
+      <span class="g">${markQ(what, S.histQ.trim())}</span>${r.status === 'error' && r.error ? `<span class="e">${esc(plain(r.error).slice(0, 160))}</span>` : ''}</span>
     <span class="meta">${whenTxt(new Date(r.startedAt).getTime())}${r.endedAt ? ' · ' + dur(r.startedAt, r.endedAt) : ''}${r.tokens ? ' · ' + fmtTok(r.tokens) + ' token' : ''}${r.costUsd ? ' · $' + r.costUsd.toFixed(2) : ''}${out ? ' · <u>mở kết quả</u>' : ''}</span></button>`;
 }
 function renderHistory(el){
-  const groups = histGroups();
+  // Giữ nguyên ô tìm khi vẽ lại (không mất chữ đang gõ), chỉ vẽ lại bộ lọc và danh sách
+  if (!el.querySelector('#histQ')){
+    el.innerHTML = `<div class="hist-bar"><div class="seg-b" role="group" aria-label="Lọc lịch sử">${[['all', 'Tất cả'], ['err', 'Chỉ lỗi'], ['solo', 'Việc lẻ']].map(([k, t]) => `<button type="button" data-histf="${k}">${t}</button>`).join('')}</div>
+      <input type="search" id="histQ" placeholder="Tìm agent, việc, lỗi…" aria-label="Tìm trong lịch sử">
+      <button class="linkbtn" type="button" data-histall></button></div><div id="histList"></div>`;
+    $('#histQ').value = S.histQ;
+  }
+  el.querySelectorAll('[data-histf]').forEach(b => b.setAttribute('aria-pressed', b.dataset.histf === S.histF));
+  const list = $('#histList'), groups = histGroups(), q = S.histQ.trim();
   if (!S.histOpen){ S.histOpen = new Set(groups.filter((g, i) => i === 0 || g.runs.some(r => r.status === 'working')).map(g => g.key)); }
-  const seg = `<div class="hist-bar"><div class="seg-b" role="group" aria-label="Lọc lịch sử">${[['all', 'Tất cả'], ['err', 'Chỉ lỗi'], ['solo', 'Việc lẻ']].map(([k, t]) => `<button type="button" data-histf="${k}" aria-pressed="${S.histF === k}">${t}</button>`).join('')}</div>
-    <button class="linkbtn" type="button" data-histall>${groups.every(g => S.histOpen.has(g.key)) ? 'Thu gọn tất cả' : 'Mở tất cả'}</button></div>`;
+  const isOpen = g => q || S.histOpen.has(g.key); // đang tìm thì mở mọi khối khớp
+  const all = el.querySelector('[data-histall]');
+  all.textContent = groups.every(isOpen) ? 'Thu gọn tất cả' : 'Mở tất cả'; all.hidden = !groups.length || !!q;
   if (!groups.length){
-    el.innerHTML = seg + `<p class="muted">${S.histF === 'err' ? 'Không có lượt nào bị lỗi trong lịch sử gần đây.' : S.histF === 'solo' ? 'Chưa có việc giao lẻ nào.' : 'Chưa có lượt làm việc nào. Chạm vào một nhân vật trên bản đồ để giao việc đầu tiên.'}</p>`;
+    list.innerHTML = `<p class="muted">${q ? `Không có lượt nào khớp "${esc(q)}".` : S.histF === 'err' ? 'Không có lượt nào bị lỗi trong lịch sử gần đây.' : S.histF === 'solo' ? 'Chưa có việc giao lẻ nào.' : 'Chưa có lượt làm việc nào. Chạm vào một nhân vật trên bản đồ để giao việc đầu tiên.'}</p>`;
     return;
   }
-  el.innerHTML = seg + `<p class="hint">Mỗi khối là một dự án, các lượt xếp theo thứ tự đã làm. Bấm một dòng để mở kết quả của lượt đó.</p>` + groups.map(g => {
+  list.innerHTML = `<p class="hint">${q ? `${groups.reduce((n, g) => n + g.runs.length, 0)} lượt khớp "${esc(q)}".` : 'Mỗi khối là một dự án, các lượt xếp theo thứ tự đã làm. Bấm một dòng để mở kết quả của lượt đó.'}</p>` + groups.map(g => {
     const p = g.plan, err = g.runs.filter(r => ['error', 'stopped'].includes(r.status)).length;
     const tok = g.runs.reduce((n, r) => n + (r.tokens || 0), 0), live = g.runs.some(r => r.status === 'working');
+    const usd = g.runs.reduce((n, r) => n + (r.costUsd || 0), 0);
+    const ms = g.runs.reduce((n, r) => n + (r.endedAt ? Math.max(0, new Date(r.endedAt) - new Date(r.startedAt)) : 0), 0);
     const title = g.key === 'solo' ? '👤 Việc giao lẻ' : '📋 ' + (p ? shortTxt(p.goal, 80) : 'Dự án đã xoá khỏi danh sách');
     const st = p ? `<span class="pst ${planDot(p.status)}"><span class="dot ${planDot(p.status)}"></span>${PLAN_TXT[p.status] || p.status}${p.score != null ? ' · ' + p.score + '/100' : ''}</span>` : '';
-    return `<details class="hgroup${err ? ' has-err' : ''}${live ? ' live' : ''}" data-hkey="${esc(g.key)}" ${S.histOpen.has(g.key) ? 'open' : ''}>
+    return `<details class="hgroup${err ? ' has-err' : ''}${live ? ' live' : ''}" data-hkey="${esc(g.key)}" ${isOpen(g) ? 'open' : ''}>
       <summary><span class="ht" title="${esc(p ? p.goal : '')}">${esc(title)}</span>
-        <span class="hm">${st}${p ? `<span>${whenTxt(new Date(p.createdAt).getTime())}</span>` : ''}<span>${g.runs.length} lượt</span>${err ? `<span class="herr">${err} lỗi</span>` : ''}<span>${fmtTok(tok)} token</span></span></summary>
+        <span class="hm">${st}${p ? `<span>${whenTxt(new Date(p.createdAt).getTime())}</span>` : ''}<span>${g.runs.length} lượt</span>${err ? `<span class="herr">${err} lỗi</span>` : ''}${ms ? `<span title="Tổng thời gian các lượt (không tính lúc chờ)">⏱ ${fmtMs(ms)}</span>` : ''}<span>${fmtTok(tok)} token</span>${usd ? `<span title="Chi phí các lượt trong khối này">$${usd.toFixed(2)}</span>` : ''}</span></summary>
       ${p ? `<div class="hacts">${p.steps.some(x => x.status !== 'pending') ? `<button class="btn sm" type="button" data-presult="${esc(p.id)}">📄 Kết quả dự án</button>` : ''}<button class="btn sm" type="button" data-hboard="${esc(p.id)}">📋 Xem trên Bảng việc</button>${canResume(p) ? `<button class="btn sm primary" type="button" data-hresume="${esc(p.id)}">▶ Chạy tiếp</button>` : ''}</div>` : ''}
       <div class="hrows">${g.runs.map(r => histRow(r, p)).join('')}</div>
     </details>`;
   }).join('');
 }
+$('#book').addEventListener('input', e => {
+  if (e.target.id !== 'histQ') return;
+  S.histQ = e.target.value; renderBook();
+});
 $('#book').addEventListener('toggle', e => {
-  const d = e.target.closest && e.target.closest('details.hgroup'); if (!d || !S.histOpen) return;
+  const d = e.target.closest && e.target.closest('details.hgroup'); if (!d || !S.histOpen || S.histQ.trim()) return;
   d.open ? S.histOpen.add(d.dataset.hkey) : S.histOpen.delete(d.dataset.hkey);
 }, true);
 $('#book').addEventListener('click', e => {

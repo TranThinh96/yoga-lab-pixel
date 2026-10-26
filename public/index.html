@@ -518,6 +518,8 @@ dialog.reader[open]{display:grid; grid-template-rows:auto minmax(0,1fr) auto}
 .usage:not(.detail) .dt{display:none}
 .u-cols{margin:0 0 10px} .u-more-tok{margin:-6px 0 16px}
 .clamp2{display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+.clamp1{display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden}
+.u-kq{display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; color:var(--muted); font-size:12px; margin-top:2px}
 .utable tbody tr{cursor:pointer}
 .utable tbody tr:hover{background:var(--paper-2)}
 .utable tfoot td{font-weight:700; border-top:2px solid var(--line); border-bottom:0}
@@ -4471,10 +4473,12 @@ function runTable(list){
   if (!list.length) return '<p class="u-more muted">Không có lượt chạy nào.</p>';
   const shown = list.slice(0, U.page * 50);
   return `<div class="tscroll"><table class="utable"><thead><tr><th>Bắt đầu</th><th>Agent</th><th>Việc</th><th>Dự án</th><th class="dt">Model</th><th>Trạng thái</th><th class="num">Thời lượng</th><th class="num dt">Lượt / công cụ</th><th class="num dt">Mới</th><th class="num dt">Ghi cache</th><th class="num dt">Đọc cache</th><th class="num dt">Ra</th><th class="num">Tổng</th><th class="num">Chi phí</th></tr></thead><tbody>
-    ${shown.map(r => `<tr data-urun="${esc(r.id)}"><td>${fmtTime(r.startedAt)}</td><td><b>${esc(r.agentName || uAgentName(r.agentId))}</b></td><td class="wrap"><span class="clamp2" title="${esc(taskText(r.task))}">${esc(gist(r.task))}</span></td>
-      <td>${r.planId ? (r.step ? 'Bước ' + r.step : 'Điều phối') : '—'}</td><td class="dt">${esc([ENGINE_TXT[r.engine] || 'Claude', r.model, r.effort].filter(Boolean).join(' · '))}</td>
+    ${shown.map(r => { const role = r.planId && r.step ? runRole(r, (U.data.plans || []).find(p => p.id === r.planId)) : '', kq = r.status !== 'working' ? hoKetQua(r) : '';
+      // Dòng kết quả: các lượt cùng một việc giao (vd các pha Deep Research) nhìn việc giao thì giống hệt nhau
+      return `<tr data-urun="${esc(r.id)}"><td>${fmtTime(r.startedAt)}</td><td><b>${esc(r.agentName || uAgentName(r.agentId))}</b></td><td class="wrap"><span class="clamp1" title="${esc(taskText(r.task))}">${esc(gist(r.task))}</span>${kq && kq !== gist(r.task) ? `<small class="u-kq" title="${esc(kq)}">→ ${esc(kq)}</small>` : ''}</td>
+      <td>${r.planId ? (r.step ? 'Bước ' + r.step + (role && role !== 'Làm' ? ' · ' + role : '') : 'Điều phối') : '—'}</td><td class="dt">${esc([ENGINE_TXT[r.engine] || 'Claude', r.model, r.effort].filter(Boolean).join(' · '))}</td>
       <td><span class="dot ${r.status === 'stopped' ? 'error' : r.status}" style="display:inline-block;margin-right:5px"></span>${RUN_ST[r.status] || r.status}</td>
-      <td class="num">${fmtMs(durMs(r))}</td><td class="num dt">${r.turns || '—'} / ${r.toolCalls || 0}</td><td class="num dt">${fmtTok(r.tokensIn)}</td><td class="num dt">${r.legacy ? '—' : fmtTok(r.cacheWrite)}</td><td class="num dt">${r.legacy ? '—' : fmtTok(r.cacheRead)}</td><td class="num dt">${fmtTok(r.tokensOut)}</td><td class="num"><b>${fmtTok(totTok(r))}</b></td><td class="num">${fmtUsd(typeof r.costUsd === 'number' ? r.costUsd : null)}</td></tr>`).join('')}
+      <td class="num">${fmtMs(durMs(r))}</td><td class="num dt">${r.turns || '—'} / ${r.toolCalls || 0}</td><td class="num dt">${fmtTok(r.tokensIn)}</td><td class="num dt">${r.legacy ? '—' : fmtTok(r.cacheWrite)}</td><td class="num dt">${r.legacy ? '—' : fmtTok(r.cacheRead)}</td><td class="num dt">${fmtTok(r.tokensOut)}</td><td class="num"><b>${fmtTok(totTok(r))}</b></td><td class="num">${fmtUsd(typeof r.costUsd === 'number' ? r.costUsd : null)}</td></tr>`; }).join('')}
   </tbody></table></div>${list.length > shown.length ? `<div class="u-more"><button class="btn sm" data-umore>Xem thêm ${Math.min(50, list.length - shown.length)} lượt</button></div>` : ''}`;
 }
 function openRun(id){

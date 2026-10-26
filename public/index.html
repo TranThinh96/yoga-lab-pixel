@@ -169,6 +169,7 @@ textarea{resize:vertical; min-height:96px}
 .arow .now{min-width:0; display:flex; flex-direction:column; gap:1px; font-size:13px}
 .arow .now .st{display:flex; align-items:center; gap:6px; font-weight:600}
 .arow .now small{color:var(--muted); font-size:12.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.arow .now .herr{color:var(--err); font-weight:700}
 .arow .acts-r{position:relative; display:flex; gap:6px}
 .arow .star{color:#b8862f}
 .arow .eng{white-space:nowrap; font-size:12px}
@@ -688,7 +689,7 @@ main{display:block; max-width:none; margin:0; padding:0}
   .hud-top .chip{padding:3px 7px}
   .win.left,.win.right{left:0; right:0; width:auto; top:auto; bottom:var(--dock-h); border-left:0; border-right:0; border-bottom:0; box-shadow:0 -4px 0 #0005;
     max-height:min(66vh, calc(100vh - var(--top-h) - var(--dock-h) - 30px)); max-height:min(66dvh, calc(100dvh - var(--top-h) - var(--dock-h) - 30px))}
-  .win.board{left:0; right:0; top:var(--top-h); bottom:var(--dock-h); height:auto; border-left:0; border-right:0}
+  .win.board{left:0; right:0; top:var(--top-h); bottom:var(--dock-h); height:auto; max-height:none; border-left:0; border-right:0} /* max-height chung của .win chừa 20px, lộ bản đồ và thanh cuộn của nó phía trên thanh dưới */
   .kb{grid-template-columns:repeat(5, minmax(78vw, 1fr)); scroll-snap-type:x mandatory} .kcol{scroll-snap-align:start}
   .dock{gap:4px; padding:0 4px}
   .dock button{flex:1; min-width:0; flex-direction:column; justify-content:center; gap:2px; height:54px; padding:2px; font-size:12px; position:relative}
@@ -2563,13 +2564,17 @@ function renderTeam(){
     const tok = S.runs.filter(r => r.agentId === a.id && new Date(r.startedAt).toDateString() === today).reduce((n, r) => n + (r.tokens || 0), 0);
     const now = st === 'working' && acts && acts.length ? acts[acts.length - 1].text
       : last ? `Lần cuối ${ago(new Date(last.endedAt || last.startedAt).getTime())}${tok ? ' · hôm nay ' + fmtTok(tok) + ' token' : ''}` : 'Chưa làm việc lần nào';
+    // Thành tích gần đây (các lượt còn trong lịch sử): bao nhiêu lượt, bao nhiêu lỗi, tốn bao nhiêu — để thấy ai hay vấp, ai tốn
+    const mine = S.runs.filter(r => r.agentId === a.id && r.status !== 'working'), loi = mine.filter(r => r.status === 'error').length;
+    const usd = mine.reduce((n, r) => n + (r.costUsd || 0), 0);
+    const tk = mine.length ? `<small class="tk" title="Tính trên các lượt còn trong Lịch sử">${mine.length} lượt${loi ? ` · <span class="${loi / mine.length >= .25 ? 'herr' : ''}">${loi} lỗi</span>` : ''}${usd ? ` · $${usd.toFixed(2)} (≈$${(usd / mine.length).toFixed(2)}/lượt)` : ''}</small>` : '';
     return `<li class="arow ${a.id === S.selected ? 'sel' : ''}" style="--d:${depth}">
       ${depth ? '<span class="branch" aria-hidden="true"></span>' : ''}
       <button class="ohit" data-sel="${esc(a.id)}" aria-label="Chọn ${esc(a.name)}"></button>
       <span class="portrait-box"><canvas class="portrait tcv" data-id="${esc(a.id)}" width="28" height="30" aria-hidden="true"></canvas>${portraitImg(a)}</span>
       <span class="nm"><b>${subs ? '<span class="star" aria-hidden="true">★</span> ' : ''}${esc(a.name)}</b><small>${esc(a.role)}</small></span>
       <span class="rep">${boss ? `<small>Báo cáo cho</small><span>${esc(boss.name)}</span>` : '<small>Cấp cao nhất</small>'}${subs ? `<span>${subs} người trực thuộc</span>` : ''}</span>
-      <span class="now"><span class="st"><span class="dot ${st}"></span>${STATUS_TXT[st]}</span><small>${esc(now)}</small></span>
+      <span class="now"><span class="st"><span class="dot ${st}"></span>${STATUS_TXT[st]}</span><small>${esc(now)}</small>${tk}</span>
       <span class="badge eng ${a.engine}">${esc(engLabel(a))}</span>
       <span class="acts-r">${(lastDone(a.id) || {}).status === 'error' && canRetry(lastDone(a.id)) ? `<button class="btn sm icon-btn" data-retry="${esc(a.id)}" aria-label="Thử lại việc vừa lỗi của ${esc(a.name)}" title="Thử lại việc vừa lỗi">↻</button>` : ''}<button class="btn sm icon-btn" data-edit-agent="${esc(a.id)}" aria-label="Sửa ${esc(a.name)}" title="Sửa agent">✎</button></span>
     </li>`;

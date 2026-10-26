@@ -310,7 +310,8 @@ Bấm **📊 Báo cáo** ở đầu trang (hoặc mở `http://127.0.0.1:4321/#u
 - **Biểu đồ** token theo ngày (hoặc theo giờ khi xem hôm nay), chia 4 loại token. Rê chuột lên cột để xem số.
 - **Bảng theo agent**: lượt, lỗi, từng loại token, tỉ lệ trúng cache, trung bình mỗi lượt, công cụ dùng nhiều.
   Bấm một dòng để lọc theo agent đó.
-- **Bảng theo dự án**: token cả dự án, phần điều phối viên dùng, chi phí và ước tính lúc dự án bắt đầu chạy (trung vị · lần tốn).
+- **Bảng theo loại bước**: lập kế hoạch, làm, duyệt, sửa, nghiệm thu, việc lẻ chiếm bao nhiêu chi phí (theo bộ lọc đang chọn), để biết nên bớt vòng nào hay hạ model ở đâu.
+- **Bảng theo dự án**: điểm nghiệm thu, token cả dự án, phần điều phối viên dùng, chi phí và ước tính lúc dự án bắt đầu chạy (trung vị · lần tốn).
 - **Trí não**: các chỉ số so với mục tiêu của kế hoạch nâng cấp (chữ xanh là đã đạt):
   - thẻ số: tỉ lệ lần chạy có gọi Bash (mục tiêu dưới 5%), bài học tái phạm trong 30 ngày (0), số dòng `index.md` (dưới 30), số ý đã duyệt, số nguồn bị chặn;
   - theo dự án: token quy đổi theo loại bước (làm, duyệt, duyệt lại, sửa, điều phối), vòng duyệt–sửa so với bước làm (dưới 0,6), số vấn đề BẮT BUỘC (rê chuột để xem theo loại và theo gốc), vấn đề không rõ người sửa (0), số lần giao ban, điểm nghiệm thu lần đầu (từ 85), token bước nguồn ở dự án tiếp nối (dưới 0,8 triệu), câu hỏi trùng (0), tỉ lệ trang An mở lại mà người khác đã mở trước (dưới 10%), ảnh ghi ra ngoài `output/<chủ đề>/` (0);

@@ -4246,6 +4246,7 @@ function renderUsage(){
     </section>
     <p class="u-cols"><label class="att"><input type="checkbox" id="uDetail" ${U.detail ? 'checked' : ''}><span>Hiện cột chi tiết token (cache, đầu vào, đầu ra, model…)</span></label></p>
     <section class="box u-card"><h3>Theo agent <small>bấm một dòng để lọc theo agent đó</small></h3>${agentTable(list)}</section>
+    ${roleTable(list)}
     ${projectTable()}
     ${triNaoBlock()}
     <section class="box u-card"><h3>Từng lượt chạy (session) <small>${list.length} lượt · bấm để xem chi tiết</small></h3>${runTable(list)}</section>`;
@@ -4310,13 +4311,25 @@ function agentTable(list){
       <td><span class="bar" style="width:${Math.round(s.total / maxT * 60)}px"></span>${fmtTok(s.total)} <small class="muted">${pct(s.total, all.total)}</small></td><td class="num dt">${Math.round(s.hit * 100)}%</td><td class="num dt">${fmtTok(s.total / s.n)}</td><td class="num">${fmtMs(s.ms / s.n)}</td><td class="num">${s.hasCost ? fmtUsd(s.cost) : '—'}</td><td class="dt">${top(s.toolMap)}</td></tr>`).join('')}
     </tbody><tfoot><tr><td>Tổng</td><td class="num">${all.n}</td><td class="num">${all.err || ''}</td><td class="num dt">${fmtTok(all.tokensIn)}</td><td class="num dt">${fmtTok(all.cacheWrite)}</td><td class="num dt">${fmtTok(all.cacheRead)}</td><td class="num dt">${fmtTok(all.tokensOut)}</td><td>${fmtTok(all.total)}</td><td class="num dt">${Math.round(all.hit * 100)}%</td><td class="num dt">${fmtTok(all.n ? all.total / all.n : 0)}</td><td class="num">${fmtMs(all.n ? all.ms / all.n : 0)}</td><td class="num">${all.hasCost ? fmtUsd(all.cost) : '—'}</td><td class="dt"></td></tr></tfoot></table></div>`;
 }
+// Theo loại bước: lập kế hoạch, làm, duyệt, sửa, nghiệm thu… tốn bao nhiêu — để biết nên bớt vòng nào, hạ model ở đâu
+function roleTable(list){
+  const plans = U.data.plans || [], by = new Map();
+  for (const r of list){ const k = r.planId ? runRole(r, plans.find(p => p.id === r.planId)) || 'Làm' : 'Việc lẻ'; if (!by.has(k)) by.set(k, []); by.get(k).push(r); }
+  if (by.size < 2) return '';
+  const rows = [...by.entries()].map(([k, rs]) => ({ k, s: sumRuns(rs) })).sort((a, b) => b.s.cost - a.s.cost || b.s.total - a.s.total);
+  const all = sumRuns(list), maxC = Math.max(...rows.map(r => r.s.cost), 1e-9);
+  return `<section class="box u-card"><h3>Theo loại bước <small>vòng duyệt và sửa tốn bao nhiêu so với phần làm chính</small></h3><div class="tscroll"><table class="utable"><thead><tr><th>Loại</th><th class="num">Lượt</th><th class="num">Lỗi</th><th class="num">Tổng token</th><th class="num">TG TB</th><th>Chi phí</th><th class="num">TB / lượt</th></tr></thead><tbody>
+    ${rows.map(({ k, s }) => `<tr><td><b>${esc(k)}</b></td><td class="num">${s.n}</td><td class="num">${s.err || ''}</td><td class="num">${fmtTok(s.total)}</td><td class="num">${fmtMs(s.ms / s.n)}</td>
+      <td><span class="bar" style="width:${Math.round(s.cost / maxC * 60)}px"></span>${s.hasCost ? fmtUsd(s.cost) : '—'} <small class="muted">${pct(s.cost, all.cost)}</small></td><td class="num">${s.hasCost ? fmtUsd(s.cost / s.n) : '—'}</td></tr>`).join('')}
+  </tbody></table></div></section>`;
+}
 function projectTable(){
   const runs = (U.data.runs || []).map(normRun).filter(r => r.planId);
   const plans = (U.data.plans || []).filter(p => runs.some(r => r.planId === p.id));
   if (!plans.length) return '';
-  return `<section class="box u-card"><h3>Theo dự án <small>bấm một dòng để chỉ xem các lượt của dự án đó</small></h3><div class="tscroll"><table class="utable"><thead><tr><th>Dự án</th><th>Trạng thái</th><th>Điều phối</th><th class="num">Bước</th><th class="num">Lượt</th><th class="num">Lỗi</th><th class="num">Tổng token</th><th class="num dt">Điều phối dùng</th><th class="num">Chi phí</th><th class="num" title="Ước tính lúc dự án bắt đầu chạy (trung vị · lần tốn)">Ước tính</th><th>Bắt đầu</th></tr></thead><tbody>
+  return `<section class="box u-card"><h3>Theo dự án <small>bấm một dòng để chỉ xem các lượt của dự án đó</small></h3><div class="tscroll"><table class="utable"><thead><tr><th>Dự án</th><th>Trạng thái</th><th class="num" title="Điểm nghiệm thu">Điểm</th><th>Điều phối</th><th class="num">Bước</th><th class="num">Lượt</th><th class="num">Lỗi</th><th class="num">Tổng token</th><th class="num dt">Điều phối dùng</th><th class="num">Chi phí</th><th class="num" title="Ước tính lúc dự án bắt đầu chạy (trung vị · lần tốn)">Ước tính</th><th>Bắt đầu</th></tr></thead><tbody>
     ${plans.map(p => { const rs = runs.filter(r => r.planId === p.id), s = sumRuns(rs), c = sumRuns(rs.filter(r => !r.step));
-      return `<tr data-uplan="${esc(p.id)}"><td class="wrap"><span class="clamp2" title="${esc(p.goal)}">${esc(p.goal)}</span></td><td>${PLAN_TXT[p.status] || p.status}</td><td>${esc(uAgentName(p.coordinatorId))}</td><td class="num">${p.steps.length}</td><td class="num">${s.n}</td><td class="num">${s.err || ''}</td><td class="num">${fmtTok(s.total)}</td><td class="num dt">${fmtTok(c.total)} <small class="muted">${pct(c.total, s.total)}</small></td><td class="num">${s.hasCost ? fmtUsd(s.cost) : '—'}</td><td class="num">${p.uocTinh ? `${fmtUsd(p.uocTinh.usd)} <small class="muted">· ${fmtUsd(p.uocTinh.cao)}</small>` : '—'}</td><td>${fmtTime(p.createdAt)}</td></tr>`; }).join('')}
+      return `<tr data-uplan="${esc(p.id)}"><td class="wrap"><span class="clamp2" title="${esc(p.goal)}">${esc(p.goal)}</span></td><td>${PLAN_TXT[p.status] || p.status}</td><td class="num">${p.score != null ? p.score : '—'}</td><td>${esc(uAgentName(p.coordinatorId))}</td><td class="num">${p.steps.length}</td><td class="num">${s.n}</td><td class="num">${s.err || ''}</td><td class="num">${fmtTok(s.total)}</td><td class="num dt">${fmtTok(c.total)} <small class="muted">${pct(c.total, s.total)}</small></td><td class="num">${s.hasCost ? fmtUsd(s.cost) : '—'}</td><td class="num">${p.uocTinh ? `${fmtUsd(p.uocTinh.usd)} <small class="muted">· ${fmtUsd(p.uocTinh.cao)}</small>` : '—'}</td><td>${fmtTime(p.createdAt)}</td></tr>`; }).join('')}
   </tbody></table></div></section>`;
 }
 // ── Trí não: chỉ số so với mục tiêu ở mục 5 của docs/ke-hoach-tri-nao.md (ghi cứng ở đây) ──

@@ -55,6 +55,7 @@ header.hero .brand p{color:#f2ead8; text-shadow:1px 1px 0 #1a2016}
 .chips{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
 .chip{display:inline-flex; align-items:center; gap:6px; padding:4px 10px; background:var(--paper); border:2px solid var(--edge); font-size:13px; font-weight:600; box-shadow:2px 2px 0 var(--shadow); white-space:nowrap}
 .chip b{font-family:var(--pixel); font-weight:700; font-size:15px}
+a.chip{color:inherit; text-decoration:none; cursor:pointer} a.chip:hover{background:var(--paper-2)}
 
 .btn{display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:9px 14px; min-height:40px;
   background:var(--paper); border:2px solid var(--edge); box-shadow:3px 3px 0 var(--edge); font-weight:600; cursor:pointer; border-radius:0}
@@ -2522,6 +2523,20 @@ function renderTags(){
   }
   placeTags(performance.now()); renderBubbles();
 }
+// Chú thích khi rê chuột lên tên trên bản đồ: tính lúc rê (việc đang làm đổi liên tục, nhãn không vẽ lại theo từng thao tác)
+function tagTip(id){
+  const a = agentById(id); if (!a) return '';
+  const st = statusOf(id), acts = S.acts[id], r = S.runs.find(x => x.agentId === id && x.status !== 'working');
+  const dong = [`${a.name} · ${a.role}`, STATUS_TXT[st]];
+  if (st === 'working'){
+    const w = S.runs.find(x => x.agentId === id && x.status === 'working');
+    if (w) dong.push('Việc: ' + shortTxt(w.planId && !w.step ? 'Điều phối dự án' : gist(w.task), 120));
+    if (acts && acts.length) dong.push('Vừa rồi: ' + shortTxt(acts[acts.length - 1].text, 120));
+  } else if (r) dong.push(`Lần cuối ${ago(new Date(r.endedAt || r.startedAt).getTime())} · ${RUN_TXT[r.status] || r.status}: ${shortTxt(hoKetQua(r), 140)}`);
+  dong.push('Bấm để giao việc');
+  return dong.join('\n');
+}
+mapEl.addEventListener('mouseover', e => { const t = e.target.closest && e.target.closest('.tag'); if (t) t.title = tagTip(t.dataset.sel); });
 function placeTags(t){
   const bubs = [];
   for (const el of mapEl.querySelectorAll('.tag,.bubble')){
@@ -4178,7 +4193,7 @@ function renderStats(){
   const tok = S.runs.filter(r => new Date(r.startedAt).toDateString() === today).reduce((s, r) => s + (r.tokens || 0), 0);
   const runsToday = S.runs.filter(r => new Date(r.startedAt).toDateString() === today).length;
   const usd = S.runs.filter(r => new Date(r.startedAt).toDateString() === today).reduce((s, r) => s + (r.costUsd || 0), 0);
-  $('#stats').innerHTML = `<span class="chip${runningN ? ' live' : ''}" title="Số người đang làm việc"><span class="dot ${runningN ? 'working' : ''}"></span><b>${runningN}</b>/${S.agents.length} đang làm</span><span class="chip" title="Hôm nay: ${runsToday} việc · ${fmtTok(tok)} token${usd ? ' · ~' + usd.toFixed(2) + ' USD tham khảo (gói Pro không trừ tiền riêng)' : ''}">Hôm nay <b>${runsToday}</b> việc<span class="c-tok"> · ${fmtTok(tok)} token</span>${usd ? ' · $' + usd.toFixed(2) : ''}</span>`;
+  $('#stats').innerHTML = `<span class="chip${runningN ? ' live' : ''}" title="Số người đang làm việc"><span class="dot ${runningN ? 'working' : ''}"></span><b>${runningN}</b>/${S.agents.length} đang làm</span><a class="chip" href="#usage" data-udays="1" title="Hôm nay: ${runsToday} việc · ${fmtTok(tok)} token${usd ? ' · ~' + usd.toFixed(2) + ' USD tham khảo (gói Pro không trừ tiền riêng)' : ''}. Bấm để xem báo cáo hôm nay.">Hôm nay <b>${runsToday}</b> việc<span class="c-tok"> · ${fmtTok(tok)} token</span>${usd ? ' · $' + usd.toFixed(2) : ''}</a>`;
 }
 function renderFoot(){
   const c = S.cli;
@@ -4537,6 +4552,12 @@ function route(){
   if (on){ window.scrollTo(0, 0); renderUsage(); loadUsage(); }
 }
 window.addEventListener('hashchange', route);
+// Chip "Hôm nay" ở thanh trên: mở báo cáo, chọn sẵn khoảng hôm nay
+document.addEventListener('click', e => {
+  const a = e.target.closest('[data-udays]'); if (!a) return;
+  U.days = +a.dataset.udays; U.page = 1; U.data = null; store.set('yl-udays', U.days);
+  if (location.hash === '#usage'){ e.preventDefault(); renderUsage(); loadUsage(); }
+});
 
 // Dữ liệu mẫu cho chế độ xem thử: lịch sử 3 tuần (cố định theo hạt giống) + các lượt bạn vừa diễn tập
 let demoHist = null;
